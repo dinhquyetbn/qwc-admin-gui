@@ -234,3 +234,24 @@ Update translation files:
 Start local service:
 
      python src/server.py
+
+
+***Lưu ý
+Thực hiện db_url trỏ trực tiếp vào DB
+* [JSON schema](schemas/qwc-admin-gui.json)
+* File location: `$CONFIG_PATH/<tenant>/adminGuiConfig.json`
+
+Example:
+```json
+{
+  "$schema": "https://github.com/qwc-services/qwc-admin-gui/raw/2024-lts/schemas/qwc-admin-gui.json",
+  "service": "admin-gui",
+  "config": {
+    "db_url": "postgresql://qwc_admin:qwc_admin@localhost:5439/qwc_services",
+    "config_generator_service_url": "http://qwc-config-service:9090",
+    "totp_enabled": false,
+    "user_info_fields": [],
+    "proxy_url_whitelist": [],
+    "proxy_timeout": 60
+  }
+}
