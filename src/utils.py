@@ -8,7 +8,9 @@ DEFAULT_LOCALE = os.environ.get('DEFAULT_LOCALE', 'en')
 translations = {}
 try:
     locale = DEFAULT_LOCALE
-    path =  pathlib.Path().absolute() / 'translations/{}.json'.format(locale)
+    # path =  pathlib.Path().absolute() / 'translations/{}.json'.format(locale)
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base_path, 'translations', f'{locale}.json')
     with open(path, 'r') as f:
         translations[locale] = json.load(f)
 except Exception as e:
