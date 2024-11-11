@@ -1,5 +1,5 @@
 :root {
-  --bs-body-font-size: 14px;
+  --bs-body-font-size: 16px;
 }
 
 html, body {
@@ -7,20 +7,21 @@ html, body {
 }
 
 body {
-  --bs-body-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --bs-body-font-size: 14px;
+  --bs-body-font-family: Roboto, sans-serif;
+  --bs-body-font-size: 16px;
+  background-color: #F8F9FA;
 }
 
 .btn {
-  --bs-btn-font-size: 14px;
+  --bs-btn-font-size: 16px;
 }
 
 .nav-link {
-  --bs-nav-link-font-size: 14px;
+  --bs-nav-link-font-size: 16px;
 }
 
 .table {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 form {
@@ -29,4 +30,226 @@ form {
 
 input:invalid {
   background-color: #FFAAAA;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+}
+
+.nav-logo img {
+  width: 50px;
+  height: 50px;
+}
+
+.nav-logo p {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #E83976;
+  text-transform: uppercase;
+}
+
+.nav-info {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  width: 110px;
+  justify-content: space-between;
+}
+
+.nav-search {
+  display: flex;
+  height: 45px;
+  align-items: center;
+}
+
+.nav-search input {
+  background-color: transparent;
+  width: 300px;
+}
+
+.nav-info .nav-info-user img {
+  width: 30px;
+  cursor: pointer;
+}
+
+.nav-info .nav-info-noti img {
+  width: 23px;
+  cursor: pointer;
+}
+
+.nav-info .nav-info-logout img {
+  width: 20px;
+  cursor: pointer;
+}
+
+
+/* Sidebar styling */
+.sidebar {
+  height: calc(100% - 85px);
+  overflow-y: auto;
+  width: 250px;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  border-radius: 12px;
+  background: var(--menu-bkg, linear-gradient(180deg, #0054A6 0%, #0A3B7B 100%));
+  padding-top: 10px;
+  margin: 10px 5px;
+  transition: width 0.3s;
+}
+
+.sidebar.collapsed {
+  width: 60px; /* Adjust width to fit icons */
+}
+
+/* .sidebar a span.icon, 
+.dropdown-btn span.icon {
+  width: 24px;
+  margin-right: 10px;
+} */
+
+.sidebar.collapsed a span.text, 
+.sidebar.collapsed .dropdown-btn span.text,
+.sidebar.collapsed .dropdown-btn i,
+.sidebar.collapsed .dropdown-container a {
+  display: none; /* Hide text when collapsed */
+}
+
+.sidebar.collapsed .svg-icon {
+  margin-right: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.sidebar.collapsed a, .sidebar.collapsed .dropdown-btn {
+  padding: 10px 0;
+}
+
+.sidebar a, .dropdown-btn {
+  margin: 5px 15px;
+  padding: 10px 15px;
+  text-decoration: none;
+  font-size: 16px;
+  color: white;
+  display: block;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  border-radius: 5px;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */
+}
+
+.dropdown-btn {
+  width: calc(100% - 30px);
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */
+}
+
+.sidebar a:hover, .dropdown-btn:hover {
+  background-color: #0093D8;
+}
+
+.dropdown-btn i {
+  float: right;
+  margin-left: auto;
+}
+
+.dropdown-container {
+  display: none;
+  background-color: transparent;
+  padding-left: 15px;
+}
+
+.dropdown-container a {
+  padding: 8px 15px;
+  text-decoration: none;
+  font-size: 16px;
+  color: white;
+  display: block;
+}
+
+.dropdown-container a:hover {
+  background-color: #0093D8;
+}
+
+.sidebar-collapsed {
+  position: absolute;
+  bottom: 1px;
+  right: 7px;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Content styling */
+.content {
+  margin-left: 250px; /* Same as the width of the sidebar */
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed + .content {
+  margin-left: 60px; /* Adjust this value based on your collapsed sidebar width */
+}
+
+.svg-icon {
+  display: inline-block;
+  width: 24px; /* Kích thước của SVG */
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle; /* Căn giữa với văn bản */
+  margin-right: 15px;
+}
+
+.svg-icon-home {
+  background-image:  url('../img/home.svg');
+}
+
+.svg-icon-data {
+  background-image:  url('../img/data.svg');
+}
+
+.svg-icon-map {
+  background-image:  url('../img/map.svg');
+}
+
+.svg-icon-report {
+  background-image:  url('../img/report.svg');
+}
+
+.svg-icon-system {
+  background-image:  url('../img/systems.svg');
+}
+
+.svg-icon-submenu {
+  margin-right: 0;
+}
+
+.svg-icon-dot {
+  background-image:  url('../img/dot.svg');
+}
+
+@media (max-width: 768px) {
+  /* .sidebar {
+    width: 60px;
+  } */
+}
+
+@media screen and (max-width: 700px) {
+  .nav-search {
+    display: none;
+  }
 }

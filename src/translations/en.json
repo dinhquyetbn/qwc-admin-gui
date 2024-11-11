@@ -140,6 +140,25 @@
       "new_role": "New Role",
       "title": "Roles"
     },
+    "sidebar": {
+      "bao_cao": "Báo cáo",
+      "cau_hinh_ban_do": "Cấu hình bản đồ",
+      "nhat_ky_ung_dung": "Nhật ký ứng dụng",
+      "phan_quyen_su_dung": "Phân quyền sử dụng",
+      "quan_ly_danh_muc": "Quản lý danh mục chung",
+      "quan_ly_dat_cong": "Đất công",
+      "quan_ly_don_vi": "Quản lý đơn vị",
+      "quan_ly_nguoi_dung": "Quản lý người dùng",
+      "quan_ly_nha_cong_san": "Nhà công sản",
+      "quan_ly_phan_loai_tai_san": "Quản lý danh mục phân loại tài sản",
+      "quan_ly_quyen": "Quản lý quyền",
+      "quan_ly_tai_san": "Quản lý tài sản",
+      "quan_ly_tham_so_tai_san": "Quản lý tham số tài sản",
+      "quan_tri_he_thong": "Quản trị hệ thống",
+      "thiet_lap_giao_dien": "Thiết lập giao diện",
+      "thiet_lap_tham_so": "Thiết lập tham số",
+      "trang_chu": "Trang chủ"
+    },
     "users": {
       "authentication": "Authentication",
       "confirm_message_delete": "Remove user?",
