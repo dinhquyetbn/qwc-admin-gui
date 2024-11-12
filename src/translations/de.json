@@ -1,6 +1,14 @@
 {
   "locale": "de",
   "interface": {
+    "asset_parameters": {
+      "new_asset_parameters": "new_asset_parameters",
+      "title": "title"
+    },
+    "asset_type": {
+      "new_asset_type": "new_asset_type",
+      "title": "title"
+    },
     "common": {
       "add": "Hinzufügen",
       "all": "alle",
@@ -70,6 +78,13 @@
       "title": "Berechtigung",
       "type_filter": "Typfilter",
       "write": "Schreiben"
+    },
+    "public_building": {
+      "title": "title"
+    },
+    "public_land": {
+      "new_public_land": "new_public_land",
+      "title": "title"
     },
     "registrable_groups": {
       "confirm_message_delete": "Registierbare Gruppe entfernen?",

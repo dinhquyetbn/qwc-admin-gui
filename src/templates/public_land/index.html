@@ -1,0 +1,109 @@
+{% extends "templates/base_index_v2.html" %}
+{% block title %}{{ i18n('interface.public_land.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.public_land.new_public_land') }}{% endblock %}
+
+{% block table %}
+<ul class="nav nav-tabs w-100" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="master-tab" data-bs-toggle="tab" data-bs-target="#data" type="button"
+            role="tab" aria-controls="home" aria-selected="true">Ds tài sản</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="draff-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab"
+            aria-controls="profile" aria-selected="false">Ds chờ phê duyệt</button>
+    </li>
+</ul>
+<div class="tab-content px-4 py-4" id="tabDataContent">
+    <div class="tab-pane fade show active" id="data" role="tabpanel" aria-labelledby="data-tab">
+        <table id="tableMaster" class="display">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã TS</th>
+                    <th>Tên đất</th>
+                    <th>Đơn vị QL</th>
+                    <th>Diện tích</th>
+                    <th>Ngày cập nhật</th>
+                    <th>Hiện trạng</th>
+                    <th>Văn bản</th>
+                    <th>Chi tiết</th>
+                    <th>Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>01</td>
+                    <td>NDCS-12345</td>
+                    <td>Khu vui chơi khu vực 1</td>
+                    <td>Khu vui chơi khu vực 1</td>
+                    <td>500 m²</td>
+                    <td>28/10/2024</td>
+                    <td class="status">Đang sử dụng</td>
+                    <td><i class="icon icon-doc"></i></td>
+                    <td>
+                        <button class="btn btn-info">Thông tin</button>
+                        <button class="btn btn-map">Bản đồ</button>
+                    </td>
+                    <td>
+                        <i class="icon icon-edit"></i>
+                        <i class="icon icon-delete"></i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block bodyCreateModal %}
+<ul class="nav nav-tabs w-100" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#infoData" type="button"
+            role="tab" aria-controls="home" aria-selected="true">Thông tin chung</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="map-tab" data-bs-toggle="tab" data-bs-target="#mapData" type="button" role="tab"
+            aria-controls="profile" aria-selected="false">Bản đồ</button>
+    </li>
+</ul>
+<div class="tab-content my-2">
+    <div class="tab-pane fade show active" id="infoData" role="tabpanel" aria-labelledby="infoData-tab">
+        <div class="d-flex align-items-start">
+            <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="v-pills-1-tab" data-bs-toggle="pill"
+                    data-bs-target="#v-pills-1" type="button" role="tab" aria-controls="v-pills-1"
+                    aria-selected="true">Thông tin tài sản đất</button>
+                <button class="nav-link" id="v-pills-2-tab" data-bs-toggle="pill"
+                    data-bs-target="#v-pills-2" type="button" role="tab" aria-controls="v-pills-2"
+                    aria-selected="false">Diện tích khuôn viên</button>
+                <button class="nav-link" id="v-pills-3-tab" data-bs-toggle="pill"
+                    data-bs-target="#v-pills-3" type="button" role="tab" aria-controls="v-pills-3"
+                    aria-selected="false">Hiện trạng sử dụng</button>
+                <button class="nav-link" id="v-pills-4-tab" data-bs-toggle="pill"
+                    data-bs-target="#v-pills-4" type="button" role="tab" aria-controls="v-pills-4"
+                    aria-selected="false">Vị trí</button>
+            </div>
+            <div class="tab-content" id="v-pills-tabContent">
+                <div class="tab-pane fade show active" id="v-pills-1" role="tabpanel"
+                    aria-labelledby="v-pills-1-tab">...</div>
+                <div class="tab-pane fade" id="v-pills-2" role="tabpanel" aria-labelledby="v-pills-2-tab">
+                    ...</div>
+                <div class="tab-pane fade" id="v-pills-3" role="tabpanel" aria-labelledby="v-pills-3-tab">
+                    ...</div>
+                <div class="tab-pane fade" id="v-pills-4" role="tabpanel" aria-labelledby="v-pills-4-tab">
+                    ...</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+    $(document).ready(function () {
+        let tableMaster = new DataTable('#tableMaster', {
+            paging: true,
+            ordering: true,
+            scrollY: 400
+        });
+    })
+</script>

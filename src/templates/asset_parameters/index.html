@@ -1,0 +1,174 @@
+{% extends "templates/base_index_v2.html" %}
+{% block title %}{{ i18n('interface.asset_parameters.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.asset_parameters.new_asset_parameters') }}{% endblock %}
+
+{% block table %}
+<ul class="nav nav-tabs w-100" id="assetParameterTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="param-tab" data-bs-toggle="tab" data-bs-target="#param"
+            data-target-modal="#createTab1Modal" type="button" role="tab" aria-controls="param" aria-selected="true">Ds
+            tham số</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="group-tab" data-bs-toggle="tab" data-bs-target="#group"
+            data-target-modal="#createTab2Modal" type="button" role="tab" aria-controls="group" aria-selected="false">Ds
+            nhóm tham số</button>
+    </li>
+</ul>
+<div class="tab-content px-4 py-4">
+    <div class="tab-pane fade" id="param" role="tabpanel" aria-labelledby="param-tab">
+    </div>
+    <div class="tab-pane fade show active" id="group" role="tabpanel" aria-labelledby="group-tab">
+        <table id="tableGroupParam" class="display">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên nhóm tham số</th>
+                    <th>Thứ tự hiển thị</th>
+                    <th>Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block renderScripts %}
+<script type="text/javascript">
+    // Thay đổi modal hiển thị khi click tab
+    document.addEventListener('DOMContentLoaded', function () {
+        const createButton = document.getElementById('createModal');
+        const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function () {
+                const targetModal = this.getAttribute('data-target-modal');
+                createButton.setAttribute('data-bs-target', targetModal);
+            });
+        });
+
+        createButton.addEventListener('click', function () {
+            const targetModal = createButton.getAttribute('data-bs-target');
+            const form = document.querySelector(`${targetModal} form`);
+            if (form) {
+                form.reset(); // Reset the form fields
+                // Remove 'is-valid' class from all form elements
+                const formValidElements = form.querySelectorAll('.is-valid');
+                formValidElements.forEach(element => {
+                    element.classList.remove('is-valid');
+                });
+                // Remove 'is-invalid' class from all form elements
+                const formInvalidElements = form.querySelectorAll('.is-invalid');
+                formInvalidElements.forEach(element => {
+                    $('.invalid-feedback').remove();
+                    element.classList.remove('is-invalid');
+                });
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        let tableGroupParm = new DataTable('#tableGroupParam', {
+            paging: true,
+            ordering: true,
+            scrollY: 300
+        });
+
+        // Set up form validation
+        $('#nhomThamSoForm').validate({
+            rules: {
+                ten_nhom: {
+                    required: true
+                },
+                thu_tu_hien_thi: {
+                    required: true,
+                    number: true,
+                    min: 1
+                }
+            },
+            messages: {
+                ten_nhom: {
+                    required: "Vui lòng nhập tên nhóm tham số."
+                },
+                thu_tu_hien_thi: {
+                    required: "Vui lòng nhập thứ tự hiển thị.",
+                    number: "Vui lòng nhập một số hợp lệ.",
+                    min: "Giá trị phải lớn hơn hoặc bằng 1."
+                }
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                error.addClass("invalid-feedback");
+                error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+            }
+        });
+
+        $('#createTab2Modal .btn-save').on('click', function () {
+            if ($('#nhomThamSoForm').valid()) {
+                // Collect form data
+                const formDataArray = $('#nhomThamSoForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+                // Make AJAX call
+                $.ajax({
+                    url: '/api/asset-parameter/group/create', // Replace with your API endpoint
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab2Modal').modal('hide');
+                    },
+                    error: function (error) {
+                        // Handle error
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+    })
+
+</script>
+{% endblock %}
+
+{% block bodyCreateTab1Modal %}
+<form id="thamSoForm" class="row g-3 needs-validation" novalidate method="post">
+    <div class="col-md-6">
+        <label for="ten_nhom" class="form-label">Mã trường dữ liệu:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_nhom" required>
+    </div>
+    <div class="col-md-6"></div>
+    <label for="ten_nhom" class="form-label">Tên trường dữ liệu:<span class="required">*</span></label>
+    <input type="text" class="form-control" name="ten_nhom" required>
+    </div>
+</form>
+{% endblock %}
+
+{% block bodyCreateTab2Modal %}
+<form id="nhomThamSoForm" class="row g-3 needs-validation" novalidate method="post">
+    <div class="col-md-12">
+        <label for="ten_nhom" class="form-label">Tên nhóm tham số:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_nhom" required>
+    </div>
+    <div class="col-md-12">
+        <label for="thu_tu_hien_thi" class="form-label">Thứ tự hiển thị:<span class="required">*</span></label>
+        <input type="number" class="form-control" name="thu_tu_hien_thi" min="1" value="1" required>
+    </div>
+</form>
+{% endblock %}

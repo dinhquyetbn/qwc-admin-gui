@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
   {% block head %}
-  <title>{% block title %}{% endblock title %} - {{ admin_gui_title }}</title>
+  <title>{% block title %}{% endblock title %} | Hệ thống quản lý nhà công sản</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="icon" href="{{ url_for('static', filename='img/logo.ico') }}" type="image/x-icon">
@@ -13,14 +13,16 @@
   <link href="{{ url_for('static', filename='css/application.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='css/all.min.css') }}" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="{{ url_for('static', filename='libs/datatables/datatables.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='libs/toastr/toastr.min.css') }}" rel="stylesheet">
   {% block styles %}{% endblock %}
 
   <!-- Scripts -->
   {{ bootstrap.load_js() }}
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-    crossorigin="anonymous">
-  </script>
+  <script src="{{ url_for('static', filename='libs/jquery/jquery-3.7.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='libs/jquery/jquery.validate.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='libs/datatables/datatables.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='libs/toastr/toastr.min.js') }}"></script>
 
   <!-- Idle autologout -->
   <script type="text/javascript">
@@ -195,8 +197,8 @@
       <i class="fa fa-chevron-down"></i>
     </button>
     <div class="dropdown-container">
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_dat_cong') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_nha_cong_san') }} </a>
+      <a href="{{ url_for('public-land') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_dat_cong') }} </a>
+      <a href="{{ url_for('public-building') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_nha_cong_san') }} </a>
     </div>
     <button class="dropdown-btn" onclick="toggleSubmenu(this)" title="{{ i18n('interface.sidebar.bao_cao') }}">
       <span class="svg-icon svg-icon-report" title="{{ i18n('interface.sidebar.bao_cao') }}"></span> 
@@ -228,8 +230,8 @@
       <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_don_vi') }} </a>
       <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.nhat_ky_ung_dung') }} </a>
       <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_danh_muc') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_phan_loai_tai_san') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_tham_so_tai_san') }} </a>
+      <a href="{{ url_for('asset-type') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_phan_loai_tai_san') }} </a>
+      <a href="{{ url_for('asset-parameters') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_tham_so_tai_san') }} </a>
     </div>
     <div class="sidebar-collapsed" title="Thu gọn menu" onclick="toggleSidebar(this)">
       <i class="fa-solid fa-circle-arrow-left"></i>
@@ -239,7 +241,7 @@
   <div class="content {{ 'content-collapsed' if sidebar_collapsed else '' }}">
     <!-- Page content -->
     {% block content %}
-    <div class="container pb-4">
+    <div class="full-container pb-4">
       {{ utils.render_messages() }}
 
       {% block container %}

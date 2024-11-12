@@ -22,7 +22,8 @@ from qwc_services_core.database import DatabaseEngine
 from access_control import AccessControl
 from controllers import UsersController, GroupsController, RolesController, \
     ResourcesController, PermissionsController, RegistrableGroupsController, \
-    RegistrationRequestsController
+    RegistrationRequestsController, DashboardController, PublicBuildingController, \
+    PublicLandController, AssetParametersController, AssetTypeController
 from utils import i18n
 
 AUTH_PATH = os.environ.get('AUTH_PATH', '/auth')
@@ -120,6 +121,12 @@ GroupsController(app, handler)
 RolesController(app, handler)
 ResourcesController(app, handler)
 PermissionsController(app, handler)
+DashboardController(app, handler)
+PublicBuildingController(app, handler)
+PublicLandController(app, handler)
+AssetTypeController(app, handler)
+AssetParametersController(app, handler)
+
 if app.config.get('QWC_GROUP_REGISTRATION_ENABLED'):
     RegistrableGroupsController(app, handler)
     RegistrationRequestsController(app, handler, mail)

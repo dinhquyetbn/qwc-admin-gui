@@ -1,6 +1,14 @@
 {
   "locale": "en",
   "interface": {
+    "asset_parameters": {
+      "new_asset_parameters": "new_asset_parameters",
+      "title": "Danh sách tham số tài sản"
+    },
+    "asset_type": {
+      "new_asset_type": "new_asset_type",
+      "title": "Danh sách danh mục phân loại tài sản"
+    },
     "common": {
       "add": "Add",
       "all": "All",
@@ -8,9 +16,9 @@
       "assigned_roles": "Assigned roles",
       "assigned_users": "Assigned users",
       "confirm_message_remove": "Remove resource?",
-      "delete": "Delete",
+      "delete": "Xóa",
       "description": "Description",
-      "edit": "Edit",
+      "edit": "Sửa",
       "form_cancel": "Cancel",
       "form_name_error": "Name has already been taken.",
       "form_priority": "Priority",
@@ -23,9 +31,9 @@
       "import_resources": "Import Resources",
       "message_required": "This field is required.",
       "name": "Name",
-      "new": "New",
+      "new": "Thêm mới",
       "new_permission": "New Permission",
-      "ph_search": "Search",
+      "ph_search": "Tìm kiếm...",
       "registrable_group": "Registrable Group",
       "remove": "Remove",
       "resource": "Resource",
@@ -70,6 +78,13 @@
       "title": "Permissions",
       "type_filter": "Type Filter",
       "write": "Write"
+    },
+    "public_building": {
+      "title": "Danh sách nhà công sản"
+    },
+    "public_land": {
+      "new_public_land": "new_public_land",
+      "title": "Danh sách thửa đất"
     },
     "registrable_groups": {
       "confirm_message_delete": "Remove registrable group?",
@@ -145,15 +160,15 @@
       "cau_hinh_ban_do": "Cấu hình bản đồ",
       "nhat_ky_ung_dung": "Nhật ký ứng dụng",
       "phan_quyen_su_dung": "Phân quyền sử dụng",
-      "quan_ly_danh_muc": "Quản lý danh mục chung",
+      "quan_ly_danh_muc": "QL danh mục",
       "quan_ly_dat_cong": "Đất công",
-      "quan_ly_don_vi": "Quản lý đơn vị",
-      "quan_ly_nguoi_dung": "Quản lý người dùng",
+      "quan_ly_don_vi": "QL đơn vị",
+      "quan_ly_nguoi_dung": "QL người dùng",
       "quan_ly_nha_cong_san": "Nhà công sản",
-      "quan_ly_phan_loai_tai_san": "Quản lý danh mục phân loại tài sản",
-      "quan_ly_quyen": "Quản lý quyền",
+      "quan_ly_phan_loai_tai_san": "QL danh mục phân loại TS",
+      "quan_ly_quyen": "QL quyền",
       "quan_ly_tai_san": "Quản lý tài sản",
-      "quan_ly_tham_so_tai_san": "Quản lý tham số tài sản",
+      "quan_ly_tham_so_tai_san": "Tham số tài sản",
       "quan_tri_he_thong": "Quản trị hệ thống",
       "thiet_lap_giao_dien": "Thiết lập giao diện",
       "thiet_lap_tham_so": "Thiết lập tham số",

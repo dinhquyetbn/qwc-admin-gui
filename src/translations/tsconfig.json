@@ -8,6 +8,10 @@
     "interface.common.permission"
   ],
   "strings": [
+    "interface.asset_parameters.new_asset_parameters",
+    "interface.asset_parameters.title",
+    "interface.asset_type.new_asset_type",
+    "interface.asset_type.title",
     "interface.common.add",
     "interface.common.all",
     "interface.common.assigned_groups",
@@ -69,6 +73,9 @@
     "interface.permissions.title",
     "interface.permissions.type_filter",
     "interface.permissions.write",
+    "interface.public_building.title",
+    "interface.public_land.new_public_land",
+    "interface.public_land.title",
     "interface.registrable_groups.confirm_message_delete",
     "interface.registrable_groups.new_registrable_group",
     "interface.registrable_groups.title",
