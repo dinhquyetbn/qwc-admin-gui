@@ -554,3 +554,10 @@ class Controller:
             return result
         except Exception as e:
             return default
+
+    def convertUTCDateToVNTime(selft, value):
+        if value is None: 
+            return None;
+        utc_plus_7 = value.astimezone(datetime.timezone(datetime.timedelta(hours=7)))
+        formatted_date = utc_plus_7.strftime("%d/%m/%Y %H:%M")
+        return formatted_date

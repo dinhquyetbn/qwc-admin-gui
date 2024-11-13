@@ -10,6 +10,7 @@ body {
   --bs-body-font-family: Roboto, sans-serif;
   --bs-body-font-size: 16px;
   background-color: #F8F9FA;
+  overflow: hidden;
 }
 
 .btn {
@@ -201,6 +202,9 @@ form {
   margin-left: 250px; /* Same as the width of the sidebar */
   padding: 20px;
   transition: margin-left 0.3s ease;
+  max-height: 100vh;
+  overflow-y: auto;
+  height: calc(100% - 30px);
 }
 
 .sidebar.collapsed + .content {
@@ -214,7 +218,7 @@ form {
   color: #fff;
 }
 
-.btn-create:hover, .btn-save:hover {
+.btn-create:hover, .btn-save:hover, .btn-delete:hover {
   color: #fff;
 }
 
@@ -222,6 +226,12 @@ form {
   box-shadow: 1px 2px 10px 0px rgba(0, 0, 0, 0.20);
   border-radius: 8px;
   background: var(--Gradients-Green, linear-gradient(180deg, #63B967 0%, #4BA64F 100%));
+  color: #fff;
+}
+.btn-delete {
+  box-shadow: 1px 2px 10px 0px rgba(0, 0, 0, 0.20);
+  border-radius: 8px;
+  background: var(--Gradients-Green, linear-gradient(180deg, red 0%, red 100%));
   color: #fff;
 }
 
@@ -275,6 +285,38 @@ form {
   font-weight: 700;
 }
 
+/* Datatables */
+div.dt-processing>div:last-child>div {
+  background-color: #0A3B7B !important;
+}
+div.dt-length {
+  display: flex;
+  float: left;
+  margin-top: 20px;
+}
+div.dt-paging {
+  display: flex;
+  float: right;
+  margin-top: 15px;
+}
+div.dt-info {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+}
+button.dt-paging-button.first {
+  display: none !important;
+}
+button.dt-paging-button.last {
+  display: none !important;
+}
+.btn-action .svg-icon {
+  margin: 0;  
+}
+.btn-action .btn-icon-edit, .btn-action .btn-icon-delete {
+  padding: 5px;
+}
+
 .svg-icon {
   display: inline-block;
   width: 24px; /* Kích thước của SVG */
@@ -285,37 +327,35 @@ form {
   vertical-align: middle; /* Căn giữa với văn bản */
   margin-right: 15px;
 }
-
 .svg-icon-home {
   background-image:  url('../img/home.svg');
 }
-
 .svg-icon-data {
   background-image:  url('../img/data.svg');
 }
-
 .svg-icon-map {
   background-image:  url('../img/map.svg');
 }
-
 .svg-icon-report {
   background-image:  url('../img/report.svg');
 }
-
 .svg-icon-system {
   background-image:  url('../img/systems.svg');
 }
-
 .svg-icon-submenu {
   margin-right: 0;
 }
-
 .svg-icon-dot {
   background-image:  url('../img/dot.svg');
 }
-
 .svg-icon-filter {
   background-image:  url('../img/filter.svg');
+}
+.svg-icon-edit {
+  background-image:  url('../img/edit.svg');
+}
+.svg-icon-delete {
+  background-image:  url('../img/delete.svg');
 }
 
 @media (max-width: 768px) {

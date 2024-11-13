@@ -23,7 +23,7 @@
 
 {% block title %}{{ i18n('interface.resources.title') }}{% endblock %}
 {% block container %}
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 <div class="d-flex w-100 flex-column">
   <div class="d-flex mb-4 w-100 justify-content-between wrapper-create">
     <h4>{{ self.title() }}</h4>
@@ -87,6 +87,42 @@
       <div class="modal-body my-2">
         {% block bodyCreateTab2Modal %}
         {% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="deleteTab1Modal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+  aria-labelledby="deleteTab1ModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Xóa dữ liệu</h5>
+        <div>
+          <button type="button" class="btn btn-delete">{{ utils.render_icon('floppy2-fill') }} Thực hiện</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ utils.render_icon('x-circle') }}
+            Hủy</button>
+        </div>
+      </div>
+      <div class="modal-body my-2">
+        <p class="text-center">Bạn có chắc chắn muốn xóa dữ liệu này không?</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="deleteTab2Modal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+  aria-labelledby="deleteTab2ModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Xóa dữ liệu</h5>
+        <div>
+          <button type="button" class="btn btn-delete">{{ utils.render_icon('trash') }} Thực hiện</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ utils.render_icon('x-circle') }}
+            Hủy</button>
+        </div>
+      </div>
+      <div class="modal-body my-2">
+        <p class="text-center">Bạn có chắc chắn muốn xóa dữ liệu này không?</p>
       </div>
     </div>
   </div>

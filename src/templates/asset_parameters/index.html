@@ -23,9 +23,10 @@
             <thead>
                 <tr>
                     <th>STT</th>
-                    <th>Tên nhóm tham số</th>
-                    <th>Thứ tự hiển thị</th>
-                    <th>Tác vụ</th>
+                    <th style="min-width: 175px;">Tên nhóm tham số</th>
+                    <th style="min-width: 100px;">Thứ tự hiển thị</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 90px;">Tác vụ</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,17 +70,82 @@
     });
 
     $(document).ready(function () {
+        const fieldGroupParams = [
+            "stt",
+            "ten_nhom",
+            "thu_tu_hien_thi",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
         let tableGroupParm = new DataTable('#tableGroupParam', {
-            paging: true,
+            dom: 'rtlpi',
             ordering: true,
-            scrollY: 300
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 10,
+            responsive: true,
+            language: PBMSLang,
+            order: [],
+            ajax: {
+                url: "api/asset-parameter/group/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (d) {
+                    return d.result.data;
+                }
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                { orderable: false, targets: getIdxFieldTable(fieldGroupParams, ['stt', 'tac_vu']) },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldGroupParams, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldGroupParams, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab2Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'ten_nhom' },
+                { data: 'thu_tu_hien_thi' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
         });
 
-        // Set up form validation
+        // Validate nhóm tham số tài sản
         $('#nhomThamSoForm').validate({
             rules: {
                 ten_nhom: {
-                    required: true
+                    required: true,
+                    maxlength: 256
                 },
                 thu_tu_hien_thi: {
                     required: true,
@@ -89,7 +155,8 @@
             },
             messages: {
                 ten_nhom: {
-                    required: "Vui lòng nhập tên nhóm tham số."
+                    required: "Vui lòng nhập tên nhóm tham số.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 256 kí tự."
                 },
                 thu_tu_hien_thi: {
                     required: "Vui lòng nhập thứ tự hiển thị.",
@@ -112,6 +179,7 @@
             }
         });
 
+        // Cập nhật dữ liệu nhóm tham số tài sản
         $('#createTab2Modal .btn-save').on('click', function () {
             if ($('#nhomThamSoForm').valid()) {
                 // Collect form data
@@ -122,7 +190,7 @@
                 });
                 // Make AJAX call
                 $.ajax({
-                    url: '/api/asset-parameter/group/create', // Replace with your API endpoint
+                    url: 'api/asset-parameter/group/create', // Replace with your API endpoint
                     type: 'POST',
                     headers: {
                         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
@@ -134,14 +202,45 @@
                         toastr.success(res.message);
                         // Optionally, close the modal or reset the form
                         $('#createTab2Modal').modal('hide');
+                        // Reload datatable
+                        tableGroupParm.ajax.reload(null, false);
                     },
-                    error: function (error) {
+                    error: function (err) {
                         // Handle error
-                        console.error('Error:', error);
+                        toastr.error(err.error);
                     }
                 });
             }
         });
+
+        // Delete Ds nhóm tham số
+        window.showDeleteTab2Modal = function(id) {
+            // Show confirmation modal
+            $('#deleteTab2Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab2Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/asset-parameter/group/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab2Modal').modal('hide');
+                        // Reload datatable
+                        tableGroupParm.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            });
+        }
     })
 
 </script>

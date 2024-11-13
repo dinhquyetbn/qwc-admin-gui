@@ -22,6 +22,7 @@
   <script src="{{ url_for('static', filename='libs/jquery/jquery-3.7.1.min.js') }}"></script>
   <script src="{{ url_for('static', filename='libs/jquery/jquery.validate.min.js') }}"></script>
   <script src="{{ url_for('static', filename='libs/datatables/datatables.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='libs/datatables/datatables_ext.js') }}"></script>
   <script src="{{ url_for('static', filename='libs/toastr/toastr.min.js') }}"></script>
 
   <!-- Idle autologout -->
@@ -130,9 +131,9 @@
           <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="TP Đà Nẵng Logo">
           <p>QUẢN LÝ NHÀ CÔNG SẢN</p>
         </div>
-        <div class="nav-search">
+        <!-- <div class="nav-search">
           <input class="form-control" placeholder="Tìm kiếm..." />
-        </div>
+        </div> -->
         <div class="nav-info">
           <div class="nav-info-user">
             <img src="{{ url_for('static', filename='img/avatar.svg')}}" title="Thông tin người dùng" />

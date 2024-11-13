@@ -73,3 +73,7 @@ class AccessControl:
         (admin_role, ), = session.query(query.exists())
 
         return admin_role
+    
+    def getUserId(self, identity):
+        return identity.get('id')
+        
