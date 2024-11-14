@@ -124,10 +124,9 @@ var PBMSLang = {
         "previous": "Trước",
         "seconds": "Giây"
     },
-    // "info": "Hiển thị _START_ tới _END_ của _TOTAL_ dữ liệu",
-    "info": "Tổng _TOTAL_ bản ghi",
+    "info": "Hiển thị _START_ tới _END_ của _TOTAL_ bản ghi",
     "infoEmpty": "Tổng 0 bản ghi",
-    "lengthMenu": "Hiển thị _MENU_ bản ghi",
+    "lengthMenu": "_MENU_",
     "loadingRecords": "Đang tải...",
     "paginate": {
         "first": "Đầu tiên",

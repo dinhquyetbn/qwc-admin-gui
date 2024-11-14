@@ -216,6 +216,8 @@ form {
   border-radius: 8px;
   background: var(--Gradients-Green, linear-gradient(180deg, #63B967 0%, #4BA64F 100%));
   color: #fff;
+  min-width: 118px;
+  height: 40px;
 }
 
 .btn-create:hover, .btn-save:hover, .btn-delete:hover {
@@ -293,6 +295,7 @@ div.dt-length {
   display: flex;
   float: left;
   margin-top: 20px;
+  margin-right: 10px;
 }
 div.dt-paging {
   display: flex;
@@ -301,15 +304,15 @@ div.dt-paging {
 }
 div.dt-info {
   display: flex;
-  justify-content: center;
-  margin-top: 25px;
+  float: left;
+  margin-top: 23px;
 }
-button.dt-paging-button.first {
+/* button.dt-paging-button.first {
   display: none !important;
 }
 button.dt-paging-button.last {
   display: none !important;
-}
+} */
 .btn-action .svg-icon {
   margin: 0;  
 }

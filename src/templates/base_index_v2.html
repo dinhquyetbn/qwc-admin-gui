@@ -37,13 +37,11 @@
       Bộ lọc
     </div>
     <div class="btn-group search-group">
-      <form action="{{ url_for(base_route) }}" method="get">
-        <div class="input-group">
-          <input name="search" type="text" class="form-control" placeholder="{{ i18n('interface.common.ph_search') }}"
-            value="{{ search_text if search_text }}">
-          <button class="btn btn-search" type="submit">{{ utils.render_icon('search') }}</button>
-        </div>
-      </form>
+      <div class="input-group">
+        <input name="txt-search" type="text" class="form-control" placeholder="{{ i18n('interface.common.ph_search') }}"
+          value="{{ search_text if search_text }}">
+        <button class="btn btn-search">{{ utils.render_icon('search') }}</button>
+      </div>
     </div>
   </div>
   <div class="d-flex w-100 wrapper-content flex-column">

@@ -2,6 +2,21 @@
 {% block title %}{{ i18n('interface.asset_parameters.title') }}{% endblock %}
 {% block new_resource_label %}{{ i18n('interface.asset_parameters.new_asset_parameters') }}{% endblock %}
 
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+<script type="text/javascript">
+    $(function () {
+
+    });
+</script>
+{% endblock %}
+
+{%- block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
+{%- endblock styles %}
+
 {% block table %}
 <ul class="nav nav-tabs w-100" id="assetParameterTab" role="tablist">
     <li class="nav-item" role="presentation">
@@ -16,9 +31,24 @@
     </li>
 </ul>
 <div class="tab-content px-4 py-4">
-    <div class="tab-pane fade" id="param" role="tabpanel" aria-labelledby="param-tab">
+    <div class="tab-pane fade show active" id="param" role="tabpanel" aria-labelledby="param-tab">
+        <table id="tableDataParam" class="display">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th class="d-none">Nhóm tham số</th>
+                    <th style="min-width: 175px;">Tên trường dữ liệu</th>
+                    <th style="min-width: 125px;">Kiểu dữ liệu</th>
+                    <th style="min-width: 200px;">Mô tả</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
-    <div class="tab-pane fade show active" id="group" role="tabpanel" aria-labelledby="group-tab">
+    <div class="tab-pane fade" id="group" role="tabpanel" aria-labelledby="group-tab">
         <table id="tableGroupParam" class="display">
             <thead>
                 <tr>
@@ -26,7 +56,7 @@
                     <th style="min-width: 175px;">Tên nhóm tham số</th>
                     <th style="min-width: 100px;">Thứ tự hiển thị</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
-                    <th class="text-center" style="min-width: 90px;">Tác vụ</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,19 +97,38 @@
                 });
             }
         });
+
+        // get danh mục
+        $.ajax({
+            url: 'api/asset-parameter/group/all',
+            type: "GET",
+            dataType: 'json',
+            success: function (data) {
+                let options = data.result.map(item => ({
+                    id: item.id,
+                    text: item.text
+                }));
+                $('#select-nhom-tham-so').select2({
+                    data: options
+                });
+            }
+        });
     });
 
     $(document).ready(function () {
-        const fieldGroupParams = [
+        // Tab 1 Ds tham số           
+        const fieldDataParams = [
             "stt",
-            "ten_nhom",
-            "thu_tu_hien_thi",
+            "nhom_tham_so_id",
+            "ten_truong",
+            "kieu_du_lieu",
+            "mo_ta",
             "ngay_tao",
             "tac_vu"
         ];
 
-        let tableGroupParm = new DataTable('#tableGroupParam', {
-            dom: 'rtlpi',
+        let tableParam = new DataTable('#tableDataParam', {
+            dom: 'rtlip',
             ordering: true,
             scrollY: 300,
             scrollX: true,
@@ -89,6 +138,87 @@
             searching: { regex: true },
             pageLength: 10,
             responsive: true,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            ajax: {
+                url: "api/asset-parameter/param/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
+                }
+            },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                { orderable: false, targets: getIdxFieldTable(fieldDataParams, ['stt', 'ngay_tao', 'tac_vu']) },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDataParams, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDataParams, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab2Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab2Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'nhom_tham_so_id' },
+                { data: 'ten_truong' },
+                { data: 'kieu_du_lieu' },
+                { data: 'mo_ta' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
+        });
+
+        // Tab 2 Ds nhóm tham số
+        const fieldGroupParams = [
+            "stt",
+            "ten_nhom",
+            "thu_tu_hien_thi",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        let tableGroupParm = new DataTable('#tableGroupParam', {
+            dom: 'rtlip',
+            ordering: true,
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 10,
+            responsive: true,
+            pagingType: "simple_numbers",
             language: PBMSLang,
             order: [],
             ajax: {
@@ -100,15 +230,21 @@
                     'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
                 },
                 data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
                     return JSON.stringify(d);
                 },
-                dataSrc: function (d) {
-                    return d.result.data;
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
                 }
+            },
+            initComplete: function () {
+
             },
             columnDefs: [
                 { "defaultContent": "", "targets": "_all" },
-                { orderable: false, targets: getIdxFieldTable(fieldGroupParams, ['stt', 'tac_vu']) },
+                { orderable: false, targets: getIdxFieldTable(fieldGroupParams, ['stt', 'ngay_tao', 'tac_vu']) },
                 {
                     data: '',
                     targets: getIdxFieldTable(fieldGroupParams, ['stt']),
@@ -121,7 +257,7 @@
                     targets: getIdxFieldTable(fieldGroupParams, ['tac_vu']),
                     render: function (data, type, full, meta) {
                         return `<div class="btn-action">
-                                    <a class="btn btn-icon-edit" role="button" title="Sửa">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab2Modal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    
                                     <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab2Modal('${full.id}')">
@@ -189,9 +325,18 @@
                     formData[item.name] = item.value;
                 });
                 // Make AJAX call
+                let ajax_url = 'api/asset-parameter/group/create';
+                let ajax_type = 'POST';
+                let paramId = $('#nhomThamSoForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/asset-parameter/group/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
                 $.ajax({
-                    url: 'api/asset-parameter/group/create', // Replace with your API endpoint
-                    type: 'POST',
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
                     headers: {
                         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
                     },
@@ -213,8 +358,47 @@
             }
         });
 
+        // Search data
+        $('.btn-search').on('click', function () {
+            let tabName = $('#createModal')[0].getAttribute('data-bs-target');
+            switch (tabName) {
+                // Tab ds tham số
+                case '#createTab1Modal':
+                    break;
+                // Tab ds nhóm tham số
+                case '#createTab2Modal':
+                    tableGroupParm.ajax.reload(null, false);
+                    break;
+                default:
+                    break;
+            }
+        })
+
+        // Update nhóm tham số
+        window.showUpdateTab2Modal = function (id) {
+            $.ajax({
+                url: `api/asset-parameter/group/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    $('#nhomThamSoForm [name="id"]').val(res.result.id);
+                    $('#nhomThamSoForm [name="ten_nhom"]').val(res.result.ten_nhom);
+                    $('#nhomThamSoForm [name="thu_tu_hien_thi"]').val(res.result.thu_tu_hien_thi);
+                    // Trigger validation on each field to show feedback
+                    $('#nhomThamSoForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab2Modal').modal('show');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
         // Delete Ds nhóm tham số
-        window.showDeleteTab2Modal = function(id) {
+        window.showDeleteTab2Modal = function (id) {
             // Show confirmation modal
             $('#deleteTab2Modal').modal('show');
             // Set the delete button action
@@ -236,7 +420,9 @@
                     },
                     error: function (err) {
                         // Handle error
-                        toastr.error(err.error);
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab2Modal').modal('hide');
                     }
                 });
             });
@@ -249,18 +435,40 @@
 {% block bodyCreateTab1Modal %}
 <form id="thamSoForm" class="row g-3 needs-validation" novalidate method="post">
     <div class="col-md-6">
-        <label for="ten_nhom" class="form-label">Mã trường dữ liệu:<span class="required">*</span></label>
-        <input type="text" class="form-control" name="ten_nhom" required>
+        <label for="ma_truong" class="form-label">Mã trường dữ liệu:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ma_truong" required>
     </div>
-    <div class="col-md-6"></div>
-    <label for="ten_nhom" class="form-label">Tên trường dữ liệu:<span class="required">*</span></label>
-    <input type="text" class="form-control" name="ten_nhom" required>
+    <div class="col-md-6">
+        <label for="ten_truong" class="form-label">Tên trường dữ liệu:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_truong" required>
+    </div>
+    <div class="col-md-12">
+        <label for="nhom_tham_so_id" class="form-label">Nhóm tham số:<span class="required">*</span></label>
+        <select id="select-nhom-tham-so" class="form-control w-100" name="nhom_tham_so_id" required>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="kieu_du_lieu" class="form-label">Kiểu dữ liệu:<span class="required">*</span></label>
+        <select class="form-control" name="kieu_du_lieu" required>
+            <option>STRING</option>
+            <option>NUMBER</option>
+            <option>DATETIME</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="ten_nhom" class="form-label">Thứ tự hiển thị:<span class="required">*</span></label>
+        <input type="number" class="form-control" name="thu_tu_hien_thi" min="1" value="1" required>
+    </div>
+    <div class="col-md-12">
+        <label for="mo_ta" class="form-label">Mô tả:</label>
+        <textarea class="form-control" rows="3" name="mo_ta"></textarea>
     </div>
 </form>
 {% endblock %}
 
 {% block bodyCreateTab2Modal %}
 <form id="nhomThamSoForm" class="row g-3 needs-validation" novalidate method="post">
+    <input type="text" name="id" hidden />
     <div class="col-md-12">
         <label for="ten_nhom" class="form-label">Tên nhóm tham số:<span class="required">*</span></label>
         <input type="text" class="form-control" name="ten_nhom" required>
