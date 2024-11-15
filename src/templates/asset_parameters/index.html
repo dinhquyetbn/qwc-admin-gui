@@ -16,7 +16,15 @@
 {{ super() }}
 <link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
 {%- endblock styles %}
-
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Quản trị hệ thống</li>
+        <li class="breadcrumb-item" aria-current="page">Tham số tài sản</li>
+    </ol>
+</nav>
+{% endblock %}
 {% block table %}
 <ul class="nav nav-tabs w-100" id="assetParameterTab" role="tablist">
     <li class="nav-item" role="presentation">
@@ -32,14 +40,14 @@
 </ul>
 <div class="tab-content px-4 py-4">
     <div class="tab-pane fade show active" id="param" role="tabpanel" aria-labelledby="param-tab">
-        <table id="tableDataParam" class="display">
+        <table id="tableDataParam" class="display responsive">
             <thead>
                 <tr>
                     <th>STT</th>
                     <th class="d-none">Nhóm tham số</th>
                     <th style="min-width: 175px;">Tên trường dữ liệu</th>
-                    <th style="min-width: 125px;">Kiểu dữ liệu</th>
-                    <th style="min-width: 200px;">Mô tả</th>
+                    <th style="min-width: 105px;">Kiểu dữ liệu nhập</th>
+                    <th style="min-width: 100px;">Mô tả</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
                     <th class="text-center" style="min-width: 100px;">Tác vụ</th>
                 </tr>
@@ -49,7 +57,7 @@
         </table>
     </div>
     <div class="tab-pane fade" id="group" role="tabpanel" aria-labelledby="group-tab">
-        <table id="tableGroupParam" class="display">
+        <table id="tableGroupParam" class="display responsive">
             <thead>
                 <tr>
                     <th>STT</th>
@@ -98,19 +106,33 @@
             }
         });
 
-        // get danh mục
-        $.ajax({
-            url: 'api/asset-parameter/group/all',
-            type: "GET",
-            dataType: 'json',
-            success: function (data) {
-                let options = data.result.map(item => ({
-                    id: item.id,
-                    text: item.text
-                }));
-                $('#select-nhom-tham-so').select2({
-                    data: options
-                });
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            // get danh mục
+            let id = $('#createTab1Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            }
+            $("#select-nhom-tham-so").select2({
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/asset-parameter/group/all', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+        });
+
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            let id = $('#createTab2Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab2Modal .modal-title').html('Thêm mới dữ liệu');
             }
         });
     });
@@ -119,7 +141,7 @@
         // Tab 1 Ds tham số           
         const fieldDataParams = [
             "stt",
-            "nhom_tham_so_id",
+            "ten_nhom_tham_so",
             "ten_truong",
             "kieu_du_lieu",
             "mo_ta",
@@ -127,7 +149,7 @@
             "tac_vu"
         ];
 
-        let tableParam = new DataTable('#tableDataParam', {
+        let dataTableParam = new DataTable('#tableDataParam', {
             dom: 'rtlip',
             ordering: true,
             scrollY: 300,
@@ -141,6 +163,9 @@
             pagingType: "simple_numbers",
             language: PBMSLang,
             order: [],
+            rowGroup: {
+                dataSrc: ['ten_nhom_tham_so'],
+            },
             ajax: {
                 url: "api/asset-parameter/param/page",
                 type: "POST",
@@ -164,7 +189,7 @@
             },
             columnDefs: [
                 { "defaultContent": "", "targets": "_all" },
-                { orderable: false, targets: getIdxFieldTable(fieldDataParams, ['stt', 'ngay_tao', 'tac_vu']) },
+                { orderable: false, targets: getIdxFieldTable(fieldDataParams, ['stt', 'kieu_du_lieu', 'mo_ta', 'ngay_tao', 'tac_vu']) },
                 {
                     data: '',
                     targets: getIdxFieldTable(fieldDataParams, ['stt']),
@@ -173,14 +198,36 @@
                     },
                 },
                 {
+                    render: function (data, type, full, meta) {
+                        return data;
+                    },
+                    type: 'string',
+                    targets: getIdxFieldTable(fieldDataParams, ['ten_truong', 'mo_ta', 'mo_ta'])
+                },
+                {
+                    render: function (data, type, full, meta) {
+                        let value = data;
+                        if (data === 'string') {
+                            value = 'Kiểu chữ';
+                        } else if (data === 'number') {
+                            value = 'Kiểu số';
+                        } else if (data === 'date') {
+                            value = 'Kiểu ngày tháng';
+                        }
+                        return value;
+                    },
+                    type: 'string',
+                    targets: getIdxFieldTable(fieldDataParams, ['kieu_du_lieu'])
+                },
+                {
                     data: '',
                     targets: getIdxFieldTable(fieldDataParams, ['tac_vu']),
                     render: function (data, type, full, meta) {
                         return `<div class="btn-action">
-                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab2Modal('${full.id}')">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    
-                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab2Modal('${full.id}')">
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.id}')">
                                         <span class="svg-icon svg-icon-delete" title="Xóa"></span>
                                     </a>    
                                 </div>`
@@ -189,7 +236,7 @@
             ],
             columns: [
                 { className: 'noVis', targets: [0] },
-                { data: 'nhom_tham_so_id' },
+                { data: 'ten_nhom_tham_so', class: 'd-none' },
                 { data: 'ten_truong' },
                 { data: 'kieu_du_lieu' },
                 { data: 'mo_ta' },
@@ -197,6 +244,177 @@
                 { className: 'noVis' },
             ]
         });
+
+        // Validate dữ liệu tham số tài sản
+        $.validator.addMethod("pattern", function (value, element, regexp) {
+            const re = new RegExp(regexp);
+            return this.optional(element) || re.test(value);
+        });
+        // Validate dữ liệu tham số tài sản
+        $('#dataThamSoForm').validate({
+            rules: {
+                ma_truong: {
+                    required: true,
+                    minlength: 5,
+                    maxlength: 50,
+                    pattern: /^[a-zA-Z0-9_]+$/
+                },
+                ten_truong: {
+                    required: true,
+                    maxlength: 100
+                },
+                kieu_du_lieu: {
+                    required: true,
+                },
+                thu_tu_hien_thi: {
+                    required: true,
+                    number: true,
+                    min: 1
+                },
+                nhom_tham_so_id: {
+                    required: true,
+                },
+            },
+            messages: {
+                ma_truong: {
+                    required: "Vui lòng nhập mã trường dữ liệu.",
+                    minlength: "Tên nhóm tham số có độ dài tối thiểu 5 kí tự.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 50 kí tự.",
+                    pattern: "Mã trường dữ liệu phải viết liền không dấu, không chứa ký tự đặc biệt, và có thể chứa dấu gạch dưới."
+                },
+                ten_truong: {
+                    required: "Vui lòng nhập tên trường dữ liệu.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 100 kí tự."
+                },
+                kieu_du_lieu: {
+                    required: "Vui lòng nhập chọn kiểu dữ liệu.",
+                },
+                thu_tu_hien_thi: {
+                    required: "Vui lòng nhập thứ tự hiển thị.",
+                    number: "Vui lòng nhập một số hợp lệ.",
+                    min: "Giá trị phải lớn hơn hoặc bằng 1."
+                },
+                nhom_tham_so_id: {
+                    required: "Vui lòng nhập chọn nhóm tham số.",
+                }
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                error.addClass("invalid-feedback");
+                error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+            }
+        });
+
+        // Cập nhật dữ liệu tham số tài sản
+        $('#createTab1Modal .btn-save').on('click', function () {
+            if ($('#dataThamSoForm').valid()) {
+                // Collect form data
+                const formDataArray = $('#dataThamSoForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+                // Make AJAX call
+                let ajax_url = 'api/asset-parameter/param/create';
+                let ajax_type = 'POST';
+                let paramId = $('#dataThamSoForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/asset-parameter/param/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab1Modal').modal('hide');
+                        // Reload datatable
+                        dataTableParam.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            }
+        });
+
+        // Update dữ liệu tham số
+        window.showUpdateTab1Modal = function (id) {
+            $.ajax({
+                url: `api/asset-parameter/param/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    $('#dataThamSoForm [name="id"]').val(res.result.id);
+                    $('#dataThamSoForm [name="ma_truong"]').val(res.result.ma_truong);
+                    $('#dataThamSoForm [name="ten_truong"]').val(res.result.ten_truong);
+                    $('#dataThamSoForm [name="kieu_du_lieu"]').val(res.result.kieu_du_lieu);
+                    $('#dataThamSoForm [name="mo_ta"]').val(res.result.mo_ta);
+                    $('#dataThamSoForm [name="nhom_tham_so_id"]').val(res.result.nhom_tham_so_id);
+                    $('#dataThamSoForm [name="thu_tu_hien_thi"]').val(res.result.thu_tu_hien_thi);
+                    $('#select-nhom-tham-so').append(new Option(res.result.ten_nhom_tham_so, res.result.nhom_tham_so_id, true, true)).trigger('change');
+                    // Trigger validation on each field to show feedback
+                    $('#dataThamSoForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab1Modal').modal('show');
+                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
+        // Delete dữ liệu tham số
+        window.showDeleteTab1Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab1Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/asset-parameter/param/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                        // Reload datatable
+                        dataTableParam.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                    }
+                });
+            });
+        }
 
         // Tab 2 Ds nhóm tham số
         const fieldGroupParams = [
@@ -364,6 +582,7 @@
             switch (tabName) {
                 // Tab ds tham số
                 case '#createTab1Modal':
+                    dataTableParam.ajax.reload(null, false);
                     break;
                 // Tab ds nhóm tham số
                 case '#createTab2Modal':
@@ -390,6 +609,7 @@
                     $('#nhomThamSoForm').validate().form();
                     // Show confirmation modal
                     $('#createTab2Modal').modal('show');
+                    $('#createTab2Modal .modal-title').html('Cập nhật dữ liệu');
                 },
                 error: function (err) {
                     // Handle error
@@ -433,7 +653,8 @@
 {% endblock %}
 
 {% block bodyCreateTab1Modal %}
-<form id="thamSoForm" class="row g-3 needs-validation" novalidate method="post">
+<form id="dataThamSoForm" class="row g-3 needs-validation" novalidate method="post">
+    <input type="text" name="id" hidden />
     <div class="col-md-6">
         <label for="ma_truong" class="form-label">Mã trường dữ liệu:<span class="required">*</span></label>
         <input type="text" class="form-control" name="ma_truong" required>
@@ -448,15 +669,15 @@
         </select>
     </div>
     <div class="col-md-6">
-        <label for="kieu_du_lieu" class="form-label">Kiểu dữ liệu:<span class="required">*</span></label>
+        <label for="kieu_du_lieu" class="form-label">Kiểu dữ liệu nhập:<span class="required">*</span></label>
         <select class="form-control" name="kieu_du_lieu" required>
-            <option>STRING</option>
-            <option>NUMBER</option>
-            <option>DATETIME</option>
+            <option value="string">Kiểu chữ</option>
+            <option value="number">Kiểu số</option>
+            <option value="date">Kiểu ngày tháng</option>
         </select>
     </div>
     <div class="col-md-6">
-        <label for="ten_nhom" class="form-label">Thứ tự hiển thị:<span class="required">*</span></label>
+        <label for="ten_nhom" class="form-label">Thứ tự hiển thị trong nhóm:<span class="required">*</span></label>
         <input type="number" class="form-control" name="thu_tu_hien_thi" min="1" value="1" required>
     </div>
     <div class="col-md-12">

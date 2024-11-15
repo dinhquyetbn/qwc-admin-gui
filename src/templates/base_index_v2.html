@@ -25,6 +25,9 @@
 {% block container %}
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 <div class="d-flex w-100 flex-column">
+  <div class="d-flex w-100">
+    {% block breadcrumb %}{% endblock %}
+  </div>
   <div class="d-flex mb-4 w-100 justify-content-between wrapper-create">
     <h4>{{ self.title() }}</h4>
     <a id="createModal" data-bs-toggle="modal" data-bs-target="#createTab1Modal" class="btn btn-create" role="button">

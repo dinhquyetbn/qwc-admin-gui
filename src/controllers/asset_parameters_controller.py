@@ -119,8 +119,15 @@ class AssetParametersController(Controller):
         req_order = body_request["order"]
         req_columns = body_request["columns"]
 
-        query = session.query(self.PBMSQuanLyThamSo).filter_by(trang_thai_xoa=False)
-
+        # query = session.query(self.PBMSQuanLyThamSo).filter_by(trang_thai_xoa=False)
+        query = (
+            session.query(self.PBMSQuanLyThamSo, self.PBMSQuanLyNhomThamSo)
+            .join(
+                self.PBMSQuanLyNhomThamSo,
+                self.PBMSQuanLyThamSo.nhom_tham_so_id == self.PBMSQuanLyNhomThamSo.id,
+            )
+            .filter(self.PBMSQuanLyThamSo.trang_thai_xoa == False)
+        )
         # Nếu có giá trị search
         if req_search["value"]:
             query = query.filter(
@@ -137,20 +144,25 @@ class AssetParametersController(Controller):
             elif val_dir == "desc":
                 query = query.order_by(getattr(self.PBMSQuanLyThamSo, val_col).desc())
         else:
-            query = query.order_by(self.PBMSQuanLyThamSo.thu_tu_hien_thi)
-        print(str(query.statement))
+            query = query.order_by(self.PBMSQuanLyThamSo.nhom_tham_so_id)
+
         # Phân trang
         data = query.limit(req_size).offset(req_page).all()
         count = query.count()
         jsonData = [
             {
-                "id": item.id,
-                "ten_nhom": item.ten_nhom,
-                "thu_tu_hien_thi": item.thu_tu_hien_thi,
-                "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao),
+                "id": tblThamSo.id,
+                "ma_truong": tblThamSo.ma_truong,
+                "ten_truong": tblThamSo.ten_truong,
+                "kieu_du_lieu": tblThamSo.kieu_du_lieu,
+                "mo_ta": tblThamSo.mo_ta,
+                "thu_tu_hien_thi": tblThamSo.thu_tu_hien_thi,
+                "nhom_tham_so_id": tblThamSo.nhom_tham_so_id,
+                "ten_nhom_tham_so": f'Nhóm: {tblNhomTS.ten_nhom}',
+                "ngay_tao": self.convertUTCDateToVNTime(tblThamSo.ngay_tao),
                 # Add other fields as necessary
             }
-            for item in data
+            for tblThamSo, tblNhomTS in data
         ]
         pagination = {
             "draw": int(body_request["draw"]),
@@ -181,11 +193,16 @@ class AssetParametersController(Controller):
                 session.add(obj)
             else:
                 # update existing
-                obj = self.find_resource(id, session)
+                obj = self.find_resource_param(id, session)
                 if obj is None:
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
+                obj.ngay_sua = datetime.now(timezone.utc)
 
-            obj.ten_nhom = data["ten_nhom"]
+            obj.ma_truong = data["ma_truong"]
+            obj.ten_truong = data["ten_truong"]
+            obj.kieu_du_lieu = data["kieu_du_lieu"]
+            obj.nhom_tham_so_id = data["nhom_tham_so_id"]
+            obj.mo_ta = data["mo_ta"]
             obj.thu_tu_hien_thi = data["thu_tu_hien_thi"]
 
             session.commit()
@@ -217,11 +234,18 @@ class AssetParametersController(Controller):
 
     def get_by_id_param(self, id):
         session = self.session()
-        query = self.find_resource_group(id, session)
+        query = self.find_resource_param(id, session)
+        objGroupParam = self.find_resource_group(query.nhom_tham_so_id, session)
+        ten_nhom_ts = objGroupParam.ten_nhom if objGroupParam else ''
         jsonData = {
             "id": query.id,
-            "ten_nhom": query.ten_nhom,
+            "ma_truong": query.ma_truong,
+            "ten_truong": query.ten_truong,
+            "kieu_du_lieu": query.kieu_du_lieu,
+            "mo_ta": query.mo_ta,
             "thu_tu_hien_thi": query.thu_tu_hien_thi,
+            "nhom_tham_so_id": query.nhom_tham_so_id,
+            "ten_nhom_tham_so": ten_nhom_ts,
             "ngay_tao": self.convertUTCDateToVNTime(query.ngay_tao),
         }
         session.close()
@@ -270,7 +294,6 @@ class AssetParametersController(Controller):
                 )
         else:
             query = query.order_by(self.PBMSQuanLyNhomThamSo.thu_tu_hien_thi)
-        print(str(query.statement))
         # Phân trang
         data = query.limit(req_size).offset(req_page).all()
         count = query.count()
@@ -295,16 +318,18 @@ class AssetParametersController(Controller):
         return jsonify({"result": pagination})
 
     def get_data_all_group(self):
+        param_value = request.args.get("q")
         session = self.session()
-        query = (
-            session.query(self.PBMSQuanLyNhomThamSo)
-            .filter_by(trang_thai_xoa=False)
-            .order_by(self.PBMSQuanLyNhomThamSo.thu_tu_hien_thi)
-        )
+        query = session.query(self.PBMSQuanLyNhomThamSo).filter_by(trang_thai_xoa=False)
+        if param_value:
+            query = query.filter(
+                self.PBMSQuanLyNhomThamSo.ten_nhom.ilike("%" + param_value + "%")
+            )
+        query = query.order_by(self.PBMSQuanLyNhomThamSo.thu_tu_hien_thi)
         jsonData = [
             {
                 "id": item.id,
-                "text": item.ten_nhom,
+                "text": f"{item.thu_tu_hien_thi}. {item.ten_nhom}",
             }
             for item in query
         ]
@@ -330,9 +355,10 @@ class AssetParametersController(Controller):
                 session.add(obj)
             else:
                 # update existing
-                obj = self.find_resource(id, session)
+                obj = self.find_resource_group(id, session)
                 if obj is None:
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
+                obj.ngay_sua = datetime.now(timezone.utc)
 
             obj.ten_nhom = data["ten_nhom"]
             obj.thu_tu_hien_thi = data["thu_tu_hien_thi"]
