@@ -135,6 +135,22 @@
                 $('#createTab2Modal .modal-title').html('Thêm mới dữ liệu');
             }
         });
+
+        // Khi table thay đổi
+        const tabContent = document.querySelectorAll('.tab-content');
+        // Hàm xử lý khi chiều rộng của tab-content thay đổi
+        function handleTabContentResize(entries) {
+            for (let entry of entries) {
+                $('#tableDataParam').resize();
+                $('#tableGroupParam').resize();
+            }
+        }
+        // Tạo một ResizeObserver để theo dõi sự thay đổi kích thước
+        const resizeObserver = new ResizeObserver(handleTabContentResize);
+        // Bắt đầu theo dõi tab-content
+        tabContent.forEach(tab => {
+            resizeObserver.observe(tab);
+        });
     });
 
     $(document).ready(function () {
@@ -190,6 +206,7 @@
             columnDefs: [
                 { "defaultContent": "", "targets": "_all" },
                 { orderable: false, targets: getIdxFieldTable(fieldDataParams, ['stt', 'kieu_du_lieu', 'mo_ta', 'ngay_tao', 'tac_vu']) },
+                { visible: false, "targets": getIdxFieldTable(fieldDataParams, ['ten_nhom_tham_so']) },
                 {
                     data: '',
                     targets: getIdxFieldTable(fieldDataParams, ['stt']),
@@ -223,7 +240,7 @@
                     data: '',
                     targets: getIdxFieldTable(fieldDataParams, ['tac_vu']),
                     render: function (data, type, full, meta) {
-                        return `<div class="btn-action">
+                        return `<div class="btn-action text-center">
                                     <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    
@@ -236,7 +253,7 @@
             ],
             columns: [
                 { className: 'noVis', targets: [0] },
-                { data: 'ten_nhom_tham_so', class: 'd-none' },
+                { data: 'ten_nhom_tham_so' },
                 { data: 'ten_truong' },
                 { data: 'kieu_du_lieu' },
                 { data: 'mo_ta' },
@@ -474,7 +491,7 @@
                     data: '',
                     targets: getIdxFieldTable(fieldGroupParams, ['tac_vu']),
                     render: function (data, type, full, meta) {
-                        return `<div class="btn-action">
+                        return `<div class="btn-action text-center">
                                     <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab2Modal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    

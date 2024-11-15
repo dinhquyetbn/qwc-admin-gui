@@ -142,7 +142,9 @@
             <img src="{{ url_for('static', filename='img/notification.svg')}}" title="Thông báo" />
           </div>
           <div class="nav-info-logout">
-            <img src="{{ url_for('static', filename='img/logout.svg')}}" title="Đăng xuất" />
+            <a href="{{ url_for('logout') }}">
+              <img src="{{ url_for('static', filename='img/logout.svg')}}" title="Đăng xuất" />
+            </a>
           </div>
         </div>
         <!-- <ul class="navbar-nav">
