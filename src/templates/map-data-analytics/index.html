@@ -1,0 +1,30 @@
+{% extends "templates/base_index_v2.html" %}
+{% block title %}{{ i18n('interface.map_data_analytics.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.map_data_analytics.new_map_data_analytics') }}{% endblock %}
+{%- block styles %}
+{{ super() }}
+<style>
+    #createModal {
+        display: none;
+    }
+
+    .wrapper-filter-search {
+        display: none !important;
+    }
+</style>
+{%- endblock styles %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item" aria-current="page">{{ i18n('interface.map_data_analytics.title') }}</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block table %}
+<div class="webview-container">
+    <iframe
+        src="http://localhost:8088/?l=ThuaDat_DacTinhGia_25092024_Region%2CThuaDat_DacTinhGia_25092024_Region&bl=&t=ThuaDat_DacTinhGia_14102024&c=11758551%2C1131588&s=8000"
+        width="100%" height="600px" frameborder="0" allowfullscreen></iframe>
+</div>
+{% endblock %}

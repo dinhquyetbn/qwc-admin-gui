@@ -69,6 +69,10 @@
       "update_resource_message_error": "Könnte nicht aktualisert werden: {}.",
       "update_resource_message_success": "{} wurde aktualisiert."
     },
+    "map_data_analytics": {
+      "new_map_data_analytics": "new_map_data_analytics",
+      "title": "title"
+    },
     "permissions": {
       "confirm_message_delete": "Berechtigung entfernen?",
       "ph_select_resource": "Ressource auswählen",

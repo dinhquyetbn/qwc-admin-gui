@@ -69,6 +69,10 @@
       "update_resource_message_error": "Could not update {}.",
       "update_resource_message_success": "{} has been updated."
     },
+    "map_data_analytics": {
+      "new_map_data_analytics": "new_map_data_analytics",
+      "title": "Phân tích dữ liệu bản đồ"
+    },
     "permissions": {
       "confirm_message_delete": "Remove permission?",
       "ph_select_resource": "Select a resource",

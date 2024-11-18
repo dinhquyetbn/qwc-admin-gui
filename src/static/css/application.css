@@ -270,6 +270,10 @@ form {
   padding: 0 20px 20px 20px;
   transition: margin-left 0.3s ease;
   height: 100%;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bs-breadcrumb-item-active-color) #f1f1f1;
 }
 
 /* .sidebar.collapsed + .content {

@@ -1,3 +1,361 @@
 {% extends "templates/base_index_v2.html" %}
 {% block title %}{{ i18n('interface.asset_type.title') }}{% endblock %}
 {% block new_resource_label %}{{ i18n('interface.asset_type.new_asset_type') }}{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Quản trị hệ thống</li>
+        <li class="breadcrumb-item" aria-current="page">Phân loại tài sản</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block styles %}
+<link href="{{ url_for('static', filename='libs/jstree/jstree.min.css') }}" rel="stylesheet">
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/jstree/jstree.min.js') }}"></script>
+{% endblock %}
+{% block table %}
+<ul class="nav nav-tabs w-100" id="assetTypeTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="loaiTS-tab" data-bs-toggle="tab" data-bs-target="#loaiTS"
+            data-target-modal="#createTab1Modal" type="button" role="tab" aria-controls="loaiTS" aria-selected="true">Ds
+            loại tài sản</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tsTheoLoaiTS-tab" data-bs-toggle="tab" data-bs-target="#tsTheoLoaiTS"
+            data-target-modal="#createTab2Modal" type="button" role="tab" aria-controls="tsTheoLoaiTS"
+            aria-selected="false">Ds
+            tham số theo loại tài sản</button>
+    </li>
+</ul>
+<div class="tab-content px-4 py-4">
+    <div class="tab-pane fade show active" id="loaiTS" role="tabpanel" aria-labelledby="loaiTS-tab">
+        <table id="tableLoaiTS" class="display responsive">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 175px;">Tên loại tài sản</th>
+                    <th style="min-width: 100px;">Mô tả</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="tab-pane fade" id="tsTheoLoaiTS" role="tabpanel" aria-labelledby="tsTheoLoaiTS-tab">
+        <table id="tableTSTheoLoaiTS" class="display responsive">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 175px;">Loại tài sản</th>
+                    <th style="min-width: 100px;">Nhóm</th>
+                    <th style="min-width: 100px;">Tham số</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block renderScripts %}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const createButton = document.getElementById('createModal');
+        const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function () {
+                const targetModal = this.getAttribute('data-target-modal');
+                createButton.setAttribute('data-bs-target', targetModal);
+            });
+        });
+
+        createButton.addEventListener('click', function () {
+            const targetModal = createButton.getAttribute('data-bs-target');
+            const form = document.querySelector(`${targetModal} form`);
+            if (form) {
+                form.reset(); // Reset the form fields
+                // Remove 'is-valid' class from all form elements
+                const formValidElements = form.querySelectorAll('.is-valid');
+                formValidElements.forEach(element => {
+                    element.classList.remove('is-valid');
+                });
+                // Remove 'is-invalid' class from all form elements
+                const formInvalidElements = form.querySelectorAll('.is-invalid');
+                formInvalidElements.forEach(element => {
+                    $('.invalid-feedback').remove();
+                    element.classList.remove('is-invalid');
+                });
+            }
+        });
+
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            let id = $('#createTab1Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            }
+        });
+    })
+
+    $(document).ready(function () {
+        // Search data
+        $('.btn-search').on('click', function () {
+            let tabName = $('#createModal')[0].getAttribute('data-bs-target');
+            switch (tabName) {
+                // Tab ds tham số
+                case '#createTab1Modal':
+                    tableLoaiTS.ajax.reload(null, false);
+                    break;
+                // Tab ds nhóm tham số
+                case '#createTab2Modal':
+                    break;
+                default:
+                    break;
+            }
+        })
+        // TAB1: LOẠI TÀI SẢN
+        const fieldLoaiTS = [
+            "stt",
+            "ten_loai_ts",
+            "mo_ta",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        let tableLoaiTS = new DataTable('#tableLoaiTS', {
+            dom: 'rtlip',
+            ordering: true,
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 10,
+            responsive: true,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            ajax: {
+                url: "api/asset-type/type/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
+                }
+            },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                { orderable: false, targets: getIdxFieldTable(fieldLoaiTS, ['stt', 'mo_ta', 'ngay_tao', 'tac_vu']) },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldLoaiTS, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    render: function (data, type, full, meta) {
+                        return data;
+                    },
+                    type: 'string',
+                    targets: getIdxFieldTable(fieldLoaiTS, ['ten_loai_ts', 'mo_ta'])
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldLoaiTS, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'ten_loai_ts' },
+                { data: 'mo_ta' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
+        });
+        $('#loaiTSForm').validate({
+            rules: {
+                ten_loai_ts: {
+                    required: true,
+                    maxlength: 256
+                }
+            },
+            messages: {
+                ten_loai_ts: {
+                    required: "Vui lòng nhập tên trường dữ liệu.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 256 kí tự."
+                }
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                error.addClass("invalid-feedback");
+                error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+            }
+        });
+        // Tạo mới loại tài sản
+        $('#createTab1Modal .btn-save').on('click', function () {
+            if ($('#loaiTSForm').valid()) {
+                // Collect form data
+                const formDataArray = $('#loaiTSForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+                // Make AJAX call
+                let ajax_url = 'api/asset-type/type/create';
+                let ajax_type = 'POST';
+                let paramId = $('#loaiTSForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/asset-type/type/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableLoaiTS.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            }
+        });
+        // Update loại tài sản
+        window.showUpdateTab1Modal = function (id) {
+            $.ajax({
+                url: `api/asset-type/type/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    $('#loaiTSForm [name="id"]').val(res.result.id);
+                    $('#loaiTSForm [name="ten_loai_ts"]').val(res.result.ten_loai_ts);
+                    $('#loaiTSForm [name="mo_ta"]').val(res.result.mo_ta);
+                    // Trigger validation on each field to show feedback
+                    $('#loaiTSForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab1Modal').modal('show');
+                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
+        // Delete loại tài sản
+        window.showDeleteTab1Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab1Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/asset-type/type/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableLoaiTS.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                    }
+                });
+            });
+        }
+        // TAB2: THAM SỐ THEO LOẠI TÀI SẢN
+    });
+</script>
+{% endblock %}
+
+{% block bodyCreateTab1Modal %}
+<form id="loaiTSForm" class="row g-3 needs-validation" novalidate method="post">
+    <input type="text" name="id" hidden />
+    <div class="col-md-12">
+        <label for="ten_loai_ts" class="form-label">Tên loại tài sản:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_loai_ts" required>
+    </div>
+    <div class="col-md-12">
+        <label for="mo_ta" class="form-label">Mô tả:</label>
+        <textarea class="form-control" rows="3" name="mo_ta"></textarea>
+    </div>
+</form>
+{% endblock %}
+{% block bodyCreateTab2Modal %}
+<form id="loaiTSForm" class="row g-3 needs-validation" novalidate method="post">
+    <input type="text" name="id" hidden />
+    <div class="col-md-12">
+        <label for="ten_loai_ts" class="form-label">Tên loại tài sản:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_loai_ts" required>
+    </div>
+    <div class="col-md-12">
+        <label for="mo_ta" class="form-label">Mô tả:</label>
+        <textarea class="form-control" rows="3" name="mo_ta"></textarea>
+    </div>
+</form>
+{% endblock %}

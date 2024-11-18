@@ -65,6 +65,8 @@
     "interface.main.title",
     "interface.main.update_resource_message_error",
     "interface.main.update_resource_message_success",
+    "interface.map_data_analytics.new_map_data_analytics",
+    "interface.map_data_analytics.title",
     "interface.permissions.confirm_message_delete",
     "interface.permissions.ph_select_resource",
     "interface.permissions.priority",

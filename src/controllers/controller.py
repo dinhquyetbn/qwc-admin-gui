@@ -91,7 +91,7 @@ class Controller:
         self.config = config_handler.config()
 
         db_engine = config_handler.db_engine()
-        self.config_models = ConfigModels(db_engine, config_handler.conn_str(), ['pbms_quan_ly_tham_so', 'pbms_quan_ly_nhom_tham_so'])
+        self.config_models = ConfigModels(db_engine, config_handler.conn_str(), ['pbms_quan_ly_tham_so', 'pbms_quan_ly_nhom_tham_so', 'pbms_quan_ly_phan_loai_tai_san'])
 
         self.Group = self.config_models.model('groups')
         self.Permission = self.config_models.model('permissions')
@@ -107,6 +107,7 @@ class Controller:
 
         self.PBMSQuanLyNhomThamSo = self.config_models.model('pbms_quan_ly_nhom_tham_so')
         self.PBMSQuanLyThamSo = self.config_models.model('pbms_quan_ly_tham_so')
+        self.PBMSQuanLyPhanLoaiTaiSan = self.config_models.model('pbms_quan_ly_phan_loai_tai_san')
 
     def resource_pkey(self):
         """Return primary key column name for resource table (default: 'id')"""

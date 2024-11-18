@@ -1,8 +1,10 @@
 import os
+import uuid
 
-from flask import json
-
+from datetime import datetime, timezone
+from flask import json, jsonify, request
 from .controller import Controller
+
 
 class AssetTypeController(Controller):
 
@@ -13,7 +15,184 @@ class AssetTypeController(Controller):
         :param handler: Tenant config handler
         """
         super(AssetTypeController, self).__init__(
-            "Danh sách danh mục phân loại tài sản", 'asset-type', 'asset-type', 'asset_type', app, handler
+            "Danh sách danh mục phân loại tài sản",
+            "asset-type",
+            "asset-type",
+            "asset_type",
+            app,
+            handler,
+        )
+        self.register_routes()
+
+    def register_routes(self):
+        # PHÂN LOẠI TÀI SẢN
+        # get data by page
+        self.app.add_url_rule(
+            "/api/asset-type/type/page",
+            "get_data_by_page_loai_ts",
+            self.get_data_by_page_loai_ts,
+            methods=["POST"],
+        )
+        # get by id
+        self.app.add_url_rule(
+            "/api/asset-type/type/detail/<id>",
+            "get_by_id_loai_ts",
+            self.get_by_id_loai_ts,
+            methods=["GET"],
+        )
+        # create
+        self.app.add_url_rule(
+            "/api/asset-type/type/create",
+            "create_or_update_item_loai_ts",
+            self.create_or_update_item_loai_ts,
+            methods=["POST"],
+        )
+        # update
+        self.app.add_url_rule(
+            "/api/asset-type/type/update/<id>",
+            "create_or_update_item_loai_ts",
+            self.create_or_update_item_loai_ts,
+            methods=["PUT"],
+        )
+        # delete
+        self.app.add_url_rule(
+            "/api/asset-type/type/delete/<id>",
+            "remove_item_loai_ts",
+            self.remove_item_loai_ts,
+            methods=["DELETE"],
+        )
+
+    # Hàm cho danh sách tham số
+    def get_data_by_page_loai_ts(self):
+        session = self.session()
+
+        body_request = request.get_json()
+        req_page = body_request["start"]
+        req_size = body_request["length"]
+        req_search = body_request["search"]
+        req_order = body_request["order"]
+        req_columns = body_request["columns"]
+
+        # query = session.query(self.PBMSQuanLyThamSo).filter_by(trang_thai_xoa=False)
+        query = session.query(self.PBMSQuanLyPhanLoaiTaiSan).filter(
+            self.PBMSQuanLyPhanLoaiTaiSan.trang_thai_xoa == False
+        )
+        # Nếu có giá trị search
+        if req_search["value"]:
+            query = query.filter(
+                self.PBMSQuanLyPhanLoaiTaiSan.ten_loai_ts.ilike(
+                    "%%%s%%" % req_search["value"]
+                )
+            )
+
+        # Sort
+        if req_order:
+            idx_col = req_order[0]["column"]
+            val_col = req_columns[idx_col]["data"]
+            val_dir = req_order[0]["dir"]
+            if val_dir == "asc":
+                query = query.order_by(
+                    getattr(self.PBMSQuanLyPhanLoaiTaiSan, val_col).asc()
+                )
+            elif val_dir == "desc":
+                query = query.order_by(
+                    getattr(self.PBMSQuanLyPhanLoaiTaiSan, val_col).desc()
+                )
+        else:
+            query = query.order_by(self.PBMSQuanLyPhanLoaiTaiSan.ngay_tao)
+
+        # Phân trang
+        data = query.limit(req_size).offset(req_page).all()
+        count = query.count()
+        jsonData = [
+            {
+                "id": tblLoaiTS.id,
+                "ten_loai_ts": tblLoaiTS.ten_loai_ts,
+                "mo_ta": tblLoaiTS.mo_ta,
+                "ngay_tao": self.convertUTCDateToVNTime(tblLoaiTS.ngay_tao),
+            }
+            for tblLoaiTS in data
+        ]
+        pagination = {
+            "draw": int(body_request["draw"]),
+            "recordsTotal": count,
+            "recordsFiltered": count,
+            "data": jsonData,
+        }
+        session.close()
+        return jsonify({"result": pagination})
+
+    def create_or_update_item_loai_ts(self, id=None):
+        try:
+            # Parse JSON data from the request
+            data = request.get_json()
+            if not data:
+                return jsonify({"error": "Dữ liệu không hợp lệ."}), 400
+
+            # create and commit
+            session = self.session()
+
+            if id is None:
+                # create new
+                obj = self.PBMSQuanLyPhanLoaiTaiSan()
+                obj.id = str(uuid.uuid4())
+                # obj.nguoi_tao = userLogin.gext('id') or None
+                obj.ngay_tao = datetime.now(timezone.utc)
+                session.add(obj)
+            else:
+                # update existing
+                obj = self.find_resource_loai_ts(id, session)
+                if obj is None:
+                    return jsonify({"error": "Không tìm thấy bản ghi."}), 401
+                obj.ngay_sua = datetime.now(timezone.utc)
+
+            obj.ten_loai_ts = data["ten_loai_ts"]
+            obj.mo_ta = data["mo_ta"]
+
+            session.commit()
+            # self.update_config_timestamp(session)
+            session.close()
+            # Return a success response
+            return jsonify({"message": "Cập nhật dữ liệu thành công."}), 201
+        except Exception as e:
+            # Handle exceptions and return an error response
+            return jsonify({"error": str(e)}), 500
+
+    def remove_item_loai_ts(self, id):
+        try:
+            session = self.session()
+            # Find the group parameter by id
+            obj = self.find_resource_loai_ts(id, session)
+            if obj is None:
+                return jsonify({"error": "Không tìm thấy bản ghi."}), 404
+
+            # Mark as deleted
+            # obj.nguoi_xoa = ''
+            obj.ngay_xoa = datetime.now(timezone.utc)
+            obj.trang_thai_xoa = True
+            session.commit()
+            session.close()
+            return jsonify({"message": "Xóa dữ liệu thành công."}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    def get_by_id_loai_ts(self, id):
+        session = self.session()
+        query = self.find_resource_loai_ts(id, session)
+        jsonData = {
+            "id": query.id,
+            "ten_loai_ts": query.ten_loai_ts,
+            "mo_ta": query.mo_ta,
+            "ngay_tao": self.convertUTCDateToVNTime(query.ngay_tao),
+        }
+        session.close()
+        return jsonify({"result": jsonData})
+
+    def find_resource_loai_ts(self, id, session):
+        return (
+            session.query(self.PBMSQuanLyPhanLoaiTaiSan)
+            .filter_by(id=id, trang_thai_xoa=False)
+            .first()
         )
 
     def resources_for_index_query(self, search_text, session):
@@ -27,95 +206,3 @@ class AssetTypeController(Controller):
             query = query.filter(self.Role.name.ilike("%%%s%%" % search_text))
 
         return query
-
-    def order_by_criterion(self, sort, sort_asc):
-        """Return order_by criterion for sorted resources list as tuple.
-
-        :param str sort: Column name for sorting
-        :param bool sort_asc: Set to sort in ascending order
-        """
-        sortable_columns = {
-            'id': self.Role.id,
-            'name': self.Role.name
-        }
-
-        order_by = sortable_columns.get(sort)
-        if order_by is not None:
-            if not sort_asc:
-                # sort in descending order
-                order_by = order_by.desc()
-
-        return order_by
-
-    def find_resource(self, id, session):
-        """Find role by ID.
-
-        :param int id: Role ID
-        :param Session session: DB session
-        """
-        return session.query(self.Role).filter_by(id=id).first()
-
-    def create_form(self, resource=None, edit_form=False):
-        """Return form with fields loaded from DB.
-
-        :param object resource: Optional role object
-        :param bool edit_form: Set if edit form
-        """
-        form = RoleForm(self.config_models, obj=resource)
-
-        session = self.session()
-        self.update_form_collection(
-            resource, edit_form, form.groups, self.Group, 'sorted_groups',
-            'id', 'name', session
-        )
-        self.update_form_collection(
-            resource, edit_form, form.users, self.User, 'sorted_users', 'id',
-            'name', session
-        )
-        session.close()
-
-        return form
-
-    def create_or_update_resources(self, resource, form, session):
-        """Create or update role records in DB.
-
-        :param object resource: Optional role object
-                                (None for create)
-        :param FlaskForm form: Form for role
-        :param Session session: DB session
-        """
-        if resource is None:
-            # create new role
-            role = self.Role()
-            session.add(role)
-        else:
-            # update existing role
-            role = resource
-
-        # update role
-        if role.name != self.ADMIN_ROLE_NAME:
-            role.name = form.name.data
-        elif form.name.data != "admin":
-            flash(Markup("The <code>admin</code> role cannot be renamed."), 'error')
-        role.description = form.description.data
-
-        # update groups
-        self.update_collection(
-            role.groups_collection, form.groups, self.Group, 'id', session
-        )
-        # update users
-        self.update_collection(
-            role.users_collection, form.users, self.User, 'id', session
-        )
-
-    def destroy_resource(self, resource, session):
-        """Delete existing resource in DB.
-
-        :param object resource: Resource object
-        :param Session session: DB session
-        """
-
-        if resource.name == self.ADMIN_ROLE_NAME:
-            raise ValidationError('The <code>admin</code> role cannot be deleted.')
-
-        Controller.destroy_resource(self, resource, session)

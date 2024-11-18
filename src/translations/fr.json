@@ -69,6 +69,10 @@
       "update_resource_message_error": "Impossible de modifier {}.",
       "update_resource_message_success": "{} a été modifié."
     },
+    "map_data_analytics": {
+      "new_map_data_analytics": "new_map_data_analytics",
+      "title": "title"
+    },
     "permissions": {
       "confirm_message_delete": "Voulez-vous supprimer la permission?",
       "ph_select_resource": "Sélectionner une ressource",

@@ -10,3 +10,4 @@ from .public_building_controller import PublicBuildingController
 from .public_land_controller import PublicLandController
 from .asset_parameters_controller import AssetParametersController
 from .asset_type_controller import AssetTypeController
+from .map_data_analytics_controller import MapDataAnalyticsController
