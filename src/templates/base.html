@@ -2,6 +2,7 @@
 
 <!doctype html>
 <html lang="en">
+
 <head>
   {% block head %}
   <title>{% block title %}{% endblock title %} | Hệ thống quản lý nhà công sản</title>
@@ -28,25 +29,25 @@
   <!-- Idle autologout -->
   <script type="text/javascript">
     var idleTimer = null;
-    if({{ config['IDLE_TIMEOUT'] }} > 0) {
+    if ({{ config['IDLE_TIMEOUT'] }} > 0) {
       function idleAutologout() {
-          location.href = "{{ url_for('logout') }}";
+        location.href = "{{ url_for('logout') }}";
       }
       function resetIdleTimer() {
-          clearTimeout(idleTimer);
-          idleTimer = setTimeout(idleAutologout, {{ config['IDLE_TIMEOUT'] }} * 1000);
-      }
-      window.addEventListener('keydown', resetIdleTimer, {passive: true});
-      window.addEventListener('mousedown', resetIdleTimer, {passive: true});
-      window.addEventListener('wheel', resetIdleTimer, {passive: true});
-      idleTimer = setTimeout(idleAutologout, {{ config['IDLE_TIMEOUT'] }} * 1000);
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(idleAutologout, {{ config['IDLE_TIMEOUT'] }} * 1000);
+    }
+    window.addEventListener('keydown', resetIdleTimer, { passive: true });
+    window.addEventListener('mousedown', resetIdleTimer, { passive: true });
+    window.addEventListener('wheel', resetIdleTimer, { passive: true });
+    idleTimer = setTimeout(idleAutologout, {{ config['IDLE_TIMEOUT'] }} * 1000);
     }
   </script>
 
   <!-- Add spinning icon to buttons with btn-spin-on-click class -->
   <script type="text/javascript">
-    $(function() {
-      $('.btn-spin-on-click').click(function(e) {
+    $(function () {
+      $('.btn-spin-on-click').click(function (e) {
         $(this).prop('disabled', true);
         $(this).html(`{{ utils.render_icon("arrow-repeat") }} ` + $(this).data('spinning-msg'));
 
@@ -57,49 +58,64 @@
         }
       });
     });
+
+    function setActiveOnLoad() {
+      const currentUrl = window.location.pathname; // Get the current URL
+      document.querySelectorAll('.nav-link').forEach(link => { // Changed from '.sidebar-link' to '.nav-link'
+        if (link.getAttribute('href') === currentUrl) {
+          link.classList.add('active'); // Add the active class to the corresponding link
+          // Show the dropdown parent if it exists
+          const dropdownParent = link.closest('.collapse'); // Find the closest dropdown
+          if (dropdownParent) {
+            dropdownParent.classList.add('show'); // Show the dropdown
+          }
+        }
+      });
+    }
   </script>
 
   <!-- jQuery script to handle dropdown functionality -->
   <script>
-    $(document).ready(function() {
-      $(".dropdown-btn").click(function() {
-        // Close all other dropdowns
-        $(".dropdown-container").not($(this).next()).slideUp();
-        $(".dropdown-btn").not($(this)).removeClass("active");
+    $(document).ready(function () {
+      setActiveOnLoad();
+      // $(".dropdown-btn").click(function() {
+      //   // Close all other dropdowns
+      //   $(".dropdown-container").not($(this).next()).slideUp();
+      //   $(".dropdown-btn").not($(this)).removeClass("active");
 
-        // Toggle the clicked dropdown
-        $(this).next(".dropdown-container").slideToggle();
-        $(this).toggleClass("active");
-      });
+      //   // Toggle the clicked dropdown
+      //   $(this).next(".dropdown-container").slideToggle();
+      //   $(this).toggleClass("active");
+      // });
     });
 
-    function toggleSubmenu(icon) {
-      const submenu = icon.parentElement.querySelector('.dropdown-container');
-      const allSubmenus = document.querySelectorAll('.dropdown-container');
+    // function toggleSubmenu(icon) {
+    //   const submenu = icon.parentElement.querySelector('.dropdown-container');
+    //   const allSubmenus = document.querySelectorAll('.dropdown-container');
 
-      // Close all other submenus
-      allSubmenus.forEach((sm) => {
-        if (sm !== submenu) {
-          sm.style.display = 'none';
-          sm.previousElementSibling.lastElementChild.classList.remove('fa-chevron-up');
-          sm.previousElementSibling.lastElementChild.classList.add('fa-chevron-down');
-        }
-      });
+    //   // Close all other submenus
+    //   allSubmenus.forEach((sm) => {
+    //     if (sm !== submenu) {
+    //       sm.style.display = 'none';
+    //       sm.previousElementSibling.lastElementChild.classList.remove('fa-chevron-up');
+    //       sm.previousElementSibling.lastElementChild.classList.add('fa-chevron-down');
+    //     }
+    //   });
 
-      // Toggle the clicked submenu
-      if (submenu.style.display === 'block') {
-        icon.lastElementChild.classList.remove('fa-chevron-up');
-        icon.lastElementChild.classList.add('fa-chevron-down');
-      } else {
-        icon.lastElementChild.classList.remove('fa-chevron-down');
-        icon.lastElementChild.classList.add('fa-chevron-up');
-      }
-    }
+    //   // Toggle the clicked submenu
+    //   if (submenu.style.display === 'block') {
+    //     icon.lastElementChild.classList.remove('fa-chevron-up');
+    //     icon.lastElementChild.classList.add('fa-chevron-down');
+    //   } else {
+    //     icon.lastElementChild.classList.remove('fa-chevron-down');
+    //     icon.lastElementChild.classList.add('fa-chevron-up');
+    //   }
+    // }
 
     function toggleSidebar(element) {
       const sidebar = document.querySelector('.sidebar');
       sidebar.classList.toggle('collapsed');
-      // Change icon when  click
+      // Change icon when click
       const icon = element.querySelector('i');
       if (sidebar.classList.contains('collapsed')) {
         icon.classList.remove('fa-circle-arrow-left');
@@ -122,32 +138,33 @@
 
   {% endblock %}
 </head>
+
 <body>
   <!-- Navigation bar -->
   {% block navbar %}
-    <nav class="navbar navbar-expand-sm bg-light">
-      <div class="full-container w-100 d-flex justify-content-between align-items-center">
-        <div class="nav-logo">
-          <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="TP Đà Nẵng Logo">
-          <p>QUẢN LÝ NHÀ CÔNG SẢN</p>
-        </div>
-        <!-- <div class="nav-search">
+  <nav class="navbar navbar-expand-sm bg-light">
+    <div class="full-container w-100 d-flex justify-content-between align-items-center">
+      <div class="nav-logo">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="TP Đà Nẵng Logo">
+        <p>QUẢN LÝ NHÀ CÔNG SẢN</p>
+      </div>
+      <!-- <div class="nav-search">
           <input class="form-control" placeholder="Tìm kiếm..." />
         </div> -->
-        <div class="nav-info">
-          <div class="nav-info-user">
-            <img src="{{ url_for('static', filename='img/avatar.svg')}}" title="Thông tin người dùng" />
-          </div>
-          <div class="nav-info-noti">
-            <img src="{{ url_for('static', filename='img/notification.svg')}}" title="Thông báo" />
-          </div>
-          <div class="nav-info-logout">
-            <a href="{{ url_for('logout') }}">
-              <img src="{{ url_for('static', filename='img/logout.svg')}}" title="Đăng xuất" />
-            </a>
-          </div>
+      <div class="nav-info">
+        <div class="nav-info-user">
+          <img src="{{ url_for('static', filename='img/avatar.svg')}}" title="Thông tin người dùng" />
         </div>
-        <!-- <ul class="navbar-nav">
+        <div class="nav-info-noti">
+          <img src="{{ url_for('static', filename='img/notification.svg')}}" title="Thông báo" />
+        </div>
+        <div class="nav-info-logout">
+          <a href="{{ url_for('logout') }}">
+            <img src="{{ url_for('static', filename='img/logout.svg')}}" title="Đăng xuất" />
+          </a>
+        </div>
+      </div>
+      <!-- <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('home') }}">{{ i18n('interface.main.home_title') }}</a>
           </li>
@@ -184,13 +201,13 @@
             <a class="nav-link" href="{{ url_for('logout') }}">{{ i18n('interface.main.logout') }}</a>
           </li>
         </ul> -->
-      </div>
-    </nav>
+    </div>
+  </nav>
   {% endblock %}
 
   <!-- Sidebar -->
-  <div class="sidebar">
-    <a href="#home">
+  <!-- <div class="sidebar">
+    <a href="#home" class="sidebar-link" onclick="setActive(this)">
       <span class="svg-icon svg-icon-home" title="{{ i18n('interface.sidebar.trang_chu') }}"></span>
       <span class="text">{{ i18n('interface.sidebar.trang_chu') }}</span>
     </a>
@@ -200,8 +217,8 @@
       <i class="fa fa-chevron-down"></i>
     </button>
     <div class="dropdown-container">
-      <a href="{{ url_for('public-land') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_dat_cong') }} </a>
-      <a href="{{ url_for('public-building') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_nha_cong_san') }} </a>
+      <a href="{{ url_for('public-land') }}" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_dat_cong') }} </a>
+      <a href="{{ url_for('public-building') }}" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_nha_cong_san') }} </a>
     </div>
     <button class="dropdown-btn" onclick="toggleSubmenu(this)" title="{{ i18n('interface.sidebar.bao_cao') }}">
       <span class="svg-icon svg-icon-report" title="{{ i18n('interface.sidebar.bao_cao') }}"></span> 
@@ -209,8 +226,8 @@
       <i class="fa fa-chevron-down"></i>
     </button>
     <div class="dropdown-container">
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_tham_so') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_giao_dien') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_tham_so') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_giao_dien') }} </a>
     </div>
     <button class="dropdown-btn" onclick="toggleSubmenu(this)">
       <span class="svg-icon svg-icon-map" title="{{ i18n('interface.sidebar.cau_hinh_ban_do') }}"></span> 
@@ -218,9 +235,9 @@
       <i class="fa fa-chevron-down"></i>
     </button>
     <div class="dropdown-container">
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_tham_so') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_giao_dien') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.phan_quyen_su_dung') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_tham_so') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.thiet_lap_giao_dien') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.phan_quyen_su_dung') }} </a>
     </div>
     <button class="dropdown-btn" onclick="toggleSubmenu(this)">
       <span class="svg-icon svg-icon-system" title="{{ i18n('interface.sidebar.quan_tri_he_thong') }}"></span> 
@@ -228,16 +245,110 @@
       <i class="fa fa-chevron-down"></i>
     </button>
     <div class="dropdown-container">
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_nguoi_dung') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_quyen') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_don_vi') }} </a>
-      <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.nhat_ky_ung_dung') }} </a>
-      <!-- <a href="#service1"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_danh_muc') }} </a> -->
-      <a href="{{ url_for('asset-type') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_phan_loai_tai_san') }} </a>
-      <a href="{{ url_for('asset-parameters') }}"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_tham_so_tai_san') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_nguoi_dung') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_quyen') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_don_vi') }} </a>
+      <a href="#service1" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.nhat_ky_ung_dung') }} </a>
+      <a href="{{ url_for('asset-type') }}" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_phan_loai_tai_san') }} </a>
+      <a href="{{ url_for('asset-parameters') }}" class="sidebar-link" onclick="setActive(this)"><span class="svg-icon svg-icon-submenu svg-icon-dot"></span> {{ i18n('interface.sidebar.quan_ly_tham_so_tai_san') }} </a>
     </div>
     <div class="sidebar-collapsed" title="Thu gọn menu" onclick="toggleSidebar(this)">
       <i class="fa-solid fa-circle-arrow-left"></i>
+    </div>
+  </div> -->
+  <div class="sidebar">
+    <nav class="nav flex-column">
+      <a class="nav-link" href="#">
+        <span class="svg-icon svg-icon-home"></span>
+        <span class="description">{{ i18n('interface.sidebar.trang_chu') }}</span>
+      </a>
+      <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#QLTaiSan" aria-expanded="false"
+        aria-controls="QLTaiSan">
+        <span class="svg-icon svg-icon-data"></span>
+        <span class="description">{{ i18n('interface.sidebar.quan_ly_tai_san') }}</span>
+        <i class="icon-drop fa fa-chevron-down ms-auto"></i>
+      </a>
+      <div class="sub-menu collapse" id="QLTaiSan">
+        <a class="nav-link" href="{{ url_for('public-land') }}">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.quan_ly_dat_cong') }}</span>
+        </a>
+        <a class="nav-link" href="{{ url_for('public-building') }}">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.quan_ly_nha_cong_san') }}</span>
+        </a>
+      </div>
+      <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#BaoCao" aria-expanded="false"
+        aria-controls="BaoCao">
+        <span class="svg-icon svg-icon-report"></span>
+        <span class="description">{{ i18n('interface.sidebar.bao_cao') }}</span>
+        <i class="icon-drop fa fa-chevron-down ms-auto"></i>
+      </a>
+      <div class="sub-menu collapse" id="BaoCao">
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.thiet_lap_tham_so') }}</span>
+        </a>
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.thiet_lap_giao_dien') }}</span>
+        </a>
+      </div>
+      <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#CauHinhBanDo" aria-expanded="false"
+        aria-controls="CauHinhBanDo">
+        <span class="svg-icon svg-icon-map"></span>
+        <span class="description">{{ i18n('interface.sidebar.cau_hinh_ban_do') }}</span>
+        <i class="icon-drop fa fa-chevron-down ms-auto"></i>
+      </a>
+      <div class="sub-menu collapse" id="CauHinhBanDo">
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.thiet_lap_tham_so') }}</span>
+        </a>
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.thiet_lap_giao_dien') }}</span>
+        </a>
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.phan_quyen_su_dung') }}</span>
+        </a>
+      </div>
+      <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#QuanTriHeThong" aria-expanded="false"
+        aria-controls="QuanTriHeThong">
+        <span class="svg-icon svg-icon-system"></span>
+        <span class="description">{{ i18n('interface.sidebar.quan_tri_he_thong') }}</span>
+        <i class="icon-drop fa fa-chevron-down ms-auto"></i>
+      </a>
+      <div class="sub-menu collapse" id="QuanTriHeThong">
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.quan_ly_nguoi_dung') }}</span>
+        </a>
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.quan_ly_quyen') }}</span>
+        </a>
+        <a class="nav-link" href="#">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.quan_ly_don_vi') }}</span>
+        </a>
+        <a class="nav-link" href="{{ url_for('asset-type') }}">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.quan_ly_phan_loai_tai_san') }}</span>
+        </a>
+        <a class="nav-link" href="{{ url_for('asset-parameters') }}">
+          <span class="svg-icon svg-icon-dot"></span>
+          <span class="description">{{ i18n('interface.sidebar.quan_ly_tham_so_tai_san') }}</span>
+        </a>
+      </div>
+      <a class="nav-link" href="#">
+        <span class="svg-icon svg-icon-map-menu"></span>
+        <span class="description">{{ i18n('interface.sidebar.phan_tich_du_lieu_ban_do') }}</span>
+      </a>
+    </nav>
+    <div class="sidebar-toggle" title="Toggle Sidebar" onclick="toggleSidebar(this)">
+      <i class="fa-solid fa-circle-arrow-left"></i> <!-- Default icon for expanded state -->
     </div>
   </div>
 
@@ -251,10 +362,11 @@
       {% endblock %}
     </div>
     {% endblock %}
-  </div>  
+  </div>
 
   <!-- Extra scripts from derived templates -->
   {% block scripts %}
   {% endblock %}
 </body>
+
 </html>
