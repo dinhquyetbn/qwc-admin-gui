@@ -67,7 +67,7 @@
           // Show the dropdown parent if it exists
           const dropdownParent = link.closest('.collapse'); // Find the closest dropdown
           if (dropdownParent) {
-            dropdownParent.classList.add('show'); // Show the dropdown
+            $(`#${dropdownParent.id}`).toggle('active'); // Show the dropdown
           }
         }
       });
