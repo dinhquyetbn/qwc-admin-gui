@@ -12,49 +12,47 @@
 {% endblock %}
 {% block styles %}
 <link href="{{ url_for('static', filename='libs/jstree/jstree.min.css') }}" rel="stylesheet">
+<style>
+    #jstree_ds_tham_so {
+        max-height: 300px;
+        overflow-y: auto;
+        border: var(--bs-border-width) solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+    }
+
+    .jstree-default .jstree-disabled {
+        color: #d8d8d8;
+    }
+
+    #jstree_ds_tham_so .jstree-themeicon {
+        display: none;
+    }
+
+    .wrapper-content .tab-content {
+        border-radius: 8px;
+    }
+</style>
 {% endblock %}
 {% block scripts %}
 {{super()}}
 <script src="{{ url_for('static', filename='libs/jstree/jstree.min.js') }}"></script>
 {% endblock %}
 {% block table %}
-<ul class="nav nav-tabs w-100" id="assetTypeTab" role="tablist">
+<!-- <ul class="nav nav-tabs w-100" id="assetTypeTab" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="loaiTS-tab" data-bs-toggle="tab" data-bs-target="#loaiTS"
             data-target-modal="#createTab1Modal" type="button" role="tab" aria-controls="loaiTS" aria-selected="true">Ds
             loại tài sản</button>
     </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tsTheoLoaiTS-tab" data-bs-toggle="tab" data-bs-target="#tsTheoLoaiTS"
-            data-target-modal="#createTab2Modal" type="button" role="tab" aria-controls="tsTheoLoaiTS"
-            aria-selected="false">Ds
-            tham số theo loại tài sản</button>
-    </li>
-</ul>
-<div class="tab-content px-4 py-4">
+</ul> -->
+<div class="tab-content px-4 py-4 my-4">
     <div class="tab-pane fade show active" id="loaiTS" role="tabpanel" aria-labelledby="loaiTS-tab">
         <table id="tableLoaiTS" class="display responsive">
             <thead>
                 <tr>
                     <th>STT</th>
                     <th style="min-width: 175px;">Tên loại tài sản</th>
-                    <th style="min-width: 100px;">Mô tả</th>
-                    <th style="min-width: 100px;">Ngày tạo</th>
-                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-    <div class="tab-pane fade" id="tsTheoLoaiTS" role="tabpanel" aria-labelledby="tsTheoLoaiTS-tab">
-        <table id="tableTSTheoLoaiTS" class="display responsive">
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th style="min-width: 175px;">Loại tài sản</th>
-                    <th style="min-width: 100px;">Nhóm</th>
-                    <th style="min-width: 100px;">Tham số</th>
+                    <th style="min-width: 125px;">Tổng tham số</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
                     <th class="text-center" style="min-width: 100px;">Tác vụ</th>
                 </tr>
@@ -98,34 +96,76 @@
         });
 
         $('#createTab1Modal').on('shown.bs.modal', function () {
+            if ($('#jstree_ds_tham_so').jstree(true)) {
+                $('#jstree_ds_tham_so').jstree(true).destroy();
+            }
+            let initDataJsTreeThamSo = [...dataJsTreeThamSo];
             let id = $('#createTab1Modal input[name="id"]').val();
             if (!id) {
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+                initDataJsTreeThamSo = [...dataJsTreeThamSo].map(x => {
+                    if (x.children.length > 0) {
+                        x.children.map(y => {
+                            y.state = { selected: false };
+                            return y;
+                        })
+                    }
+                    return x;
+                });
+            } else {
+                // Nếu có giá trị tham số sẽ thực hiện init lại jsTree
+                let dsThamSo = $('#loaiTSForm [name="ds_tham_so"]').val();
+                let arrThamSo = dsThamSo.split(',');
+                initDataJsTreeThamSo = [...dataJsTreeThamSo].map(x => {
+                    if (x.children.length > 0) {
+                        x.children.map(y => {
+                            if (dsThamSo) {
+                                y.state = { selected: arrThamSo.indexOf(y.id) !== -1 };
+                            } else {
+                                y.state = { selected: false };
+                            }
+                            return y;
+                        })
+                    }
+                    return x;
+                });
             }
+
+            $('#jstree_ds_tham_so').jstree({
+                "check_callback": true,
+                "core": {
+                    "data": initDataJsTreeThamSo,
+                    "animation": 0,
+                    "multiple": true,
+                },
+                "checkbox": {
+                    "keep_selected_style": false
+                },
+                "plugins": ["checkbox"],
+            });
         });
     })
 
+    dataJsTreeThamSo = [];
     $(document).ready(function () {
+        // Get category
+        getCategoryGroupParam();
+
         // Search data
         $('.btn-search').on('click', function () {
-            let tabName = $('#createModal')[0].getAttribute('data-bs-target');
-            switch (tabName) {
-                // Tab ds tham số
-                case '#createTab1Modal':
-                    tableLoaiTS.ajax.reload(null, false);
-                    break;
-                // Tab ds nhóm tham số
-                case '#createTab2Modal':
-                    break;
-                default:
-                    break;
+            tableLoaiTS.ajax.reload(null, false);
+        })
+
+        $('#input-search').on('keydown', function (e) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                tableLoaiTS.ajax.reload(null, false);
             }
         })
         // TAB1: LOẠI TÀI SẢN
         const fieldLoaiTS = [
             "stt",
             "ten_loai_ts",
-            "mo_ta",
+            "ds_tham_so",
             "ngay_tao",
             "tac_vu"
         ];
@@ -167,7 +207,7 @@
             },
             columnDefs: [
                 { "defaultContent": "", "targets": "_all" },
-                { orderable: false, targets: getIdxFieldTable(fieldLoaiTS, ['stt', 'mo_ta', 'ngay_tao', 'tac_vu']) },
+                { orderable: false, targets: getIdxFieldTable(fieldLoaiTS, ['stt', 'ds_tham_so', 'ngay_tao', 'tac_vu']) },
                 {
                     data: '',
                     targets: getIdxFieldTable(fieldLoaiTS, ['stt']),
@@ -180,7 +220,16 @@
                         return data;
                     },
                     type: 'string',
-                    targets: getIdxFieldTable(fieldLoaiTS, ['ten_loai_ts', 'mo_ta'])
+                    targets: getIdxFieldTable(fieldLoaiTS, ['ten_loai_ts'])
+                },
+                {
+                    render: function (data, type, full, meta) {
+                        let count = full.ds_tham_so?.split(',').length | 0;
+                        return count;
+                    },
+                    type: 'string',
+                    className: 'text-center',
+                    targets: getIdxFieldTable(fieldLoaiTS, ['ds_tham_so'])
                 },
                 {
                     data: '',
@@ -241,6 +290,8 @@
                 formDataArray.forEach(item => {
                     formData[item.name] = item.value;
                 });
+                let checkedThamSos = $("#jstree_ds_tham_so").jstree().get_selected(true);
+                formData['ds_tham_so'] = checkedThamSos.filter(x => x.children.length === 0).map(x => x.id).join(',');
                 // Make AJAX call
                 let ajax_url = 'api/asset-type/type/create';
                 let ajax_type = 'POST';
@@ -285,6 +336,7 @@
                 success: function (res) {
                     $('#loaiTSForm [name="id"]').val(res.result.id);
                     $('#loaiTSForm [name="ten_loai_ts"]').val(res.result.ten_loai_ts);
+                    $('#loaiTSForm [name="ds_tham_so"]').val(res.result.ds_tham_so);
                     $('#loaiTSForm [name="mo_ta"]').val(res.result.mo_ta);
                     // Trigger validation on each field to show feedback
                     $('#loaiTSForm').validate().form();
@@ -328,8 +380,25 @@
                 });
             });
         }
-        // TAB2: THAM SỐ THEO LOẠI TÀI SẢN
     });
+
+    // Get danh mục tham số theo nhóm
+    function getCategoryGroupParam() {
+        $.ajax({
+            url: `api/asset-parameter/group/category`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: function (res) {
+                dataJsTreeThamSo = res.result;
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
+        });
+    }
 </script>
 {% endblock %}
 
@@ -341,17 +410,9 @@
         <input type="text" class="form-control" name="ten_loai_ts" required>
     </div>
     <div class="col-md-12">
-        <label for="mo_ta" class="form-label">Mô tả:</label>
-        <textarea class="form-control" rows="3" name="mo_ta"></textarea>
-    </div>
-</form>
-{% endblock %}
-{% block bodyCreateTab2Modal %}
-<form id="loaiTSForm" class="row g-3 needs-validation" novalidate method="post">
-    <input type="text" name="id" hidden />
-    <div class="col-md-12">
-        <label for="ten_loai_ts" class="form-label">Tên loại tài sản:<span class="required">*</span></label>
-        <input type="text" class="form-control" name="ten_loai_ts" required>
+        <label for="ds_tham_so" class="form-label">Danh sách nhóm tham số:<span class="required">*</span></label>
+        <input name="ds_tham_so" hidden />
+        <div id="jstree_ds_tham_so"></div>
     </div>
     <div class="col-md-12">
         <label for="mo_ta" class="form-label">Mô tả:</label>

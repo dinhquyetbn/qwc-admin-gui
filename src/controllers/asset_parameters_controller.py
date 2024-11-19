@@ -3,12 +3,13 @@ import os
 import uuid
 from datetime import datetime, timezone
 from flask import render_template, jsonify, request
-from .controller import Controller
+from .controller_v2 import ControllerV2
 from utils import i18n
+from sqlalchemy import func
 from qwc_services_core.auth import get_identity
 
 
-class AssetParametersController(Controller):
+class AssetParametersController(ControllerV2):
 
     def __init__(self, app, handler):
         """Constructor
@@ -107,6 +108,13 @@ class AssetParametersController(Controller):
             self.remove_item_group,
             methods=["DELETE"],
         )
+        # get category param by group
+        self.app.add_url_rule(
+            "/api/asset-parameter/group/category",
+            "get_category_group_param",
+            self.get_category_group_param,
+            methods=["GET"],
+        )
 
     # Hàm cho danh sách tham số
     def get_data_by_page_param(self):
@@ -158,7 +166,7 @@ class AssetParametersController(Controller):
                 "mo_ta": tblThamSo.mo_ta,
                 "thu_tu_hien_thi": tblThamSo.thu_tu_hien_thi,
                 "nhom_tham_so_id": tblThamSo.nhom_tham_so_id,
-                "ten_nhom_tham_so": f'Nhóm: {tblNhomTS.ten_nhom}',
+                "ten_nhom_tham_so": f"Nhóm: {tblNhomTS.ten_nhom}",
                 "ngay_tao": self.convertUTCDateToVNTime(tblThamSo.ngay_tao),
                 # Add other fields as necessary
             }
@@ -236,7 +244,7 @@ class AssetParametersController(Controller):
         session = self.session()
         query = self.find_resource_param(id, session)
         objGroupParam = self.find_resource_group(query.nhom_tham_so_id, session)
-        ten_nhom_ts = objGroupParam.ten_nhom if objGroupParam else ''
+        ten_nhom_ts = objGroupParam.ten_nhom if objGroupParam else ""
         jsonData = {
             "id": query.id,
             "ma_truong": query.ma_truong,
@@ -409,21 +417,66 @@ class AssetParametersController(Controller):
             .first()
         )
 
+    def get_category_group_param(self):
+        self.setup_models()
+        session = self.session()
+        queryData = (
+            session.query(
+                self.PBMSQuanLyThamSo.nhom_tham_so_id,
+                func.json_agg(
+                    func.json_build_object(
+                        "id",
+                        self.PBMSQuanLyThamSo.id,
+                        "text",
+                        self.PBMSQuanLyThamSo.ten_truong,
+                    )
+                ).label(
+                    "datas"
+                ),  # Label the aggregated JSON array
+            )
+            .filter(self.PBMSQuanLyThamSo.trang_thai_xoa == False)
+            .group_by(self.PBMSQuanLyThamSo.nhom_tham_so_id)
+        )
+        dataParam = queryData.all()
+
+        queryGroup = (
+            session.query(self.PBMSQuanLyNhomThamSo)
+            .filter(self.PBMSQuanLyNhomThamSo.trang_thai_xoa == False)
+            .order_by(self.PBMSQuanLyNhomThamSo.thu_tu_hien_thi)
+        )
+        dataGroup = queryGroup.all()
+
+        jsonData = []
+        for itemGroup in dataGroup:
+            dsParam = [item[1] for item in dataParam if item[0] == itemGroup.id]
+            dsParam = dsParam[0] if dsParam else []
+            obj = {
+                "id": itemGroup.id,
+                "state": {"disabled": len(dsParam) == 0},
+                "text": f"{itemGroup.ten_nhom} ({len(dsParam)})",
+                "children": dsParam,
+            }
+            jsonData.append(obj)
+
+        session.close()
+        return jsonify({"result": jsonData})
+
     def resources_for_index_query(self, search_text, session):
         """Return query for roles list.
 
         :param str search_text: Search string for filtering
         :param Session session: DB session
         """
-        query = (
-            session.query(self.PBMSQuanLyNhomThamSo)
-            .filter_by(trang_thai_xoa=False)
-            .order_by(self.PBMSQuanLyNhomThamSo.thu_tu_hien_thi)
-        )
+        # query = (
+        #     session.query(self.PBMSQuanLyNhomThamSo)
+        #     .filter_by(trang_thai_xoa=False)
+        #     .order_by(self.PBMSQuanLyNhomThamSo.thu_tu_hien_thi)
+        # )
 
-        if search_text:
-            query = query.filter(
-                self.PBMSQuanLyNhomThamSo.ten_nhom.ilike("%%%s%%" % search_text)
-            )
+        # if search_text:
+        #     query = query.filter(
+        #         self.PBMSQuanLyNhomThamSo.ten_nhom.ilike("%%%s%%" % search_text)
+        #     )
 
-        return query
+        # return query
+        pass

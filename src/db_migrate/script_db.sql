@@ -38,6 +38,7 @@ GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc
 CREATE TABLE qwc_config.pbms_quan_ly_phan_loai_tai_san (
 	id VARCHAR(50) NOT NULL,
     ten_loai_ts VARCHAR(256) NOT NULL,
+    ds_tham_so TEXT,
     mo_ta VARCHAR(50) NOT NULL,
     nguoi_tao VARCHAR(50),
     ngay_tao TIMESTAMPTZ NOT NULL,

@@ -3,10 +3,10 @@ import uuid
 
 from datetime import datetime, timezone
 from flask import json, jsonify, request
-from .controller import Controller
+from .controller_v2 import ControllerV2
 
 
-class AssetTypeController(Controller):
+class AssetTypeController(ControllerV2):
 
     def __init__(self, app, handler):
         """Constructor
@@ -108,6 +108,7 @@ class AssetTypeController(Controller):
             {
                 "id": tblLoaiTS.id,
                 "ten_loai_ts": tblLoaiTS.ten_loai_ts,
+                "ds_tham_so": tblLoaiTS.ds_tham_so,
                 "mo_ta": tblLoaiTS.mo_ta,
                 "ngay_tao": self.convertUTCDateToVNTime(tblLoaiTS.ngay_tao),
             }
@@ -147,6 +148,7 @@ class AssetTypeController(Controller):
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             obj.ten_loai_ts = data["ten_loai_ts"]
+            obj.ds_tham_so  = data["ds_tham_so"]
             obj.mo_ta = data["mo_ta"]
 
             session.commit()
@@ -182,6 +184,7 @@ class AssetTypeController(Controller):
         jsonData = {
             "id": query.id,
             "ten_loai_ts": query.ten_loai_ts,
+            "ds_tham_so": query.ds_tham_so,
             "mo_ta": query.mo_ta,
             "ngay_tao": self.convertUTCDateToVNTime(query.ngay_tao),
         }
@@ -196,13 +199,4 @@ class AssetTypeController(Controller):
         )
 
     def resources_for_index_query(self, search_text, session):
-        """Return query for roles list.
-
-        :param str search_text: Search string for filtering
-        :param Session session: DB session
-        """
-        query = session.query(self.Role).order_by(self.Role.name)
-        if search_text:
-            query = query.filter(self.Role.name.ilike("%%%s%%" % search_text))
-
-        return query
+        pass

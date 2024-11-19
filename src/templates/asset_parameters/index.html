@@ -595,6 +595,14 @@
 
         // Search data
         $('.btn-search').on('click', function () {
+            reloadTable();
+        })
+        $('#input-search').on('keydown', function (e) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                reloadTable();
+            }
+        })
+        function reloadTable() {
             let tabName = $('#createModal')[0].getAttribute('data-bs-target');
             switch (tabName) {
                 // Tab ds tham số
@@ -608,8 +616,7 @@
                 default:
                     break;
             }
-        })
-
+        }
         // Update nhóm tham số
         window.showUpdateTab2Modal = function (id) {
             $.ajax({
