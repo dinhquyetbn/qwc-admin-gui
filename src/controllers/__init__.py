@@ -11,3 +11,5 @@ from .public_land_controller import PublicLandController
 from .asset_parameters_controller import AssetParametersController
 from .asset_type_controller import AssetTypeController
 from .map_data_analytics_controller import MapDataAnalyticsController
+from .units_controller import UnitsController
+from .categories_controller import CategoriesController

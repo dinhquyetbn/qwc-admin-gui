@@ -178,6 +178,10 @@
       "thiet_lap_tham_so": "Thiết lập tham số",
       "trang_chu": "Trang chủ"
     },
+    "unit": {
+      "new_unit": "new_unit",
+      "title": "Danh sách đơn vị"
+    },
     "users": {
       "authentication": "Authentication",
       "confirm_message_delete": "Remove user?",

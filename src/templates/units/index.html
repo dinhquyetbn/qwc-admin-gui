@@ -1,0 +1,427 @@
+{% extends "templates/base_index_v2.html" %}
+{% block title %}{{ i18n('interface.unit.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.unit.new_unit') }}{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Quản trị hệ thống</li>
+        <li class="breadcrumb-item" aria-current="page">Quản lý đơn vị</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+{% endblock %}
+
+{%- block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
+<style>
+    .wrapper-content .tab-content {
+        border-radius: 8px;
+    }
+</style>
+{%- endblock styles %}
+{% block table %}
+<div class="tab-content px-4 py-4 my-4">
+    <div class="tab-pane fade show active" id="units" role="tabpanel" aria-labelledby="units-tab">
+        <table id="tableUnits" class="display responsive">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 175px;">Mã đơn vị </th>
+                    <th style="min-width: 175px;">Tên đơn vị </th>
+                    <th style="min-width: 125px;">Đơn vị cha</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block bodyCreateTab1Modal %}
+<form id="unitsForm" class="row g-3 needs-validation" novalidate method="post">
+    <input type="text" name="id" hidden />
+    <div class="col-md-4">
+        <label for="ma_dv" class="form-label">Mã đơn vị:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ma_dv" required>
+    </div>
+    <div class="col-md-8">
+        <label for="ten_dv" class="form-label">Tên đơn vị:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_dv" required>
+    </div>
+    <div class="col-md-6">
+        <label for="ma_tp" class="form-label">Tỉnh/TP:<span class="required">*</span></label>
+        <select id="select-province" class="form-control w-100" name="ma_tp"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="ma_qh" class="form-label">Quận/Huyện:<span class="required">*</span></label>
+        <select id="select-district" class="form-control w-100" name="ma_qh"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="ma_px" class="form-label">Phường/Xã:<span class="required">*</span></label>
+        <select id="select-ward" class="form-control w-100" name="ma_px"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="dia_chi" class="form-label">Địa chỉ:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="dia_chi" required>
+    </div>
+    <div class="col-md-6">
+        <label for="don_vi_cap_cha_id" class="form-label">Đơn vị cấp cha (nếu có):</label>
+        <select id="select-don-vi" class="form-control w-100" name="don_vi_cap_cha_id"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="sdt" class="form-label">Số điện thoại:</label>
+        <input type="text" class="form-control" name="sdt">
+    </div>
+</form>
+{% endblock %}
+{% block renderScripts %}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            // get danh mục
+            let id = $('#createTab1Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            }
+
+            $("#select-don-vi").select2({
+                allowClear: true,
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                escapeMarkup: function (m) { return m; },
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/units/all', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $("#select-province").select2({
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/categories/province', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $('#select-province').on('select2:select', function (e) {
+                // Do something
+                let ma_tp = e.target.value;
+                $("#select-district").select2({
+                    minimumInputLength: 0, // Number of characters before AJAX request is made
+                    dropdownParent: $('#createTab1Modal'),
+                    ajax: {
+                        url: `api/categories/${ma_tp}/district`, // API endpoint URL
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            return {
+                                results: data.result
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            });
+            $('#select-district').on('select2:select', function (e) {
+                // Do something
+                let ma_qh = e.target.value;
+                $("#select-ward").select2({
+                    minimumInputLength: 0, // Number of characters before AJAX request is made
+                    dropdownParent: $('#createTab1Modal'),
+                    ajax: {
+                        url: `api/categories/48/${ma_qh}/ward`, // API endpoint URL
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            return {
+                                results: data.result
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            });
+            $("#select-district").select2();
+            $("#select-ward").select2();
+        });
+    })
+
+    $(document).ready(function () {
+        // Search data
+        $('.btn-search').on('click', function () {
+            tableUnits.ajax.reload(null, false);
+        })
+
+        $('#input-search').on('keydown', function (e) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                tableUnits.ajax.reload(null, false);
+            }
+        })
+        // TAB1: LOẠI TÀI SẢN
+        const fieldUnits = [
+            "stt",
+            "ma_dv",
+            "ten_dv",
+            "ten_don_vi_cap_cha",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        let tableUnits = new DataTable('#tableUnits', {
+            dom: 'rtlip',
+            ordering: true,
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 10,
+            responsive: true,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            ajax: {
+                url: "api/units/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
+                }
+            },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                { orderable: false, targets: getIdxFieldTable(fieldUnits, ['stt', 'ngay_tao', 'tac_vu']) },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldUnits, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldUnits, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'ma_dv' },
+                { data: 'ten_dv' },
+                { data: 'ten_don_vi_cap_cha' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
+        });
+        $('#unitsForm').validate({
+            rules: {
+                ma_dv: {
+                    required: true,
+                    maxlength: 100
+                },
+                ten_dv: {
+                    required: true,
+                    maxlength: 500
+                },
+                dia_chi: {
+                    required: true,
+                    maxlength: 500
+                },
+                ma_px: {
+                    required: true,
+                },
+                ma_qh: {
+                    required: true,
+                },
+                ma_tp: {
+                    required: true,
+                }
+            },
+            messages: {
+                ma_dv: {
+                    required: "Vui lòng nhập mã đơn vị.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 100 kí tự."
+                },
+                ten_dv: {
+                    required: "Vui lòng nhập tên đơn vị.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 500 kí tự."
+                },
+                dia_chi: {
+                    required: "Vui lòng nhập địa chỉ.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 500 kí tự."
+                },
+                ma_px: {
+                    required: "Vui lòng chọn Phường/Xã.",
+                },
+                ma_qh: {
+                    required: "Vui lòng chọn Quận/Huyện.",
+                },
+                ma_tp: {
+                    required: "Vui lòng chọn Tỉnh/TP.",
+                },
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                error.addClass("invalid-feedback");
+                error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+            }
+        });
+        // Tạo mới loại tài sản
+        $('#createTab1Modal .btn-save').on('click', function () {
+            if ($('#unitsForm').valid()) {
+                // Collect form data
+                const formDataArray = $('#unitsForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+
+                formData['ten_tp'] = $("#select-province").text();
+                formData['ten_qh'] = $("#select-district").text();
+                formData['ten_px'] = $("#select-ward").text();
+                formData['don_vi_cap_cha_id'] = $("#select-don-vi").val();
+
+                // Make AJAX call
+                let ajax_url = 'api/units/create';
+                let ajax_type = 'POST';
+                let paramId = $('#unitsForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/units/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableUnits.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            }
+        });
+        // Update loại tài sản
+        window.showUpdateTab1Modal = function (id) {
+            $.ajax({
+                url: `api/asset-type/type/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    $('#loaiTSForm [name="id"]').val(res.result.id);
+                    $('#loaiTSForm [name="ten_loai_ts"]').val(res.result.ten_loai_ts);
+                    $('#loaiTSForm [name="ds_tham_so"]').val(res.result.ds_tham_so);
+                    $('#loaiTSForm [name="mo_ta"]').val(res.result.mo_ta);
+                    // Trigger validation on each field to show feedback
+                    $('#loaiTSForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab1Modal').modal('show');
+                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
+        // Delete loại tài sản
+        window.showDeleteTab1Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab1Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/asset-type/type/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableUnits.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

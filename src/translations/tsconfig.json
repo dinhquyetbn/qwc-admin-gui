@@ -156,6 +156,8 @@
     "interface.sidebar.thiet_lap_giao_dien",
     "interface.sidebar.thiet_lap_tham_so",
     "interface.sidebar.trang_chu",
+    "interface.unit.new_unit",
+    "interface.unit.title",
     "interface.users.authentication",
     "interface.users.confirm_message_delete",
     "interface.users.form_email",
