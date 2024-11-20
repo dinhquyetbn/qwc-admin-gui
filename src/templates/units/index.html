@@ -31,8 +31,9 @@
             <thead>
                 <tr>
                     <th>STT</th>
-                    <th style="min-width: 175px;">Mã đơn vị </th>
+                    <th style="min-width: 125px;">Mã đơn vị </th>
                     <th style="min-width: 175px;">Tên đơn vị </th>
+                    <th style="min-width: 200px;">Địa chỉ </th>
                     <th style="min-width: 125px;">Đơn vị cha</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
                     <th class="text-center" style="min-width: 100px;">Tác vụ</th>
@@ -92,6 +93,7 @@
             }
 
             $("#select-don-vi").select2({
+                placeholder: 'Chọn đơn vị cấp cha...',
                 allowClear: true,
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 escapeMarkup: function (m) { return m; },
@@ -110,6 +112,7 @@
             });
 
             $("#select-province").select2({
+                placeholder: 'Chọn Tỉnh/TP...',
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
                 ajax: {
@@ -129,6 +132,7 @@
                 // Do something
                 let ma_tp = e.target.value;
                 $("#select-district").select2({
+                    placeholder: 'Chọn Quận Huyện...',
                     minimumInputLength: 0, // Number of characters before AJAX request is made
                     dropdownParent: $('#createTab1Modal'),
                     ajax: {
@@ -148,6 +152,7 @@
                 // Do something
                 let ma_qh = e.target.value;
                 $("#select-ward").select2({
+                    placeholder: 'Chọn Phường Xã...',
                     minimumInputLength: 0, // Number of characters before AJAX request is made
                     dropdownParent: $('#createTab1Modal'),
                     ajax: {
@@ -166,6 +171,14 @@
             $("#select-district").select2();
             $("#select-ward").select2();
         });
+
+        $('#createTab1Modal').on('hide.bs.modal', function () {
+            $('#unitsForm')[0].reset();
+            $('#select-province').val(null).trigger('change');
+            $('#select-district').val(null).trigger('change');
+            $('#select-ward').val(null).trigger('change');
+            $('#select-don-vi').val(null).trigger('change');
+        })
     })
 
     $(document).ready(function () {
@@ -184,6 +197,7 @@
             "stt",
             "ma_dv",
             "ten_dv",
+            "full_dia_chi",
             "ten_don_vi_cap_cha",
             "ngay_tao",
             "tac_vu"
@@ -226,7 +240,7 @@
             },
             columnDefs: [
                 { "defaultContent": "", "targets": "_all" },
-                { orderable: false, targets: getIdxFieldTable(fieldUnits, ['stt', 'ngay_tao', 'tac_vu']) },
+                { orderable: false, targets: getIdxFieldTable(fieldUnits, ['stt', 'full_dia_chi', 'ten_don_vi_cap_cha', 'ngay_tao', 'tac_vu']) },
                 {
                     data: '',
                     targets: getIdxFieldTable(fieldUnits, ['stt']),
@@ -253,6 +267,7 @@
                 { className: 'noVis', targets: [0] },
                 { data: 'ma_dv' },
                 { data: 'ten_dv' },
+                { data: 'full_dia_chi' },
                 { data: 'ten_don_vi_cap_cha' },
                 { data: 'ngay_tao' },
                 { className: 'noVis' },
@@ -370,18 +385,24 @@
         // Update loại tài sản
         window.showUpdateTab1Modal = function (id) {
             $.ajax({
-                url: `api/asset-type/type/detail/${id}`, // Replace with your API endpoint
+                url: `api/units/detail/${id}`, // Replace with your API endpoint
                 type: 'GET',
                 headers: {
                     'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
                 },
                 success: function (res) {
-                    $('#loaiTSForm [name="id"]').val(res.result.id);
-                    $('#loaiTSForm [name="ten_loai_ts"]').val(res.result.ten_loai_ts);
-                    $('#loaiTSForm [name="ds_tham_so"]').val(res.result.ds_tham_so);
-                    $('#loaiTSForm [name="mo_ta"]').val(res.result.mo_ta);
+                    $('#unitsForm [name="id"]').val(res.result.id);
+                    $('#unitsForm [name="ma_dv"]').val(res.result.ma_dv);
+                    $('#unitsForm [name="ten_dv"]').val(res.result.ten_dv);
+                    $('#unitsForm [name="dia_chi"]').val(res.result.dia_chi);
+                    $('#unitsForm [name="sdt"]').val(res.result.sdt);
+
+                    $('#select-province').append(new Option(res.result.ten_tp, res.result.ma_tp, true, true)).trigger('change');
+                    $('#select-district').append(new Option(res.result.ten_qh, res.result.ma_qh, true, true)).trigger('change');
+                    $('#select-ward').append(new Option(res.result.ten_px, res.result.ma_px, true, true)).trigger('change');
+                    $('#select-don-vi').append(new Option(res.result.ten_don_vi_cap_cha, res.result.don_vi_cap_cha_id, true, true)).trigger('change');
                     // Trigger validation on each field to show feedback
-                    $('#loaiTSForm').validate().form();
+                    $('#unitsForm').validate().form();
                     // Show confirmation modal
                     $('#createTab1Modal').modal('show');
                     $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
@@ -400,7 +421,7 @@
             $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
                 // Make AJAX call to delete the item
                 $.ajax({
-                    url: `api/asset-type/type/delete/${id}`, // Replace with your API endpoint
+                    url: `api/units/delete/${id}`, // Replace with your API endpoint
                     type: 'DELETE',
                     headers: {
                         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers

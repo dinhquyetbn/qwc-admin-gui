@@ -276,6 +276,11 @@ form {
   scrollbar-color: var(--bs-breadcrumb-item-active-color) #f1f1f1;
 }
 
+.modal-body {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
 /* .sidebar.collapsed + .content {
   margin-left: 60px;
 } */

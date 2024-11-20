@@ -85,7 +85,8 @@ class UnitsController(ControllerV2):
         # Nếu có giá trị search
         if req_search["value"]:
             query = query.filter(
-                self.PBMSQuanLyDonVi.ten_dv.ilike("%%%s%%" % req_search["value"])
+                self.PBMSQuanLyDonVi.ten_dv.ilike("%%%s%%" % req_search["value"]) |
+                self.PBMSQuanLyDonVi.ma_dv.ilike("%%%s%%" % req_search["value"])
             )
 
         # Sort
@@ -103,6 +104,16 @@ class UnitsController(ControllerV2):
         # Phân trang
         data = query.limit(req_size).offset(req_page).all()
         count = query.count()
+        # ds đơn vị cấp cha
+        idCapChas = [item.don_vi_cap_cha_id for item in data]
+        dataCapCha = (
+            session.query(self.PBMSQuanLyDonVi)
+            .filter(
+                self.PBMSQuanLyDonVi.id.in_(idCapChas),
+                self.PBMSQuanLyDonVi.trang_thai_xoa == False,
+            )
+            .all()
+        )
         jsonData = [
             {
                 "id": tblUnit.id,
@@ -115,8 +126,9 @@ class UnitsController(ControllerV2):
                 "ten_qh": tblUnit.ten_qh,
                 "ma_tp": tblUnit.ma_tp,
                 "ten_tp": tblUnit.ten_tp,
+                "full_dia_chi": f"{tblUnit.dia_chi}, {tblUnit.ten_px}, {tblUnit.ten_qh}, {tblUnit.ten_tp}",
                 "don_vi_cap_cha_id": tblUnit.don_vi_cap_cha_id,
-                "ten_don_vi_cap_cha": "",
+                "ten_don_vi_cap_cha": next((capCha.ten_dv for capCha in dataCapCha if capCha.id == tblUnit.don_vi_cap_cha_id), ""),
                 "sdt": tblUnit.sdt,
                 "ngay_tao": self.convertUTCDateToVNTime(tblUnit.ngay_tao),
             }
@@ -224,6 +236,7 @@ class UnitsController(ControllerV2):
         )
 
     def get_all_unit(self):
+        self.setup_models()
         param_value = request.args.get("q")
         session = self.session()
         query = session.query(self.PBMSQuanLyDonVi).filter_by(trang_thai_xoa=False)

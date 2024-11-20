@@ -1,109 +1,497 @@
 {% extends "templates/base_index_v2.html" %}
 {% block title %}{{ i18n('interface.public_land.title') }}{% endblock %}
 {% block new_resource_label %}{{ i18n('interface.public_land.new_public_land') }}{% endblock %}
-
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Quản lý tài sản</li>
+        <li class="breadcrumb-item" aria-current="page">Đất công</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+{% endblock %}
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
+<style>
+    @media (min-width: 576px) {
+        .modal-dialog {
+            max-width: 700px !important;
+        }
+    }
+</style>
+{% endblock %}
 {% block table %}
-<ul class="nav nav-tabs w-100" id="myTab" role="tablist">
+<ul class="nav nav-tabs w-100" id="tabDatCong" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="master-tab" data-bs-toggle="tab" data-bs-target="#data" type="button"
-            role="tab" aria-controls="home" aria-selected="true">Ds tài sản</button>
+        <button class="nav-link active" id="tabDuLieuChinh" data-bs-toggle="tab" data-bs-target="#tab-DuLieuChinh"
+            data-target-modal="#createTab1Modal" type="button" role="tab" aria-controls="tab-DuLieuChinh"
+            aria-selected="true">Ds tài sản</button>
     </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="draff-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab"
-            aria-controls="profile" aria-selected="false">Ds chờ phê duyệt</button>
-    </li>
+    <!-- <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tabChoPheDuyet" data-bs-toggle="tab" data-bs-target="#tab-ChoPheDuyet"
+            data-target-modal="#createTab2Modal" type="button" role="tab" aria-controls="tab-ChoPheDuyet"
+            aria-selected="false">Ds chờ phê duyệt</button>
+    </li> -->
 </ul>
-<div class="tab-content px-4 py-4" id="tabDataContent">
-    <div class="tab-pane fade show active" id="data" role="tabpanel" aria-labelledby="data-tab">
-        <table id="tableMaster" class="display">
+<div class="tab-content px-4 py-4">
+    <div class="tab-pane fade show active" id="tab-DuLieuChinh" role="tabpanel" aria-labelledby="tab-DuLieuChinh">
+        <table id="tableDuLieuChinh" class="display responsive">
             <thead>
                 <tr>
                     <th>STT</th>
-                    <th>Mã TS</th>
-                    <th>Tên đất</th>
-                    <th>Đơn vị QL</th>
-                    <th>Diện tích</th>
-                    <th>Ngày cập nhật</th>
-                    <th>Hiện trạng</th>
-                    <th>Văn bản</th>
-                    <th>Chi tiết</th>
-                    <th>Tác vụ</th>
+                    <th style="min-width: 100px;">Mã đất</th>
+                    <th style="min-width: 175px;">Tên đất</th>
+                    <th style="min-width: 200px;">Địa chỉ</th>
+                    <th style="min-width: 175px;">Đơn vị quản lý</th>
+                    <th style="min-width: 142px;">Diện tích (m2)</th>
+                    <th style="min-width: 100px;">Hiện trạng <br> sử dụng</th>
+                    <th>Ảnh/Văn bản</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>01</td>
-                    <td>NDCS-12345</td>
-                    <td>Khu vui chơi khu vực 1</td>
-                    <td>Khu vui chơi khu vực 1</td>
-                    <td>500 m²</td>
-                    <td>28/10/2024</td>
-                    <td class="status">Đang sử dụng</td>
-                    <td><i class="icon icon-doc"></i></td>
-                    <td>
-                        <button class="btn btn-info">Thông tin</button>
-                        <button class="btn btn-map">Bản đồ</button>
-                    </td>
-                    <td>
-                        <i class="icon icon-edit"></i>
-                        <i class="icon icon-delete"></i>
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
-</div>
-{% endblock %}
-
-{% block bodyCreateModal %}
-<ul class="nav nav-tabs w-100" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#infoData" type="button"
-            role="tab" aria-controls="home" aria-selected="true">Thông tin chung</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="map-tab" data-bs-toggle="tab" data-bs-target="#mapData" type="button" role="tab"
-            aria-controls="profile" aria-selected="false">Bản đồ</button>
-    </li>
-</ul>
-<div class="tab-content my-2">
-    <div class="tab-pane fade show active" id="infoData" role="tabpanel" aria-labelledby="infoData-tab">
-        <div class="d-flex align-items-start">
-            <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button class="nav-link active" id="v-pills-1-tab" data-bs-toggle="pill"
-                    data-bs-target="#v-pills-1" type="button" role="tab" aria-controls="v-pills-1"
-                    aria-selected="true">Thông tin tài sản đất</button>
-                <button class="nav-link" id="v-pills-2-tab" data-bs-toggle="pill"
-                    data-bs-target="#v-pills-2" type="button" role="tab" aria-controls="v-pills-2"
-                    aria-selected="false">Diện tích khuôn viên</button>
-                <button class="nav-link" id="v-pills-3-tab" data-bs-toggle="pill"
-                    data-bs-target="#v-pills-3" type="button" role="tab" aria-controls="v-pills-3"
-                    aria-selected="false">Hiện trạng sử dụng</button>
-                <button class="nav-link" id="v-pills-4-tab" data-bs-toggle="pill"
-                    data-bs-target="#v-pills-4" type="button" role="tab" aria-controls="v-pills-4"
-                    aria-selected="false">Vị trí</button>
-            </div>
-            <div class="tab-content" id="v-pills-tabContent">
-                <div class="tab-pane fade show active" id="v-pills-1" role="tabpanel"
-                    aria-labelledby="v-pills-1-tab">...</div>
-                <div class="tab-pane fade" id="v-pills-2" role="tabpanel" aria-labelledby="v-pills-2-tab">
-                    ...</div>
-                <div class="tab-pane fade" id="v-pills-3" role="tabpanel" aria-labelledby="v-pills-3-tab">
-                    ...</div>
-                <div class="tab-pane fade" id="v-pills-4" role="tabpanel" aria-labelledby="v-pills-4-tab">
-                    ...</div>
-            </div>
-        </div>
+    <div class="tab-pane fade" id="tab-ChoPheDuyet" role="tabpanel" aria-labelledby="tab-ChoPheDuyet">
+        <!-- <table id="tableChoPheDuyet" class="display responsive">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 175px;">Tên nhóm tham số</th>
+                    <th style="min-width: 100px;">Thứ tự hiển thị</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table> -->
     </div>
 </div>
 {% endblock %}
 
-<script>
+{% block bodyCreateTab1Modal %}
+<ul class="nav nav-tabs w-100" id="tabDuLieuChinhModal" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tabDuLieuModal" data-bs-toggle="tab" data-bs-target="#tab-DuLieuModal"
+            type="button" role="tab" aria-controls="tab-DuLieuModal" aria-selected="true">Dữ liệu</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tabBanDoModal" data-bs-toggle="tab" data-bs-target="#tab-BanDoModal" type="button"
+            role="tab" aria-controls="tab-BanDoModal" aria-selected="false">Bản đồ</button>
+    </li>
+</ul>
+<div class="tab-content px-4 py-4">
+    <div class="tab-pane fade show active" id="tab-DuLieuModal" role="tabpanel" aria-labelledby="tab-DuLieuModal">
+        <form id="duLieuChinhForm" class="row g-3 needs-validation" novalidate method="post">
+            <input type="text" name="id" hidden />
+            <div class="col-md-4">
+                <label for="ma_dat" class="form-label">Mã đất:<span class="required">*</span></label>
+                <input type="text" class="form-control" name="ma_dat" required>
+            </div>
+            <div class="col-md-8">
+                <label for="ten_dat" class="form-label">Tên đất:<span class="required">*</span></label>
+                <input type="text" class="form-control" name="ten_dat" required>
+            </div>
+            <div class="col-md-6">
+                <label for="don_vi_quan_ly_id" class="form-label">Đơn vị quản lý:</label>
+                <select id="select-don-vi-quan-ly" class="form-control w-100" name="don_vi_quan_ly_id"></select>
+            </div>
+            <div class="col-md-6">
+                <label for="hien_trang_sd_id" class="form-label">Hiện trạng sử dụng:<span
+                        class="required">*</span></label>
+                <select id="select-hien-trang-sd" class="form-control w-100" name="hien_trang_sd_id"></select>
+            </div>
+            <div class="col-md-4">
+                <label for="so_to" class="form-label">Số tờ:</label>
+                <input type="number" name="so_to" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label for="so_thua" class="form-label">Số thửa:</label>
+                <input type="number" name="so_thua" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label for="dien_tich" class="form-label">Diện tích (m2):</label>
+                <input type="number" name="dien_tich" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label for="ma_tp" class="form-label">Tỉnh/TP:<span class="required">*</span></label>
+                <select id="select-province" class="form-control w-100" name="ma_tp"></select>
+            </div>
+            <div class="col-md-6">
+                <label for="ma_qh" class="form-label">Quận/Huyện:<span class="required">*</span></label>
+                <select id="select-district" class="form-control w-100" name="ma_qh"></select>
+            </div>
+            <div class="col-md-6">
+                <label for="ma_px" class="form-label">Phường/Xã:<span class="required">*</span></label>
+                <select id="select-ward" class="form-control w-100" name="ma_px"></select>
+            </div>
+            <div class="col-md-6">
+                <label for="dia_chi" class="form-label">Địa chỉ:<span class="required">*</span></label>
+                <input type="text" class="form-control" name="dia_chi" required>
+            </div>
+            <div class="col-md-6">
+                <label for="ds_file_dinh_kem" class="form-label">Ảnh / Văn bản đính kèm:</label>
+                <input type="text" class="form-control" name="ds_file_dinh_kem" hidden>
+                <input type="file" class="form-control" multiple>
+            </div>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="tab-BanDoModal" role="tabpanel" aria-labelledby="tab-BanDoModal">
+        <p>Đang tải...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block renderScripts %}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            // get danh mục
+            let id = $('#createTab1Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            }
+
+            $("#select-don-vi-quan-ly").select2({
+                placeholder: 'Chọn đơn vị quản lý...',
+                allowClear: true,
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                escapeMarkup: function (m) { return m; },
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/units/all', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $("#select-hien-trang-sd").select2({
+                placeholder: 'Chọn hiện trạng sử dụng...',
+                // allowClear: true,
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                escapeMarkup: function (m) { return m; },
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/categories/HTSD/all', // ma_nhom: HTSD | Hiện trạng sử dụng
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $('#select-don-vi-quan-ly').on('select2:clear', function () {
+                console.log('Selection cleared!');
+            });
+
+            $("#select-province").select2({
+                placeholder: 'Chọn Tỉnh/TP...',
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/categories/province', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $('#select-province').on('select2:select', function (e) {
+                // Do something
+                let ma_tp = e.target.value;
+                $("#select-district").select2({
+                    placeholder: 'Chọn Quận Huyện...',
+                    minimumInputLength: 0, // Number of characters before AJAX request is made
+                    dropdownParent: $('#createTab1Modal'),
+                    ajax: {
+                        url: `api/categories/${ma_tp}/district`, // API endpoint URL
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            return {
+                                results: data.result
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            });
+            $('#select-district').on('select2:select', function (e) {
+                // Do something
+                let ma_qh = e.target.value;
+                $("#select-ward").select2({
+                    placeholder: 'Chọn Phường Xã...',
+                    minimumInputLength: 0, // Number of characters before AJAX request is made
+                    dropdownParent: $('#createTab1Modal'),
+                    ajax: {
+                        url: `api/categories/48/${ma_qh}/ward`, // API endpoint URL
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            return {
+                                results: data.result
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            });
+            $("#select-district").select2();
+            $("#select-ward").select2();
+        });
+
+        $('#createTab1Modal').on('hide.bs.modal', function () {
+            $('#duLieuChinhForm')[0].reset();
+            $('#select-province').val(null).trigger('change');
+            $('#select-district').val(null).trigger('change');
+            $('#select-ward').val(null).trigger('change');
+            $('#select-don-vi-quan-ly').val(null).trigger('change');
+            $('#select-hien-trang-su-dung').val(null).trigger('change');
+        })
+    })
+
     $(document).ready(function () {
-        let tableMaster = new DataTable('#tableMaster', {
-            paging: true,
+        // Search data
+        $('.btn-search').on('click', function () {
+            tableDuLieuChinh.ajax.reload(null, false);
+        })
+
+        $('#input-search').on('keydown', function (e) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                tableDuLieuChinh.ajax.reload(null, false);
+            }
+        })
+        // Tab Ds dữ liệu chính     
+        const fieldDuLieuChinh = [
+            "stt",
+            "ma_dat",
+            "ten_dat",
+            "full_dia_chi",
+            "ten_don_vi_quan_ly",
+            "dien_tich",
+            "ten_hien_trang_sd",
+            "ds_file_dinh_kem",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        let tableDuLieuChinh = new DataTable('#tableDuLieuChinh', {
+            dom: 'rtlip',
             ordering: true,
-            scrollY: 400
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 10,
+            responsive: false,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            ajax: {
+                url: "api/public-land/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
+                }
+            },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                {
+                    orderable: false, targets: getIdxFieldTable(fieldDuLieuChinh,
+                        ['stt', 'ten_don_vi_quan_ly', 'ten_hien_trang_sd', 'full_dia_chi',
+                            'ds_file_dinh_kem', 'dien_tich', 'hien_trang_sd_id', 'ngay_tao', 'tac_vu'])
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDuLieuChinh, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDuLieuChinh, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'ma_dat' },
+                { data: 'ten_dat' },
+                { data: 'full_dia_chi' },
+                { data: 'ten_don_vi_quan_ly' },
+                { data: 'dien_tich' },
+                { data: 'ten_hien_trang_sd' },
+                { data: 'ds_file_dinh_kem' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
+        });
+
+        $('#duLieuChinhForm').validate({
+            rules: {
+                ma_dat: {
+                    required: true,
+                    maxlength: 50
+                },
+                ten_dat: {
+                    required: true,
+                    maxlength: 256
+                },
+                hien_trang_sd_id: {
+                    required: true,
+                },
+                dia_chi: {
+                    required: true,
+                    maxlength: 500
+                },
+                ma_px: {
+                    required: true,
+                },
+                ma_qh: {
+                    required: true,
+                },
+                ma_tp: {
+                    required: true,
+                }
+            },
+            messages: {
+                ma_dat: {
+                    required: "Vui lòng nhập mã đất.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 50 kí tự."
+                },
+                ten_dat: {
+                    required: "Vui lòng nhập tên đất.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 256 kí tự."
+                },
+                hien_trang_sd_id: {
+                    required: "Vui lòng chọn hiện trạng sử dụng.",
+                },
+                dia_chi: {
+                    required: "Vui lòng nhập địa chỉ.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 500 kí tự."
+                },
+                ma_px: {
+                    required: "Vui lòng chọn Phường/Xã.",
+                },
+                ma_qh: {
+                    required: "Vui lòng chọn Quận/Huyện.",
+                },
+                ma_tp: {
+                    required: "Vui lòng chọn Tỉnh/TP.",
+                },
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                error.addClass("invalid-feedback");
+                error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+            }
+        });
+
+        $('#createTab1Modal .btn-save').on('click', function () {
+            if ($('#duLieuChinhForm').valid()) {
+                // Collect form data
+                const formDataArray = $('#duLieuChinhForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+
+                formData['ten_tp'] = $("#select-province").text();
+                formData['ten_qh'] = $("#select-district").text();
+                formData['ten_px'] = $("#select-ward").text();
+                formData['don_vi_quan_ly_id'] = $("#select-don-vi-quan-ly").val();
+                formData['hien_trang_su_dung_id'] = $("#select-hien-trang-su-dung").val();
+
+                // Make AJAX call
+                let ajax_url = 'api/public-land/create';
+                let ajax_type = 'POST';
+                let paramId = $('#unitsForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/public-land/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableDuLieuChinh.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            }
         });
     })
 </script>
+{% endblock %}

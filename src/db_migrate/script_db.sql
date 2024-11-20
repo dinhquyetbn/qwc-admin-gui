@@ -130,3 +130,50 @@ CREATE TABLE qwc_config.pbms_quan_ly_don_vi (
 );
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_don_vi TO qwc_admin;
+
+CREATE TABLE qwc_config.pbms_quan_ly_dat_cong (
+	id VARCHAR(50) NOT NULL,
+    ma_dat VARCHAR(50) NOT NULL,
+    ten_dat VARCHAR(256) NOT NULL,
+    don_vi_quan_ly_id VARCHAR(50),
+    hien_trang_sd_id VARCHAR(50),
+    so_to INTEGER,
+    so_thua INTEGER,
+    dien_tich FLOAT,
+    dia_chi VARCHAR(500),
+    ma_px VARCHAR(5) NOT NULL,
+    ten_px VARCHAR(256) NOT NULL,
+    ma_qh VARCHAR(5) NOT NULL,
+    ten_qh VARCHAR(256) NOT NULL,
+    ma_tp VARCHAR(5) NOT NULL,
+    ten_tp VARCHAR(256) NOT NULL,
+    ds_file_dinh_kem TEXT,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_quan_ly_dat_cong_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_dat_cong TO qwc_admin;
+
+CREATE TABLE qwc_config.pbms_quan_ly_danh_muc (
+    id VARCHAR(50) NOT NULL,
+    ma_danh_muc VARCHAR(50) NOT NULL,
+    ten_danh_muc VARCHAR(256) NOT NULL,
+    ma_nhom VARCHAR(50) NOT NULL,
+    ten_nhom VARCHAR(50) NOT NULL,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+    CONSTRAINT pbms_quan_ly_danh_muc_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_danh_muc TO qwc_admin;

@@ -45,6 +45,13 @@ class CategoriesController(ControllerV2):
             self.get_category_ward,
             methods=["GET"],
         )
+        # Lấy danh sách danh mục theo mã nhóm
+        self.app.add_url_rule(
+            "/api/categories/<ma_nhom>/all",
+            "get_category_by_ma_nhom",
+            self.get_category_by_ma_nhom,
+            methods=["GET"],
+        )
 
     def get_category_province(self):
         self.setup_models()
@@ -109,6 +116,29 @@ class CategoriesController(ControllerV2):
             {
                 "id": item.ma,
                 "text": item.ten,
+            }
+            for item in query
+        ]
+        session.close()
+        return jsonify({"result": jsonData})
+
+    def get_category_by_ma_nhom(self, ma_nhom):
+        self.setup_models()
+        param_value = request.args.get("q")
+        session = self.session()
+        # Get dữ liệu đà nẵng
+        query = session.query(self.PBDMQuanLyDanhMuc).filter_by(
+            trang_thai_xoa=False, ma_nhom=ma_nhom
+        )
+        if param_value:
+            query = query.filter(
+                self.PBDMQuanLyDanhMuc.ten_danh_muc.ilike("%" + param_value + "%")
+            )
+        query = query.order_by(self.PBDMQuanLyDanhMuc.ten_danh_muc)
+        jsonData = [
+            {
+                "id": item.id,
+                "text": item.ten_danh_muc,
             }
             for item in query
         ]
