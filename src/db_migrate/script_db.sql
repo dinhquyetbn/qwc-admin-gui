@@ -177,3 +177,31 @@ CREATE TABLE qwc_config.pbms_quan_ly_danh_muc (
 );
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_danh_muc TO qwc_admin;
+
+CREATE TABLE qwc_config.pbms_quan_ly_nha_cong_san (
+	id VARCHAR(50) NOT NULL,
+    he_thong_id VARCHAR(50) NOT NULL,
+    tai_san_id VARCHAR(50) NOT NULL,
+    tai_san_theo_chu_so_huu_id VARCHAR(50) NOT NULL,
+    ma_tai_san VARCHAR(50) NOT NULL,
+    phan_loai_tai_san_id VARCHAR(50) NOT NULL,
+    ten_ngoi_nha VARCHAR(500) NOT NULL,
+    dia_chi VARCHAR(500),
+    ma_px VARCHAR(5) NOT NULL,
+    ten_px VARCHAR(256) NOT NULL,
+    ma_qh VARCHAR(5) NOT NULL,
+    ten_qh VARCHAR(256) NOT NULL,
+    ma_tp VARCHAR(5) NOT NULL,
+    ten_tp VARCHAR(256) NOT NULL,
+    ds_file_dinh_kem TEXT,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_quan_ly_nha_cong_san_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_nha_cong_san TO qwc_admin;

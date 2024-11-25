@@ -9,7 +9,9 @@
         "proxy_url_whitelist": [],
         "proxy_timeout": 60,
         "plugins": [
-            "themes"
+            "themes",
+            "alkis",
+            "config_editor"
         ],
         "input_config_path": "/srv/qwc_service/config-in",
         "qwc2_path": "/qwc2",

@@ -41,8 +41,8 @@
     </div>
     <div class="btn-group search-group">
       <div class="input-group">
-        <input id="input-search" name="txt-search" type="text" class="form-control" placeholder="{{ i18n('interface.common.ph_search') }}"
-          value="{{ search_text if search_text }}">
+        <input id="input-search" name="txt-search" type="text" class="form-control"
+          placeholder="{{ i18n('interface.common.ph_search') }}" value="{{ search_text if search_text }}">
         <button class="btn btn-search">{{ utils.render_icon('search') }}</button>
       </div>
     </div>
@@ -51,6 +51,29 @@
     {% block table %}
 
     {% endblock %}
+  </div>
+</div>
+
+<div class="modal fade" id="step1Modal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+  aria-labelledby="step1ModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {% block titleStep1Modal %}
+          {% endblock %}
+        </h5>
+        <div>
+          <button type="button" class="btn btn-step1-next">{{ utils.render_icon('floppy2-fill') }} Tiếp tục</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ utils.render_icon('x-circle') }}
+            Hủy</button>
+        </div>
+      </div>
+      <div class="modal-body my-2">
+        {% block bodyStep1Modal %}
+        {% endblock %}
+      </div>
+    </div>
   </div>
 </div>
 

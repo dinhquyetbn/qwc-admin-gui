@@ -1,2 +1,105 @@
-{% extends "templates/base_index.html" %}
+{% extends "templates/base_index_v2.html" %}
 {% block title %}{{ i18n('interface.public_building.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.public_building.new_public_building') }}{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Quản lý tài sản</li>
+        <li class="breadcrumb-item" aria-current="page">Nhà công sản</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+{% endblock %}
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
+<style>
+    /* @media (min-width: 576px) {
+        .modal-dialog {
+            max-width: 700px !important;
+        }
+    } */
+</style>
+{% endblock %}
+{% block table %}
+<ul class="nav nav-tabs w-100" id="tabNhaCongSan" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tabDuLieuChinh" data-bs-toggle="tab" data-bs-target="#tab-DuLieuChinh"
+            data-target-modal="#createTab1Modal" type="button" role="tab" aria-controls="tab-DuLieuChinh"
+            aria-selected="true">Ds nhà công sản</button>
+    </li>
+    <!-- <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tabChoPheDuyet" data-bs-toggle="tab" data-bs-target="#tab-ChoPheDuyet"
+            data-target-modal="#createTab2Modal" type="button" role="tab" aria-controls="tab-ChoPheDuyet"
+            aria-selected="false">Ds chờ phê duyệt</button>
+    </li> -->
+</ul>
+<div class="tab-content px-4 py-4">
+    <div class="tab-pane fade show active" id="tab-DuLieuChinh" role="tabpanel" aria-labelledby="tab-DuLieuChinh">
+        <table id="tableDuLieuChinh" class="display responsive">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 100px;">Mã tài sản</th>
+                    <th style="min-width: 175px;">Tên tài sản</th>
+                    <th style="min-width: 200px;">Địa chỉ</th>
+                    <th style="min-width: 175px;">Đơn vị sử dụng</th>
+                    <th style="min-width: 142px;">Diện tích (m2)</th>
+                    <th style="min-width: 100px;">Hiện trạng <br> sử dụng</th>
+                    <th>Ảnh/Văn bản</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="tab-pane fade" id="tab-ChoPheDuyet" role="tabpanel" aria-labelledby="tab-ChoPheDuyet">
+        <!-- <table id="tableChoPheDuyet" class="display responsive">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 175px;">Tên nhóm tham số</th>
+                    <th style="min-width: 100px;">Thứ tự hiển thị</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table> -->
+    </div>
+</div>
+{% endblock %}
+
+{% block titleStep1Modal %}
+Chọn danh mục phân loại tài sản
+{% endblock %}
+{% block bodyStep1Modal %}
+<div class="row">
+    <div class="col-md-12">
+        <select id="select-phan-loai-ts" class="form-control w-100"></select>
+    </div>
+</div>
+{% endblock %}
+
+{% block renderScripts %}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        // Init show modal create
+        const createButton = document.getElementById('createModal');
+        if (createButton) {
+            createButton.setAttribute('data-bs-target', '#step1Modal')
+        }
+    })
+
+    $(document).ready(function () {
+
+    })
+</script>
+{% endblock %}

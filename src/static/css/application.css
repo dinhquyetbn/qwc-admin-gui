@@ -297,7 +297,12 @@ form {
 .btn-create:hover, .btn-save:hover, .btn-delete:hover {
   color: #fff;
 }
-
+.btn-step1-next {
+  box-shadow: 1px 2px 10px 0px rgba(0, 0, 0, 0.20);
+  border-radius: 8px;
+  background: var(--Gradients-Green, linear-gradient(180deg, #63B967 0%, #4BA64F 100%));
+  color: #fff;
+}
 .btn-save {
   box-shadow: 1px 2px 10px 0px rgba(0, 0, 0, 0.20);
   border-radius: 8px;
