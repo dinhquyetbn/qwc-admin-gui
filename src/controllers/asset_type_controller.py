@@ -62,6 +62,14 @@ class AssetTypeController(ControllerV2):
             methods=["DELETE"],
         )
 
+        # delete
+        self.app.add_url_rule(
+            "/api/asset-type/type/categories/all",
+            "get_categories_all_loai_ts",
+            self.get_categories_all_loai_ts,
+            methods=["GET"],
+        )
+
     # Hàm cho danh sách tham số
     def get_data_by_page_loai_ts(self):
         session = self.session()
@@ -148,7 +156,7 @@ class AssetTypeController(ControllerV2):
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             obj.ten_loai_ts = data["ten_loai_ts"]
-            obj.ds_tham_so  = data["ds_tham_so"]
+            obj.ds_tham_so = data["ds_tham_so"]
             obj.mo_ta = data["mo_ta"]
 
             session.commit()
@@ -197,6 +205,27 @@ class AssetTypeController(ControllerV2):
             .filter_by(id=id, trang_thai_xoa=False)
             .first()
         )
+
+    def get_categories_all_loai_ts(self):
+        param_value = request.args.get("q")
+        session = self.session()
+        query = session.query(self.PBMSQuanLyPhanLoaiTaiSan).filter_by(
+            trang_thai_xoa=False
+        )
+        if param_value:
+            query = query.filter(
+                self.PBMSQuanLyPhanLoaiTaiSan.ten_nhom.ilike("%" + param_value + "%")
+            )
+        query = query.order_by(self.PBMSQuanLyPhanLoaiTaiSan.ngay_tao)
+        jsonData = [
+            {
+                "id": item.id,
+                "text": item.ten_loai_ts,
+            }
+            for item in query
+        ]
+        session.close()
+        return jsonify({"result": jsonData})
 
     def resources_for_index_query(self, search_text, session):
         pass

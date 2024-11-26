@@ -63,15 +63,17 @@
           {% block titleStep1Modal %}
           {% endblock %}
         </h5>
-        <div>
-          <button type="button" class="btn btn-step1-next">{{ utils.render_icon('floppy2-fill') }} Tiếp tục</button>
+      </div>
+      <div class="modal-body my-2">
+        <div class="d-flex">
+          {% block bodyStep1Modal %}
+          {% endblock %}
+        </div>
+        <div class="d-flex justify-content-center mt-4" style="gap: 10px;">
+          <button type="button" class="btn btn-step1-next">{{ utils.render_icon('arrow-right') }} Tiếp tục</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ utils.render_icon('x-circle') }}
             Hủy</button>
         </div>
-      </div>
-      <div class="modal-body my-2">
-        {% block bodyStep1Modal %}
-        {% endblock %}
       </div>
     </div>
   </div>
