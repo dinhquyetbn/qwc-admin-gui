@@ -136,7 +136,7 @@ class ControllerV2:
         self.PBDMDanhMucTinhThanh = self.config_models.model("pbms_dm_tinh_thanh")
         self.PBDMDanhMucQuanHuyen = self.config_models.model("pbms_dm_quan_huyen")
         self.PBDMDanhMucPhuongXa = self.config_models.model("pbms_dm_phuong_xa")
-        self.PBDMQuanLyNhaCongSan = self.config_models.model("pbms_quan_ly_dat_cong")
+        self.PBDMQuanLyDatCong = self.config_models.model("pbms_quan_ly_dat_cong")
         self.PBDMQuanLyDanhMuc = self.config_models.model("pbms_quan_ly_danh_muc")
         self.PBDMQuanLyNhaCongSan = self.config_models.model("pbms_quan_ly_nha_cong_san")
 
