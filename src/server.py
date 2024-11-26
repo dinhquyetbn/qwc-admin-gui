@@ -162,23 +162,28 @@ def load_plugins():
         app._got_first_request = True
 
 # TODO
-# @app.before_request
-# @optional_auth
-# def assert_admin_role():
-#     identity = get_identity()
-#     app.logger.debug("Access with identity %s" % identity)
-#     if not access_control.is_admin(identity):
-#         if SKIP_LOGIN:
-#             app.logger.info("Login skipped for user %s" % identity)
-#             pass  # Allow access without login
-#         else:
-#             app.logger.info("Access denied for user %s" % identity)
-#             prefix = auth_path_prefix()
-#             if identity:
-#                 # Already logged in, but not with admin role
-#                 return redirect(prefix + '/logout?url=%s' % request.url)
-#             else:
-#                 return redirect(prefix + '/login?url=%s' % request.url)
+@app.before_request
+@optional_auth
+def assert_admin_role():
+    identity = get_identity()
+    app.logger.debug("Access with identity %s" % identity)
+    print("Access with identity %s" % identity)
+    if not access_control.is_admin(identity):
+        if SKIP_LOGIN:
+            app.logger.info("Login skipped for user %s" % identity)
+            print("Login skipped for user %s" % identity)
+            pass  # Allow access without login
+        else:
+            app.logger.info("Access denied for user %s" % identity)
+            print("Access denied for user %s" % identity)
+            prefix = auth_path_prefix()
+            if identity:
+                print('LOGOUT')
+                # Already logged in, but not with admin role
+                return redirect(prefix + '/logout?url=%s' % request.url)
+            else:
+                print('LOGIN')
+                return redirect(prefix + '/login?url=%s' % request.url)
 
 
 @app.route('/logout')
