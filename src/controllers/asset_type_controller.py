@@ -207,6 +207,7 @@ class AssetTypeController(ControllerV2):
         )
 
     def get_categories_all_loai_ts(self):
+        self.setup_models()
         param_value = request.args.get("q")
         session = self.session()
         query = session.query(self.PBMSQuanLyPhanLoaiTaiSan).filter_by(
@@ -214,7 +215,7 @@ class AssetTypeController(ControllerV2):
         )
         if param_value:
             query = query.filter(
-                self.PBMSQuanLyPhanLoaiTaiSan.ten_nhom.ilike("%" + param_value + "%")
+                self.PBMSQuanLyPhanLoaiTaiSan.ten_loai_ts.ilike("%" + param_value + "%")
             )
         query = query.order_by(self.PBMSQuanLyPhanLoaiTaiSan.ngay_tao)
         jsonData = [

@@ -294,7 +294,7 @@ form {
   height: 40px;
 }
 
-.btn-create:hover, .btn-save:hover, .btn-delete:hover {
+.btn-create:hover, .btn-save:hover, .btn-delete:hover, .btn-step1-next:hover {
   color: #fff;
 }
 .btn-step1-next {

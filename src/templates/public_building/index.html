@@ -81,10 +81,12 @@
 Thêm mới dữ liệu nhà công sản
 {% endblock %}
 {% block bodyStep1Modal %}
-<div class="d-flex w-100 flex-column">
-    <p class="text-center">Vui lòng lựa chọn danh mục phân loại tài sản cho nhà công sản.</p>
-    <select id="select-phan-loai-ts" class="form-control w-100"></select>
-</div>
+<form id="dmPhanLoaiTSForm" class="row g-3 needs-validation" novalidate method="post">
+    <div class="d-flex w-100 flex-column">
+        <p class="text-center">Vui lòng lựa chọn danh mục phân loại tài sản cho nhà công sản.</p>
+        <select id="select-phan-loai-ts" class="form-control w-100" name="ten_loai_ts"></select>
+    </div>
+</form>
 {% endblock %}
 
 {% block renderScripts %}
@@ -115,7 +117,88 @@ Thêm mới dữ liệu nhà công sản
     })
 
     $(document).ready(function () {
+        // Validate lựa chọn danh mục phân loại tài sản
+        $('#dmPhanLoaiTSForm').validate({
+            rules: {
+                ten_loai_ts: {
+                    required: true
+                }
+            },
+            messages: {
+                ten_loai_ts: {
+                    required: "Vui lòng nhập chọn danh mục.",
+                }
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                if (element.hasClass('select2-hidden-accessible')) {
+                    // Insert the error message after the Select2 container
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element.next('.select2-container'));
+                } else {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').addClass(errorClass);
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').removeClass(errorClass);
+                }
+            }
+        });
 
+        $('#step1Modal .btn-save').on('click', function () {
+            if ($('#dmPhanLoaiTSForm').valid()) {
+                // Collect form data
+                // const formDataArray = $('#dmPhanLoaiTSForm').serializeArray();
+                // const formData = {};
+                // formDataArray.forEach(item => {
+                //     formData[item.name] = item.value;
+                // });
+                // let checkedThamSos = $("#jstree_ds_tham_so").jstree().get_selected(true);
+                // formData['ds_tham_so'] = checkedThamSos.filter(x => x.children.length === 0).map(x => x.id).join(',');
+                // // Make AJAX call
+                // let ajax_url = 'api/asset-type/type/create';
+                // let ajax_type = 'POST';
+                // let paramId = $('#loaiTSForm input[name="id"]').val();
+                // // Tồn tại Id thì call api update
+                // if (paramId) {
+                //     ajax_url = `api/asset-type/type/update/${paramId}`;
+                //     ajax_type = 'PUT';
+                // }
+
+                // $.ajax({
+                //     url: ajax_url, // Replace with your API endpoint
+                //     type: ajax_type,
+                //     headers: {
+                //         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                //     },
+                //     contentType: 'application/json', // Set content type to JSON
+                //     data: JSON.stringify(formData), // Convert formData to JSON string
+                //     success: function (res) {
+                //         // Handle success
+                //         toastr.success(res.message);
+                //         // Optionally, close the modal or reset the form
+                //         $('#createTab1Modal').modal('hide');
+                //         // Reload datatable
+                //         tableLoaiTS.ajax.reload(null, false);
+                //     },
+                //     error: function (err) {
+                //         // Handle error
+                //         toastr.error(err.error);
+                //     }
+                // });
+            }
+        });
     })
 </script>
 {% endblock %}

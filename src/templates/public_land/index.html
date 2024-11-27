@@ -490,8 +490,8 @@
                     headers: {
                         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
                     },
-                    // contentType: 'application/json',
-                    data: formData,
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
                     success: function (res) {
                         // Handle success
                         toastr.success(res.message);
