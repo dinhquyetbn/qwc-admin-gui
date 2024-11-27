@@ -183,9 +183,9 @@ class PublicLandController(ControllerV2):
             obj.ten_dat = data["ten_dat"]
             obj.don_vi_quan_ly_id = data["don_vi_quan_ly_id"]
             obj.hien_trang_sd_id = data["hien_trang_sd_id"]
-            obj.so_to = data["so_to"]
-            obj.so_thua = data["so_thua"]
-            obj.dien_tich = data["dien_tich"]
+            obj.so_to = int(data["so_to"]) if data.get("so_to") else None
+            obj.so_thua = int(data["so_thua"]) if data.get("so_thua") else None
+            obj.dien_tich = float(data["dien_tich"]) if data.get("dien_tich") else None
             obj.dia_chi = data["dia_chi"]
             obj.ma_px = data["ma_px"]
             obj.ten_px = data["ten_px"]
