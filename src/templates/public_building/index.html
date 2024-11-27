@@ -47,9 +47,8 @@
                     <th style="min-width: 100px;">Mã tài sản</th>
                     <th style="min-width: 175px;">Tên tài sản</th>
                     <th style="min-width: 200px;">Địa chỉ</th>
-                    <th style="min-width: 175px;">Đơn vị sử dụng</th>
-                    <th style="min-width: 142px;">Diện tích (m2)</th>
-                    <th style="min-width: 100px;">Hiện trạng <br> sử dụng</th>
+                    <th style="min-width: 142px;">Mã tờ thửa</th>
+                    <th style="min-width: 142px;">Mã tờ đất</th>
                     <th>Ảnh/Văn bản</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
                     <th class="text-center" style="min-width: 100px;">Tác vụ</th>
@@ -198,6 +197,132 @@ Thêm mới dữ liệu nhà công sản
                 //     }
                 // });
             }
+        });
+
+        const fieldDuLieuChinh = [
+            "stt",
+            "ma_ts",
+            "ten_ts",
+            "dia_chi",
+            "ma_to_thua",
+            "ma_to_dat",
+            "ds_file_dinh_kem",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        let tableDuLieuChinh = new DataTable('#tableDuLieuChinh', {
+            dom: 'rtlip',
+            ordering: true,
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            // serverSide: true,
+            searching: { regex: true },
+            pageLength: 10,
+            responsive: false,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            data: [
+                {
+                    "ma_ts": "NDCS-20224303233",
+                    "ten_ts": "Trường tiểu học An Khê",
+                    "dia_chi": "K245 Trường Chinh, phường An Khê, Thanh Khê, Đà Nẵng",
+                    "ma_to_thua": "30",
+                    "ma_to_dat": "32",
+                    "ds_file_dinh_kem": "",
+                    "ngay_tao": "25/11/2024 10:12"
+                },
+                {
+                    "ma_ts": "NDCS-20257336410",
+                    "ten_ts": "BQL chợ Nguyễn Tri Phương",
+                    "dia_chi": "KDC số 01 Nguyễn Tri Phương, phường Hòa Cường Bắc, Hải Châu, Đà Nẵng",
+                    "ma_to_thua": "33",
+                    "ma_to_dat": "64",
+                    "ds_file_dinh_kem": "",
+                    "ngay_tao": "12/10/2024 8:12"
+                }
+                , {
+                    "ma_ts": "NDCS-202573256124",
+                    "ten_ts": "Trường tiểu học Núi Thành",
+                    "dia_chi": "Số 158 Ỷ Lan Nguyên Phi, phường Hòa Cường Bắc, Hải Châu, Đà Nẵng",
+                    "ma_to_thua": "32",
+                    "ma_to_dat": "561",
+                    "ds_file_dinh_kem": "",
+                    "ngay_tao": "02/11/2024 11:12"
+                }
+                , {
+                    "ma_ts": "NDCS-20258687",
+                    "ten_ts": "Trường THPT Nguyễn Hiền",
+                    "dia_chi": "Số 61 Phan Đăng Lưu, phường Hòa Cường Nam, Hải Châu, Đà Nẵng",
+                    "ma_to_thua": "6",
+                    "ma_to_dat": "7",
+                    "ds_file_dinh_kem": "",
+                    "ngay_tao": "25/11/2024 10:12"
+                }
+            ],
+            // ajax: {
+            //     url: "api/public-land/page",
+            //     type: "POST",
+            //     contentType: 'application/json',
+            //     dataType: "json",
+            //     headers: {
+            //         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            //     },
+            //     data: function (d) {
+            //         d.search.value = $('input[name=txt-search]').val();
+            //         return JSON.stringify(d);
+            //     },
+            //     dataSrc: function (json) {
+            //         json.recordsTotal = json.result.recordsTotal;
+            //         json.recordsFiltered = json.result.recordsFiltered;
+            //         return json.result.data;
+            //     }
+            // },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                {
+                    orderable: false, targets: getIdxFieldTable(fieldDuLieuChinh,
+                        ['stt', 'ds_file_dinh_kem', 'ngay_tao', 'tac_vu'])
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDuLieuChinh, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDuLieuChinh, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'ma_ts' },
+                { data: 'ten_ts' },
+                { data: 'dia_chi' },
+                { data: 'ma_to_thua' },
+                { data: 'ma_to_dat' },
+                { data: 'ds_file_dinh_kem' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
         });
     })
 </script>
