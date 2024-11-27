@@ -465,7 +465,8 @@
                 const formDataArray = $('#duLieuChinhForm').serializeArray();
                 const formData = {};
                 formDataArray.forEach(item => {
-                    formData.append(item.name, item.value);
+                    // formData.append(item.name, item.value);
+                    formData[item.name] = item.value;
                 });
 
                 formData['ten_tp'] = $("#select-province").text();
