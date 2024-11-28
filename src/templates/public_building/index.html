@@ -18,11 +18,28 @@
 {{ super() }}
 <link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
 <style>
-    /* @media (min-width: 576px) {
-        .modal-dialog {
+    #tab-DuLieuModal .nav-link {
+        color: #7B809A;
+    }
+
+    #tab-DuLieuModal .nav-link.active {
+        color: #fff;
+        background-color: #0093D8;
+    }
+
+    #v-pills-tab {
+        border-right: 1px solid #f5f5f5;
+    }
+
+    #v-pills-tabContent .tab-pane.active {
+        display: inline-flex;
+    }
+
+    @media (min-width: 576px) {
+        #createTab1Modal .modal-dialog {
             max-width: 700px !important;
         }
-    } */
+    }
 </style>
 {% endblock %}
 {% block table %}
@@ -86,6 +103,127 @@ Thêm mới dữ liệu nhà công sản
         <select id="select-phan-loai-ts" class="form-control w-100" name="ten_loai_ts"></select>
     </div>
 </form>
+{% endblock %}
+{% block bodyCreateTab1Modal %}
+<ul class="nav nav-tabs w-100" id="tabDuLieuChinhModal" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tabDuLieuModal" data-bs-toggle="tab" data-bs-target="#tab-DuLieuModal"
+            type="button" role="tab" aria-controls="tab-DuLieuModal" aria-selected="true">Dữ liệu</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tabBanDoModal" data-bs-toggle="tab" data-bs-target="#tab-BanDoModal" type="button"
+            role="tab" aria-controls="tab-BanDoModal" aria-selected="false">Bản đồ</button>
+    </li>
+</ul>
+<div class="tab-content py-4">
+    <div class="tab-pane fade show active" id="tab-DuLieuModal" role="tabpanel" aria-labelledby="tab-DuLieuModal">
+        <form id="duLieuChinhForm" class="row g-3 needs-validation" novalidate method="post">
+            <input type="text" name="id" hidden />
+            <div class="d-flex align-items-start">
+                <div class="nav flex-column nav-pills me-3 pe-2" id="v-pills-tab" role="tablist"
+                    aria-orientation="vertical">
+                    <button class="nav-link text-start active" id="thamChieu-tab" data-bs-toggle="pill"
+                        data-bs-target="#thamChieu" type="button" role="tab" aria-controls="thamChieu"
+                        aria-selected="true">Tham chiếu</button>
+                    <button class="nav-link text-start" id="viTri-tab" data-bs-toggle="pill" data-bs-target="#viTri"
+                        type="button" role="tab" aria-controls="viTri" aria-selected="false">Vị trí</button>
+                    <!-- <button class="nav-link text-start" id="moTaVatLy-tab" data-bs-toggle="pill"
+                        data-bs-target="#moTaVatLy" type="button" role="tab" aria-controls="moTaVatLy"
+                        aria-selected="false">Mô tả vật lý</button>
+                    <button class="nav-link text-start" id="phapLy-tab" data-bs-toggle="pill" data-bs-target="#phapLy"
+                        type="button" role="tab" aria-controls="phapLy" aria-selected="false">Pháp lý</button> -->
+                    <button class="nav-link text-start" id="thongTinThua-tab" data-bs-toggle="pill"
+                        data-bs-target="#thongTinThua" type="button" role="tab" aria-controls="thongTinThua"
+                        aria-selected="false">Thông tin thửa</button>
+                    <button class="nav-link text-start" id="tinhTrangSuDung-tab" data-bs-toggle="pill"
+                        data-bs-target="#tinhTrangSuDung" type="button" role="tab" aria-controls="tinhTrangSuDung"
+                        aria-selected="false">Tình trạng sử dụng</button>
+                </div>
+                <div class="tab-content row w-100" id="v-pills-tabContent">
+                    <div class="tab-pane row fade show active" id="thamChieu" role="tabpanel"
+                        aria-labelledby="thamChieu-tab">
+                        <div class="col-md-6 mt-3">
+                            <label for="maTaiSan" class="form-label">Mã tài sản:<span class="required">*</span></label>
+                            <input type="text" class="form-control" name="maTaiSan" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="tenTaiSan" class="form-label">Tên tài sản:<span
+                                    class="required">*</span></label>
+                            <input type="text" class="form-control" name="tenTaiSan" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="maCoSo" class="form-label">Mã cơ sở:<span class="required">*</span></label>
+                            <input type="text" class="form-control" name="maCoSo" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="tenCoQuan" class="form-label">Tên cơ quan:<span
+                                    class="required">*</span></label>
+                            <input type="text" class="form-control" name="tenCoQuan" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="loaiTaiSan" class="form-label">Loại tài sản:<span
+                                    class="required">*</span></label>
+                            <input type="text" class="form-control" name="loaiTaiSan" required>
+                        </div>
+                    </div>
+                    <div class="tab-pane row fade" id="viTri" role="tabpanel" aria-labelledby="viTri-tab">
+                        <div class="col-md-6 mt-3">
+                            <label for="tinhTP" class="form-label">Tỉnh/TP:<span class="required">*</span></label>
+                            <input type="text" class="form-control" name="tinhTP" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="quanHuyen" class="form-label">Quận/Huyện:<span class="required">*</span></label>
+                            <input type="text" class="form-control" name="quanHuyen" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="phuongXa" class="form-label">Phường/Xã:<span class="required">*</span></label>
+                            <input type="text" class="form-control" name="phuongXa" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="diaDiem" class="form-label">Địa điểm:<span class="required">*</span></label>
+                            <input type="text" class="form-control" name="diaDiem" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="toaDoDiaLy" class="form-label">Tọa độ địa lý:<span
+                                    class="required">*</span></label>
+                            <input type="text" class="form-control" name="toaDoDiaLy" required>
+                        </div>
+                    </div>
+                    <div class="tab-pane row fade" id="moTaVatLy" role="tabpanel" aria-labelledby="moTaVatLy-tab">
+
+                    </div>
+                    <div class="tab-pane row fade" id="thongTinThua" role="tabpanel" aria-labelledby="thongTinThua-tab">
+                        <div class="col-md-6 mt-3">
+                            <label for="maSoTo" class="form-label">Mã số tờ:</label>
+                            <input type="number" class="form-control" name="maSoTo" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="maSoThua" class="form-label">Mã số thửa:</label>
+                            <input type="number" class="form-control" name="maSoThua" required>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label for="fileDinhKems" class="form-label">Ảnh/Văn bản:</label>
+                            <input type="file" class="form-control" name="fileDinhKems" required>
+                        </div>
+                    </div>
+                    <div class="tab-pane row fade" id="thongTinThua" role="tabpanel" aria-labelledby="thongTinThua-tab">
+
+                    </div>
+                    <div class="tab-pane row fade" id="tinhTrangSuDung" role="tabpanel"
+                        aria-labelledby="tinhTrangSuDung-tab">
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="tab-BanDoModal" role="tabpanel" aria-labelledby="tab-BanDoModal">
+        <iframe
+            src="/map_viewer?t=DaNang_PBM_Shpfile&l=edit_polygons%2Cedit_points%2Cedit_lines%2CNHA_CS_METADATA%2CDAT_CS_METADATA%2COpenStreetMap&bl=&c=12043404%2C1810885&s=20000"
+            width="100%" height="600px" frameborder="0" allowfullscreen
+            sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms allow-popups allow-pointer-lock allow-popups-to-escape-sandbox"></iframe>
+    </div>
+</div>
 {% endblock %}
 
 {% block renderScripts %}
@@ -155,47 +293,10 @@ Thêm mới dữ liệu nhà công sản
             }
         });
 
-        $('#step1Modal .btn-save').on('click', function () {
+        $('#step1Modal .btn-step1-next').on('click', function () {
             if ($('#dmPhanLoaiTSForm').valid()) {
-                // Collect form data
-                // const formDataArray = $('#dmPhanLoaiTSForm').serializeArray();
-                // const formData = {};
-                // formDataArray.forEach(item => {
-                //     formData[item.name] = item.value;
-                // });
-                // let checkedThamSos = $("#jstree_ds_tham_so").jstree().get_selected(true);
-                // formData['ds_tham_so'] = checkedThamSos.filter(x => x.children.length === 0).map(x => x.id).join(',');
-                // // Make AJAX call
-                // let ajax_url = 'api/asset-type/type/create';
-                // let ajax_type = 'POST';
-                // let paramId = $('#loaiTSForm input[name="id"]').val();
-                // // Tồn tại Id thì call api update
-                // if (paramId) {
-                //     ajax_url = `api/asset-type/type/update/${paramId}`;
-                //     ajax_type = 'PUT';
-                // }
-
-                // $.ajax({
-                //     url: ajax_url, // Replace with your API endpoint
-                //     type: ajax_type,
-                //     headers: {
-                //         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
-                //     },
-                //     contentType: 'application/json', // Set content type to JSON
-                //     data: JSON.stringify(formData), // Convert formData to JSON string
-                //     success: function (res) {
-                //         // Handle success
-                //         toastr.success(res.message);
-                //         // Optionally, close the modal or reset the form
-                //         $('#createTab1Modal').modal('hide');
-                //         // Reload datatable
-                //         tableLoaiTS.ajax.reload(null, false);
-                //     },
-                //     error: function (err) {
-                //         // Handle error
-                //         toastr.error(err.error);
-                //     }
-                // });
+                $('#step1Modal').modal('hide');
+                $('#createTab1Modal').modal('show');
             }
         });
 
