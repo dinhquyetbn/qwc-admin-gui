@@ -338,6 +338,13 @@ Thêm mới dữ liệu nhà công sản
             console.log(itemSelected);
         });
 
+        $('#chonTaiSanCoSanModal').on('shown.bs.modal', function () {
+        });
+
+        $('#chonTaiSanCoSanModal').on('hide.bs.modal', function () {
+            $('#createTab1Modal').modal('show');
+        });
+
         $('#createTab1Modal').on('shown.bs.modal', function () {
             let id = $('#createTab1Modal input[name="id"]').val();
             if (!id) {
