@@ -60,6 +60,13 @@ class PublicBuildingController(ControllerV2):
             methods=["DELETE"],
         )
 
+        self.app.add_url_rule(
+            "/api/public-building/categories/all",
+            "get_categories_public_building",
+            self.get_categories_public_building,
+            methods=["GET"],
+        )
+
     # Hàm cho danh sách tham số
     def get_data_by_page_public_building(self):
         session = self.session()
@@ -150,3 +157,70 @@ class PublicBuildingController(ControllerV2):
 
     def remove_item_public_building(self):
         pass
+
+    def get_categories_public_building(self):
+        # self.setup_models()
+        # param_value = request.args.get("q")
+        # session = self.session()
+        # query = session.query(self.PBMSQuanLyPhanLoaiTaiSan).filter_by(
+        #     trang_thai_xoa=False
+        # )
+        # if param_value:
+        #     query = query.filter(
+        #         self.PBMSQuanLyPhanLoaiTaiSan.ten_loai_ts.ilike("%" + param_value + "%")
+        #     )
+        # query = query.order_by(self.PBMSQuanLyPhanLoaiTaiSan.ngay_tao)
+        # jsonData = [
+        #     {
+        #         "id": item.id,
+        #         "text": item.ten_loai_ts,
+        #     }
+        #     for item in query
+        # ]
+        # session.close()
+        # return jsonify({"result": jsonData})
+
+        jsonData = [
+            {
+                "id": "NDCS-20224303233",
+                "text": "NDCS-20224303233",
+                "ten_ts": "Trường tiểu học An Khê",
+                "dia_chi": "K245 Trường Chinh, phường An Khê, Thanh Khê, Đà Nẵng",
+                "ma_to_thua": "30",
+                "ma_to_dat": "32",
+                "ds_file_dinh_kem": "",
+                "ngay_tao": "25/11/2024 10:12",
+            },
+            {
+                "id": "NDCS-20257336410",
+                "text": "NDCS-20257336410",
+                "ten_ts": "BQL chợ Nguyễn Tri Phương",
+                "dia_chi": "KDC số 01 Nguyễn Tri Phương, phường Hòa Cường Bắc, Hải Châu, Đà Nẵng",
+                "ma_to_thua": "33",
+                "ma_to_dat": "64",
+                "ds_file_dinh_kem": "",
+                "ngay_tao": "12/10/2024 8:12",
+            },
+            {
+                "id": "NDCS-202573256124",
+                "text": "NDCS-202573256124",
+                "ten_ts": "Trường tiểu học Núi Thành",
+                "dia_chi": "Số 158 Ỷ Lan Nguyên Phi, phường Hòa Cường Bắc, Hải Châu, Đà Nẵng",
+                "ma_to_thua": "32",
+                "ma_to_dat": "561",
+                "ds_file_dinh_kem": "",
+                "ngay_tao": "02/11/2024 11:12",
+            },
+            {
+                "id": "NDCS-20258687",
+                "text": "NDCS-20258687",
+                "ten_ts": "Trường THPT Nguyễn Hiền",
+                "dia_chi": "Số 61 Phan Đăng Lưu, phường Hòa Cường Nam, Hải Châu, Đà Nẵng",
+                "ma_to_thua": "6",
+                "ma_to_dat": "7",
+                "ds_file_dinh_kem": "",
+                "ngay_tao": "25/11/2024 10:12",
+            },
+        ]
+
+        return jsonify({"result": jsonData})

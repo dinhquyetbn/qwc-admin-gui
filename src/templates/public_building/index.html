@@ -35,6 +35,11 @@
         display: inline-flex;
     }
 
+    #btn-DuLieuTaiSan {
+        color: blue;
+        text-decoration: underline;
+    }
+
     @media (min-width: 576px) {
         #createTab1Modal .modal-dialog {
             max-width: 700px !important;
@@ -92,7 +97,38 @@
     </div>
 </div>
 {% endblock %}
-
+{% block addNewModal %}
+<div class="modal fade" id="chonTaiSanCoSanModal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+    aria-labelledby="chonTaiSanCoSanModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Chọn mã tài sản có sẵn
+                </h5>
+            </div>
+            <div class="modal-body my-2">
+                <div class="d-flex justify-content-center">
+                    <form id="dmPhanLoaiTSForm" class="row g-3 needs-validation" novalidate method="post">
+                        <div class="d-flex w-100 flex-column">
+                            <p class="text-center">Vui lòng lựa chọn mã tài sản có sẵn trong hệ thống.</p>
+                            <select id="select-maTaiSan" class="form-control w-100" name="selectMaTaiSan"></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="d-flex m-4" id="select-content-detail"></div>
+                <div class="d-flex justify-content-center mt-4" style="gap: 10px;">
+                    <button type="button" class="btn btn-maTaiSan-next">{{ utils.render_icon('arrow-right') }} Tiếp
+                        tục</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{
+                        utils.render_icon('x-circle') }}
+                        Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 {% block titleStep1Modal %}
 Thêm mới dữ liệu nhà công sản
 {% endblock %}
@@ -144,7 +180,12 @@ Thêm mới dữ liệu nhà công sản
                         aria-labelledby="thamChieu-tab">
                         <div class="col-md-6 mt-3">
                             <label for="maTaiSan" class="form-label">Mã tài sản:<span class="required">*</span></label>
-                            <input type="text" class="form-control" name="maTaiSan" required>
+                            <input type="text" class="form-control" name="maTaiSan" required disabled>
+                            <span class="w-100 mt-1 m-0">
+                                <a id="btn-DuLieuTaiSan" data-bs-toggle="modal" data-bs-target="#chonTaiSanCoSanModal"
+                                    role="button">+ Chọn dữ
+                                    liệu tài sản có sẵn</a>
+                            </span>
                         </div>
                         <div class="col-md-6 mt-3">
                             <label for="tenTaiSan" class="form-label">Tên tài sản:<span
@@ -237,6 +278,7 @@ Thêm mới dữ liệu nhà công sản
 
         $("#select-phan-loai-ts").select2({
             placeholder: 'Chọn danh mục phân loại tài sản...',
+            allowClear: true,
             minimumInputLength: 0, // Number of characters before AJAX request is made
             dropdownParent: $('#step1Modal'),
             ajax: {
@@ -249,6 +291,63 @@ Thêm mới dữ liệu nhà công sản
                     };
                 },
                 cache: true
+            }
+        });
+
+        // TODO
+        let listMaTaiSan = [];
+        $("#select-maTaiSan").select2({
+            placeholder: 'Chọn mã tài sản...',
+            allowClear: true,
+            minimumInputLength: 0, // Number of characters before AJAX request is made
+            dropdownParent: $('#chonTaiSanCoSanModal'),
+            ajax: {
+                url: 'api/public-building/categories/all', // API endpoint URL
+                dataType: 'json',
+                delay: 250,
+                processResults: function (data) {
+                    listMaTaiSan = data;
+                    return {
+                        results: data.result
+                    };
+                },
+                cache: true
+            }
+        });
+
+        // Event listener for change event
+        $("#select-maTaiSan").on('change', function () {
+            var selectedValue = $(this).val();
+            // Add any additional logic you want to execute on change
+            let itemSelected = listMaTaiSan['result'].filter(x => x.id === selectedValue);
+            const selectMaTaiSan = document.getElementById("select-content-detail");
+            if (selectedValue) {
+                selectMaTaiSan.innerHTML = `
+                    <ul>
+                        <li>Mã tài sản: ${itemSelected[0].id}</li>
+                        <li>Tên tài sản: ${itemSelected[0].ten_ts}</li>
+                        <li>Địa chỉ: ${itemSelected[0].dia_chi}</li>
+                        <li>Mã số tờ: ${itemSelected[0].ma_to_thua}</li>
+                        <li>Mã số thửa: ${itemSelected[0].ma_to_dat}</li>
+                    </ul>
+                `;
+            } else {
+                selectMaTaiSan.innerHTML = '';
+            }
+
+            console.log(itemSelected);
+        });
+
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            let id = $('#createTab1Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+                // Nếu là thêm mới thì tự động gợi ý mã tài sản
+                const timestamp = Math.floor(Date.now() / 1000);
+                let valMaTaiSan = `NDCS-${new Date().getFullYear()}${timestamp}`;
+                $('#createTab1Modal input[name="maTaiSan"]').val(valMaTaiSan);
+            } else {
+
             }
         });
     })
