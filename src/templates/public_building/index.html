@@ -28,6 +28,7 @@
     }
 
     #v-pills-tab {
+        min-width: 125px;
         border-right: 1px solid #f5f5f5;
     }
 
@@ -38,6 +39,10 @@
     #btn-DuLieuTaiSan {
         color: blue;
         text-decoration: underline;
+    }
+
+    .select2-container {
+        width: 100% !important;
     }
 
     @media (min-width: 576px) {
@@ -69,8 +74,8 @@
                     <th style="min-width: 100px;">Mã tài sản</th>
                     <th style="min-width: 175px;">Tên tài sản</th>
                     <th style="min-width: 200px;">Địa chỉ</th>
-                    <th style="min-width: 142px;">Mã tờ thửa</th>
-                    <th style="min-width: 142px;">Mã tờ đất</th>
+                    <th style="min-width: 142px;">Số tờ</th>
+                    <th style="min-width: 142px;">Số thửa</th>
                     <th>Ảnh/Văn bản</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
                     <th class="text-center" style="min-width: 100px;">Tác vụ</th>
@@ -158,25 +163,25 @@ Thêm mới dữ liệu nhà công sản
             <div class="d-flex align-items-start">
                 <div class="nav flex-column nav-pills me-3 pe-2" id="v-pills-tab" role="tablist"
                     aria-orientation="vertical">
-                    <button class="nav-link text-start active" id="thamChieu-tab" data-bs-toggle="pill"
+                    <!-- <button class="nav-link text-start active" id="thamChieu-tab" data-bs-toggle="pill"
                         data-bs-target="#thamChieu" type="button" role="tab" aria-controls="thamChieu"
                         aria-selected="true">Tham chiếu</button>
                     <button class="nav-link text-start" id="viTri-tab" data-bs-toggle="pill" data-bs-target="#viTri"
-                        type="button" role="tab" aria-controls="viTri" aria-selected="false">Vị trí</button>
+                        type="button" role="tab" aria-controls="viTri" aria-selected="false">Vị trí</button> -->
                     <!-- <button class="nav-link text-start" id="moTaVatLy-tab" data-bs-toggle="pill"
                         data-bs-target="#moTaVatLy" type="button" role="tab" aria-controls="moTaVatLy"
                         aria-selected="false">Mô tả vật lý</button>
                     <button class="nav-link text-start" id="phapLy-tab" data-bs-toggle="pill" data-bs-target="#phapLy"
                         type="button" role="tab" aria-controls="phapLy" aria-selected="false">Pháp lý</button> -->
-                    <button class="nav-link text-start" id="thongTinThua-tab" data-bs-toggle="pill"
+                    <!-- <button class="nav-link text-start" id="thongTinThua-tab" data-bs-toggle="pill"
                         data-bs-target="#thongTinThua" type="button" role="tab" aria-controls="thongTinThua"
                         aria-selected="false">Thông tin thửa</button>
                     <button class="nav-link text-start" id="tinhTrangSuDung-tab" data-bs-toggle="pill"
                         data-bs-target="#tinhTrangSuDung" type="button" role="tab" aria-controls="tinhTrangSuDung"
-                        aria-selected="false">Tình trạng sử dụng</button>
+                        aria-selected="false">Tình trạng sử dụng</button> -->
                 </div>
-                <div class="tab-content row w-100" id="v-pills-tabContent">
-                    <div class="tab-pane row fade show active" id="thamChieu" role="tabpanel"
+                <div class="tab-content tab-validate row w-100" id="v-pills-tabContent">
+                    <!-- <div class="tab-pane row fade show active" id="thamChieu" role="tabpanel"
                         aria-labelledby="thamChieu-tab">
                         <div class="col-md-6 mt-3">
                             <label for="maTaiSan" class="form-label">Mã tài sản:<span class="required">*</span></label>
@@ -253,7 +258,7 @@ Thêm mới dữ liệu nhà công sản
                     <div class="tab-pane row fade" id="tinhTrangSuDung" role="tabpanel"
                         aria-labelledby="tinhTrangSuDung-tab">
 
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </form>
@@ -347,19 +352,24 @@ Thêm mới dữ liệu nhà công sản
 
         $('#createTab1Modal').on('shown.bs.modal', function () {
             let id = $('#createTab1Modal input[name="id"]').val();
+
             if (!id) {
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
                 // Nếu là thêm mới thì tự động gợi ý mã tài sản
                 const timestamp = Math.floor(Date.now() / 1000);
                 let valMaTaiSan = `NDCS-${new Date().getFullYear()}${timestamp}`;
-                $('#createTab1Modal input[name="maTaiSan"]').val(valMaTaiSan);
+                $('#createTab1Modal input[name="ma_tai_san"]').val(valMaTaiSan);
             } else {
 
             }
+
+            renderSelectAddress();
+            renderFormatDate();
         });
     })
 
     $(document).ready(function () {
+        let globalParams = {};
         // Validate lựa chọn danh mục phân loại tài sản
         $('#dmPhanLoaiTSForm').validate({
             rules: {
@@ -401,8 +411,63 @@ Thêm mới dữ liệu nhà công sản
 
         $('#step1Modal .btn-step1-next').on('click', function () {
             if ($('#dmPhanLoaiTSForm').valid()) {
-                $('#step1Modal').modal('hide');
-                $('#createTab1Modal').modal('show');
+                const id = $('#select-phan-loai-ts').val();
+                // Get all param
+                $.ajax({
+                    url: `/api/asset-type/type/${id}/param`, // Replace with your API endpoint
+                    type: 'GET',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Render UI
+                        if (res.result) {
+                            // Gán lại cho biển global
+                            globalParams = res.result.params;
+
+                            const params = res.result.params.reduce((acc, current) => {
+                                const x = acc.find(item => item.ten_nhom_tham_so === current.ten_nhom_tham_so);
+                                if (!x) {
+                                    return acc.concat([{ ten_nhom_tham_so: current.ten_nhom_tham_so, items: [current] }]);
+                                } else {
+                                    x.items.push(current);
+                                    return acc;
+                                }
+                            }, []);
+
+                            let subjectTAB = '';
+                            let contentTAB = '';
+                            params.forEach((element, index) => {
+                                let guid = generateRandomString();
+                                let active = index === 0 ? 'show active' : '';
+                                // RENDER TAB
+                                subjectTAB += `<button class="nav-link text-start ${active}" id="${guid}-tab" data-bs-toggle="pill"
+                        data-bs-target="#${guid}" type="button" role="tab" aria-controls="${guid}"
+                        aria-selected="${index === 0}">${element.ten_nhom_tham_so}</button>`;
+                                // RENDER CONTENT
+                                contentTAB += `<div class="tab-pane row fade ${active}" id="${guid}" role="tabpanel"
+                        aria-labelledby="${guid}-tab">`;
+                                element.items.forEach((par, index) => {
+                                    contentTAB += renderUIControl(par, res.result.id, res.result.ten_loai_ts);
+                                });
+                                contentTAB += `</div>`
+                            });
+
+                            $('#v-pills-tab')[0].innerHTML = subjectTAB;
+                            $('#v-pills-tabContent')[0].innerHTML = contentTAB;
+                        }
+
+                        $('#step1Modal').modal('hide');
+                        $('#createTab1Modal').modal('show');
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                    }
+                });
+
+            } else {
+                toastr.error('Vui lòng nhập đầy đủ trường bắt buộc.');
             }
         });
 
@@ -425,69 +490,31 @@ Thêm mới dữ liệu nhà công sản
             scrollX: true,
             scrollCollapse: true,
             processing: true,
-            // serverSide: true,
+            serverSide: true,
             searching: { regex: true },
             pageLength: 10,
             responsive: false,
             pagingType: "simple_numbers",
             language: PBMSLang,
             order: [],
-            data: [
-                {
-                    "ma_ts": "NDCS-20224303233",
-                    "ten_ts": "Trường tiểu học An Khê",
-                    "dia_chi": "K245 Trường Chinh, phường An Khê, Thanh Khê, Đà Nẵng",
-                    "ma_to_thua": "30",
-                    "ma_to_dat": "32",
-                    "ds_file_dinh_kem": "",
-                    "ngay_tao": "25/11/2024 10:12"
+            ajax: {
+                url: "api/public-building/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
                 },
-                {
-                    "ma_ts": "NDCS-20257336410",
-                    "ten_ts": "BQL chợ Nguyễn Tri Phương",
-                    "dia_chi": "KDC số 01 Nguyễn Tri Phương, phường Hòa Cường Bắc, Hải Châu, Đà Nẵng",
-                    "ma_to_thua": "33",
-                    "ma_to_dat": "64",
-                    "ds_file_dinh_kem": "",
-                    "ngay_tao": "12/10/2024 8:12"
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
                 }
-                , {
-                    "ma_ts": "NDCS-202573256124",
-                    "ten_ts": "Trường tiểu học Núi Thành",
-                    "dia_chi": "Số 158 Ỷ Lan Nguyên Phi, phường Hòa Cường Bắc, Hải Châu, Đà Nẵng",
-                    "ma_to_thua": "32",
-                    "ma_to_dat": "561",
-                    "ds_file_dinh_kem": "",
-                    "ngay_tao": "02/11/2024 11:12"
-                }
-                , {
-                    "ma_ts": "NDCS-20258687",
-                    "ten_ts": "Trường THPT Nguyễn Hiền",
-                    "dia_chi": "Số 61 Phan Đăng Lưu, phường Hòa Cường Nam, Hải Châu, Đà Nẵng",
-                    "ma_to_thua": "6",
-                    "ma_to_dat": "7",
-                    "ds_file_dinh_kem": "",
-                    "ngay_tao": "25/11/2024 10:12"
-                }
-            ],
-            // ajax: {
-            //     url: "api/public-land/page",
-            //     type: "POST",
-            //     contentType: 'application/json',
-            //     dataType: "json",
-            //     headers: {
-            //         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
-            //     },
-            //     data: function (d) {
-            //         d.search.value = $('input[name=txt-search]').val();
-            //         return JSON.stringify(d);
-            //     },
-            //     dataSrc: function (json) {
-            //         json.recordsTotal = json.result.recordsTotal;
-            //         json.recordsFiltered = json.result.recordsFiltered;
-            //         return json.result.data;
-            //     }
-            // },
+            },
             initComplete: function () {
 
             },
@@ -531,6 +558,294 @@ Thêm mới dữ liệu nhà công sản
                 { className: 'noVis' },
             ]
         });
+
+        $('#duLieuChinhForm').validate({
+            rules: {
+                ma_tai_san: {
+                    required: true,
+                },
+                ten_tai_san: {
+                    required: true,
+                },
+                so_to: {
+                    required: true,
+                },
+                so_thua: {
+                    required: true,
+                },
+                dia_chi: {
+                    required: true,
+                    maxlength: 500
+                },
+                ma_px: {
+                    required: true,
+                },
+                ma_qh: {
+                    required: true,
+                },
+                ma_tp: {
+                    required: true,
+                }
+            },
+            messages: {
+                ma_tai_san: {
+                    required: "Vui lòng nhập mã tài sản.",
+                },
+                ten_tai_san: {
+                    required: "Vui lòng nhập tên tài sản.",
+                },
+                so_to: {
+                    required: "Vui lòng nhập số tờ.",
+                },
+                so_thua: {
+                    required: "Vui lòng nhập số thửa.",
+                },
+                dia_chi: {
+                    required: "Vui lòng nhập địa chỉ.",
+                    maxlength: "Tên nhóm tham số có độ dài tối đa 500 kí tự."
+                },
+                ma_px: {
+                    required: "Vui lòng chọn Phường/Xã.",
+                },
+                ma_qh: {
+                    required: "Vui lòng chọn Quận/Huyện.",
+                },
+                ma_tp: {
+                    required: "Vui lòng chọn Tỉnh/TP.",
+                },
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                if (element.hasClass('select2-hidden-accessible')) {
+                    // Insert the error message after the Select2 container
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element.next('.select2-container'));
+                } else {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').addClass(errorClass);
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').removeClass(errorClass);
+                }
+            }
+        });
+
+        // Tạo mới loại tài sản
+        $('#createTab1Modal .btn-save').on('click', function () {
+            if ($('#duLieuChinhForm').valid()) {
+                debugger;
+                // Collect form data
+                const formData = new FormData($('#duLieuChinhForm')[0]);
+                // Gán lại giá trị
+                formData.append('ma_tai_san', $('input[name="ma_tai_san"]').val());
+                formData.append('phan_loai_tai_san_id', $('select[name="phan_loai_tai_san_id"]').val());
+                // Truyền lại danh sách param
+                formData.append('body_params', JSON.stringify(globalParams));
+                formData.append('ten_tp', $("#select-province").text());
+                formData.append('ten_qh', $("#select-district").text());
+                formData.append('ten_px', $("#select-ward").text());
+
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}:`, value); // Hiển thị key và giá trị
+                }
+
+                // Make AJAX call
+                let ajax_url = 'api/public-building/create';
+                let ajax_type = 'POST';
+                let paramId = $('#duLieuChinhForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/public-building/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: false, // Set content type to false for FormData
+                    processData: false, // Prevent jQuery from setting the Content-Type header
+                    data: formData, // Use FormData directly
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableDuLieuChinh.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            }
+        });
     })
+
+    function generateRandomString(length = 8) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+    }
+
+    function renderUIControl(obj, idTS, tenLoaiTS) {
+        let content = '<div class="col-md-6 mt-3">';
+        if (obj.ma_truong === 'ma_tai_san') {
+            content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <input type="text" class="form-control" name="${obj.ma_truong}" required disabled>
+                `;
+            // <span class="w-100 mt-1 m-0">
+            //     <a id="btn-DuLieuTaiSan" data-bs-toggle="modal" data-bs-target="#chonTaiSanCoSanModal"
+            //         role="button">+ Chọn dữ
+            //         liệu tài sản có sẵn</a>
+            // </span>
+        } else if (obj.ma_truong === 'phan_loai_tai_san_id') {
+            content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <select class="form-control" name="${obj.ma_truong}" disabled>
+                        <option value="${idTS}">${tenLoaiTS}</option>
+                    </select>
+                `;
+        } else if (obj.ma_truong === 'ma_tp') {
+            content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <select id="select-province" class="form-control w-100" name="ma_tp"></select>
+                `;
+        } else if (obj.ma_truong === 'ma_qh') {
+            content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <select id="select-district" class="form-control w-100" name="ma_qh"></select>
+                `;
+        } else if (obj.ma_truong === 'ma_px') {
+            content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <select id="select-ward" class="form-control w-100" name="ma_px"></select>
+                `;
+        } else {
+            if (obj.kieu_du_lieu === 'string') {
+                content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <input type="text" class="form-control" name="${obj.ma_truong}">
+                `;
+            } else if (obj.kieu_du_lieu === 'textarea') {
+                content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <textarea type="text" class="form-control" rows="3" name="${obj.ma_truong}"></textarea>
+                `;
+            } else if (obj.kieu_du_lieu === 'integer') {
+                content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <input type="number" class="form-control" name="${obj.ma_truong}">
+                `;
+            } else if (obj.kieu_du_lieu === 'float') {
+                content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <input type="number" class="form-control" name="${obj.ma_truong}">
+                `;
+            } else if (obj.kieu_du_lieu === 'date') {
+                content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <input id="${obj.ma_truong}" data-type="date" type="text" placeholder="dd/MM/yyyy" class="form-control" name="${obj.ma_truong}">
+                `;
+            } else if (obj.kieu_du_lieu === 'file') {
+                content += `
+                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
+                    <input type="file" class="form-control" name="${obj.ma_truong}" mulptile>
+                `;
+            }
+        }
+        content += '</div>';
+        return content;
+    }
+
+    function renderSelectAddress() {
+        $("#select-province").select2({
+            placeholder: 'Chọn Tỉnh/TP...',
+            minimumInputLength: 0, // Number of characters before AJAX request is made
+            dropdownParent: $('#createTab1Modal'),
+            ajax: {
+                url: 'api/categories/province', // API endpoint URL
+                dataType: 'json',
+                delay: 250,
+                processResults: function (data) {
+                    return {
+                        results: data.result
+                    };
+                },
+                cache: true
+            }
+        });
+
+        $('#select-province').on('select2:select', function (e) {
+            // Do something
+            let ma_tp = e.target.value;
+            $("#select-district").select2({
+                placeholder: 'Chọn Quận Huyện...',
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: `api/categories/${ma_tp}/district`, // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+        });
+        $('#select-district').on('select2:select', function (e) {
+            // Do something
+            let ma_qh = e.target.value;
+            $("#select-ward").select2({
+                placeholder: 'Chọn Phường Xã...',
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: `api/categories/48/${ma_qh}/ward`, // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+        });
+        $("#select-district").select2();
+        $("#select-ward").select2();
+    }
+
+    function renderFormatDate() {
+        $('input[data-type="date"]').each(function () {
+            $(this).datepicker({
+                changeMonth: true,
+                changeYear: true
+            });
+            $(this).datepicker("option", "dateFormat", 'dd/mm/yy');
+        });
+    }
 </script>
 {% endblock %}

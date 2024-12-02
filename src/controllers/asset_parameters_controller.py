@@ -464,7 +464,7 @@ class AssetParametersController(ControllerV2):
             obj = {
                 "id": itemGroup.id,
                 "state": {"disabled": len(dsParam) == 0},
-                "text": f"{itemGroup.ten_nhom} ({len(dsParam)})",
+                "text": f"{itemGroup.ten_nhom} ({self.getLoaiTS(itemGroup.loai_ts)}) ({len(dsParam)})",
                 "children": dsParam,
             }
             jsonData.append(obj)
@@ -501,10 +501,12 @@ class AssetParametersController(ControllerV2):
             return None
 
     def getTypeColumnForTable(self, type):
-        if type == "string" or type == "file":
+        if type == "string" or type == "file" or type == "textarea":
             return "TEXT"
-        elif type == "number":
+        elif type == "integer":
             return "INTEGER"
+        elif type == "float":
+            return "FLOAT"
         elif type == "date":
             return "DATE"
 

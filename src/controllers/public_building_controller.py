@@ -1,4 +1,6 @@
+from datetime import datetime, timezone
 import os
+import uuid
 
 from flask import json, jsonify, request
 
@@ -152,8 +154,68 @@ class PublicBuildingController(ControllerV2):
     def get_by_id_public_building(self):
         pass
 
-    def create_or_update_item_public_building(self):
-        pass
+    def create_or_update_item_public_building(self, id=None):
+        try:
+            # Parse JSON data from the request
+            data = request.form
+            if not data:
+                return jsonify({"error": "Dữ liệu không hợp lệ."}), 400
+
+            # create and commit
+            session = self.session()
+
+            if id is None:
+                # create new
+                obj = self.PBDMQuanLyNhaCongSan()
+                obj.id = str(uuid.uuid4())
+                # Từ số tờ, số thửa => tai_san_id
+                checkSoTo = data.get('so_to')
+                checkSoThua = data.get('so_thua')
+                if checkSoTo and checkSoThua:
+                    obj.tai_san_id = str(uuid.uuid4())
+                # obj.nguoi_tao = userLogin.gext('id') or None
+                obj.ngay_tao = datetime.now(timezone.utc)
+                session.add(obj)
+            else:
+                # update existing
+                obj = self.find_resource(id, session)
+                if obj is None:
+                    return jsonify({"error": "Không tìm thấy bản ghi."}), 401
+                obj.ngay_sua = datetime.now(timezone.utc)
+
+            # update value tai_san_id
+            obj.tai_san_id = self.getTaiSanIdBySoToAndSoThua(session, data.get('so_to'), data.get('so_thua'))
+            print(f"TS: {obj.tai_san_id}")
+            # Lấy dữ liệu tham số
+            dsParamInDB = json.loads(data["body_params"])
+            # Gán lại các giá trị vào bảng dữ liệu
+            for item in dsParamInDB:
+                if item['kieu_du_lieu'] == "string" or item['kieu_du_lieu'] == "textarea":
+                    setattr(obj, item['ma_truong'], data.get(item['ma_truong']))
+
+                elif item['kieu_du_lieu'] == "integer":
+                    setattr(obj, item['ma_truong'], int(data.get(item['ma_truong'])) if data.get(item['ma_truong']) and data.get(item['ma_truong']) != '' else None)
+
+                elif item['kieu_du_lieu'] == "float":
+                    setattr(obj, item['ma_truong'], float(data.get(item['ma_truong'])) if data.get(item['ma_truong']) and data.get(item['ma_truong']) != '' else None)
+
+                elif item['kieu_du_lieu'] == "date":
+                    pass
+
+                elif item['kieu_du_lieu'] == "file":
+                    pass
+
+            # for key, value in data.items():
+            #     objField = dsParamInDB
+            #     setattr(obj, key, value)
+
+            session.commit()
+            session.close()
+            # Return a success response
+            return jsonify({"message": "Cập nhật dữ liệu thành công."}), 201
+        except Exception as e:
+            # Handle exceptions and return an error response
+            return jsonify({"error": str(e)}), 500
 
     def remove_item_public_building(self):
         pass
@@ -224,3 +286,13 @@ class PublicBuildingController(ControllerV2):
         ]
 
         return jsonify({"result": jsonData})
+
+    def getTaiSanIdBySoToAndSoThua(self, session, soTo, soThua):
+        if soTo and soThua:
+            return (
+                session.query(self.PBDMQuanLyNhaCongSan.tai_san_id)
+                .filter_by(so_to=soTo, so_thua=soThua, trang_thai_xoa=False)
+                .first()
+            )
+        else:
+            return str(uuid.uuid4())

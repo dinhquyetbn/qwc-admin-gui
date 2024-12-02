@@ -208,3 +208,13 @@ GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc
 
 // 20241202: TODO
 ALTER TABLE qwc_config.pbms_quan_ly_nhom_tham_so ADD COLUMN loai_ts VARCHAR(50);
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN he_thong_id DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN tai_san_theo_chu_so_huu_id DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_ngoi_nha DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN phan_loai_tai_san_id DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ma_px DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_px DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ma_qh DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_qh DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ma_tp DROP NOT NULL;
+ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_tp DROP NOT NULL;

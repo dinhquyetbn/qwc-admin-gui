@@ -70,6 +70,14 @@ class AssetTypeController(ControllerV2):
             methods=["GET"],
         )
 
+        # danh sách tham số theo loai tài sản
+        self.app.add_url_rule(
+            "/api/asset-type/type/<id>/param",
+            "get_all_param_by_loai_ts_id",
+            self.get_all_param_by_loai_ts_id,
+            methods=["GET"],
+        )
+
     # Hàm cho danh sách tham số
     def get_data_by_page_loai_ts(self):
         session = self.session()
@@ -227,6 +235,55 @@ class AssetTypeController(ControllerV2):
         ]
         session.close()
         return jsonify({"result": jsonData})
+
+    def get_all_param_by_loai_ts_id(self, id):
+        self.setup_models()
+        session = self.session()
+        query = self.find_resource_loai_ts(id, session)
+        jsonData = []
+        if query.ds_tham_so:
+            lstThamSoId = query.ds_tham_so.split(",")
+            dbThamSos = (
+                session.query(self.PBMSQuanLyThamSo, self.PBMSQuanLyNhomThamSo)
+                .join(
+                    self.PBMSQuanLyNhomThamSo,
+                    self.PBMSQuanLyThamSo.nhom_tham_so_id
+                    == self.PBMSQuanLyNhomThamSo.id,
+                )
+                .filter(
+                    self.PBMSQuanLyThamSo.trang_thai_xoa == False,
+                    self.PBMSQuanLyThamSo.id.in_(lstThamSoId),
+                )
+                .all()
+            )
+
+            jsonData = sorted(
+                [
+                    {
+                        "id": tblThamSo.id,
+                        "ma_truong": tblThamSo.ma_truong,
+                        "ten_truong": tblThamSo.ten_truong,
+                        "kieu_du_lieu": tblThamSo.kieu_du_lieu,
+                        "mo_ta": tblThamSo.mo_ta,
+                        "thu_tu_hien_thi": tblThamSo.thu_tu_hien_thi,
+                        "nhom_tham_so_id": tblThamSo.nhom_tham_so_id,
+                        "ten_nhom_tham_so": f"{tblNhomTS.thu_tu_hien_thi}.{tblNhomTS.ten_nhom}",
+                        # Add other fields as necessary
+                    }
+                    for tblThamSo, tblNhomTS in dbThamSos
+                ],
+                key=lambda x: x["ten_nhom_tham_so"],
+            )
+        session.close()
+        return jsonify(
+            {
+                "result": {
+                    "id": query.id,
+                    "ten_loai_ts": query.ten_loai_ts,
+                    "params": jsonData,
+                }
+            }
+        )
 
     def resources_for_index_query(self, search_text, session):
         pass

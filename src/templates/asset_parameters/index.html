@@ -226,13 +226,17 @@
                     render: function (data, type, full, meta) {
                         let value = data;
                         if (data === 'string') {
-                            value = 'Kiểu chữ';
-                        } else if (data === 'number') {
-                            value = 'Kiểu số';
+                            value = 'Kiểu chữ trên 1 dòng';
+                        } else if (data === 'integer') {
+                            value = 'Kiểu số nguyên';
+                        } else if (data === 'float') {
+                            value = 'Kiểu số thập phân';
                         } else if (data === 'date') {
                             value = 'Kiểu ngày tháng';
                         } else if (data === 'file') {
                             value = 'Kiểu upload file';
+                        } else if (data === 'textarea') {
+                            value = 'Kiểu chữ trên nhiều dòng';
                         }
                         return value;
                     },
@@ -735,8 +739,10 @@
     <div class="col-md-6">
         <label for="kieu_du_lieu" class="form-label">Kiểu dữ liệu nhập:<span class="required">*</span></label>
         <select class="form-control" name="kieu_du_lieu" required>
-            <option value="string">Kiểu chữ</option>
-            <option value="number">Kiểu số</option>
+            <option value="string">Kiểu chữ trên 1 dòng</option>
+            <option value="textarea">Kiểu chữ trên nhiều dòng</option>
+            <option value="integer">Kiểu số nguyên</option>
+            <option value="float">Kiểu số thâp phân</option>
             <option value="date">Kiểu ngày tháng</option>
             <option value="file">Kiểu upload file</option>
         </select>
