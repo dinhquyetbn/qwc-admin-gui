@@ -2,7 +2,7 @@
     "$schema": "https://github.com/qwc-services/qwc-admin-gui/raw/2024-lts/schemas/qwc-admin-gui.json",
     "service": "admin-gui",
     "config": {
-        "db_url": "postgresql://qwc_admin:qwc_admin@localhost:5439/qwc_services",
+        "db_url": "postgresql://postgres:worldbank123@localhost:5439/qwc_services",
         "config_generator_service_url": "http://qwc-config-service:9090",
         "totp_enabled": false,
         "user_info_fields": [],

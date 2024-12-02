@@ -61,6 +61,7 @@
             <thead>
                 <tr>
                     <th>STT</th>
+                    <th class="d-none">Loại tài sản</th>
                     <th style="min-width: 175px;">Tên nhóm tham số</th>
                     <th style="min-width: 100px;">Thứ tự hiển thị</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
@@ -230,6 +231,8 @@
                             value = 'Kiểu số';
                         } else if (data === 'date') {
                             value = 'Kiểu ngày tháng';
+                        } else if (data === 'file') {
+                            value = 'Kiểu upload file';
                         }
                         return value;
                     },
@@ -448,6 +451,7 @@
         // Tab 2 Ds nhóm tham số
         const fieldGroupParams = [
             "stt",
+            "loai_ts",
             "ten_nhom",
             "thu_tu_hien_thi",
             "ngay_tao",
@@ -468,6 +472,9 @@
             pagingType: "simple_numbers",
             language: PBMSLang,
             order: [],
+            rowGroup: {
+                dataSrc: ['loai_ts'],
+            },
             ajax: {
                 url: "api/asset-parameter/group/page",
                 type: "POST",
@@ -492,6 +499,7 @@
             columnDefs: [
                 { "defaultContent": "", "targets": "_all" },
                 { orderable: false, targets: getIdxFieldTable(fieldGroupParams, ['stt', 'ngay_tao', 'tac_vu']) },
+                { visible: false, targets: getIdxFieldTable(fieldGroupParams, ['loai_ts']) },
                 {
                     data: '',
                     targets: getIdxFieldTable(fieldGroupParams, ['stt']),
@@ -516,6 +524,7 @@
             ],
             columns: [
                 { className: 'noVis', targets: [0] },
+                { data: 'loai_ts' },
                 { data: 'ten_nhom' },
                 { data: 'thu_tu_hien_thi' },
                 { data: 'ngay_tao' },
@@ -530,6 +539,9 @@
                     required: true,
                     maxlength: 256
                 },
+                loai_ts: {
+                    required: true,
+                },
                 thu_tu_hien_thi: {
                     required: true,
                     number: true,
@@ -540,6 +552,9 @@
                 ten_nhom: {
                     required: "Vui lòng nhập tên nhóm tham số.",
                     maxlength: "Tên nhóm tham số có độ dài tối đa 256 kí tự."
+                },
+                loai_ts: {
+                    required: "Vui lòng chọn loại tài sản."
                 },
                 thu_tu_hien_thi: {
                     required: "Vui lòng nhập thứ tự hiển thị.",
@@ -652,6 +667,7 @@
                 success: function (res) {
                     $('#nhomThamSoForm [name="id"]').val(res.result.id);
                     $('#nhomThamSoForm [name="ten_nhom"]').val(res.result.ten_nhom);
+                    $('#nhomThamSoForm [name="loai_ts"]').val(res.result.loai_ts);
                     $('#nhomThamSoForm [name="thu_tu_hien_thi"]').val(res.result.thu_tu_hien_thi);
                     // Trigger validation on each field to show feedback
                     $('#nhomThamSoForm').validate().form();
@@ -722,6 +738,7 @@
             <option value="string">Kiểu chữ</option>
             <option value="number">Kiểu số</option>
             <option value="date">Kiểu ngày tháng</option>
+            <option value="file">Kiểu upload file</option>
         </select>
     </div>
     <div class="col-md-6">
@@ -741,6 +758,13 @@
     <div class="col-md-12">
         <label for="ten_nhom" class="form-label">Tên nhóm tham số:<span class="required">*</span></label>
         <input type="text" class="form-control" name="ten_nhom" required>
+    </div>
+    <div class="col-md-12">
+        <label for="loai_ts" class="form-label">Loại tài sản:<span class="required">*</span></label>
+        <select class="form-control" name="loai_ts" required>
+            <option value="DAT_CS">Đất Công sản</option>
+            <option value="NHA_CS">Nhà Công Sản</option>
+        </select>
     </div>
     <div class="col-md-12">
         <label for="thu_tu_hien_thi" class="form-label">Thứ tự hiển thị:<span class="required">*</span></label>

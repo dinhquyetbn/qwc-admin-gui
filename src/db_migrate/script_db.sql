@@ -205,3 +205,6 @@ CREATE TABLE qwc_config.pbms_quan_ly_nha_cong_san (
 );
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_nha_cong_san TO qwc_admin;
+
+// 20241202: TODO
+ALTER TABLE qwc_config.pbms_quan_ly_nhom_tham_so ADD COLUMN loai_ts VARCHAR(50);

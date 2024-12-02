@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from flask import render_template, jsonify, request
 from .controller_v2 import ControllerV2
 from utils import i18n
-from sqlalchemy import func
+from sqlalchemy import func, text
 from qwc_services_core.auth import get_identity
 
 
@@ -166,7 +166,7 @@ class AssetParametersController(ControllerV2):
                 "mo_ta": tblThamSo.mo_ta,
                 "thu_tu_hien_thi": tblThamSo.thu_tu_hien_thi,
                 "nhom_tham_so_id": tblThamSo.nhom_tham_so_id,
-                "ten_nhom_tham_so": f"Nhóm: {tblNhomTS.ten_nhom}",
+                "ten_nhom_tham_so": f"Nhóm: {tblNhomTS.ten_nhom} (TS: {self.getLoaiTS(tblNhomTS.loai_ts)})",
                 "ngay_tao": self.convertUTCDateToVNTime(tblThamSo.ngay_tao),
                 # Add other fields as necessary
             }
@@ -212,6 +212,14 @@ class AssetParametersController(ControllerV2):
             obj.nhom_tham_so_id = data["nhom_tham_so_id"]
             obj.mo_ta = data["mo_ta"]
             obj.thu_tu_hien_thi = data["thu_tu_hien_thi"]
+
+            # Cập nhật cột dữ liệu vào bảng dữ liệu chính
+            objNhomTS = self.find_resource_group(obj.nhom_tham_so_id, session)
+            if objNhomTS:
+                valLoaiTS = objNhomTS.loai_ts
+                self.alterColumnForTable(valLoaiTS, obj.ma_truong, obj.kieu_du_lieu)
+            else:
+                return jsonify({"error": "Không tìm thấy bản ghi."}), 401
 
             session.commit()
             # self.update_config_timestamp(session)
@@ -308,6 +316,7 @@ class AssetParametersController(ControllerV2):
         jsonData = [
             {
                 "id": item.id,
+                "loai_ts": f"TS: {self.getLoaiTS(item.loai_ts)}",
                 "ten_nhom": item.ten_nhom,
                 "thu_tu_hien_thi": item.thu_tu_hien_thi,
                 "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao),
@@ -337,7 +346,7 @@ class AssetParametersController(ControllerV2):
         jsonData = [
             {
                 "id": item.id,
-                "text": f"{item.thu_tu_hien_thi}. {item.ten_nhom}",
+                "text": f"Nhóm: {item.ten_nhom} (TS: {self.getLoaiTS(item.loai_ts)})",
             }
             for item in query
         ]
@@ -369,6 +378,7 @@ class AssetParametersController(ControllerV2):
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             obj.ten_nhom = data["ten_nhom"]
+            obj.loai_ts = data["loai_ts"]
             obj.thu_tu_hien_thi = data["thu_tu_hien_thi"]
 
             session.commit()
@@ -404,6 +414,7 @@ class AssetParametersController(ControllerV2):
         jsonData = {
             "id": query.id,
             "ten_nhom": query.ten_nhom,
+            "loai_ts": query.loai_ts,
             "thu_tu_hien_thi": query.thu_tu_hien_thi,
             "ngay_tao": self.convertUTCDateToVNTime(query.ngay_tao),
         }
@@ -480,3 +491,43 @@ class AssetParametersController(ControllerV2):
 
         # return query
         pass
+
+    def getLoaiTS(self, valLoaiTS=None):
+        if valLoaiTS == "DAT_CS":
+            return "Đất Công Sản"
+        elif valLoaiTS == "NHA_CS":
+            return "Nhà Công Sản"
+        else:
+            return None
+
+    def getTypeColumnForTable(self, type):
+        if type == "string" or type == "file":
+            return "TEXT"
+        elif type == "number":
+            return "INTEGER"
+        elif type == "date":
+            return "DATE"
+
+    def alterColumnForTable(self, loaiTS, fieldName, type):
+        if type:
+            session = self.session()
+            try:
+                convertType = self.getTypeColumnForTable(type)
+                sql_query = ""
+                if loaiTS == "NHA_CS":
+                    sql_query = text(
+                        f"ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ADD COLUMN IF NOT EXISTS {fieldName} {convertType}"
+                    )
+                elif loaiTS == "DAT_CS":
+                    sql_query = text(
+                        f"ALTER TABLE qwc_config.pbms_quan_ly_dat_cong ADD COLUMN IF NOT EXISTS {fieldName} {convertType}"
+                    )
+
+                if sql_query is not None:
+                    session.execute(sql_query)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise e
+            finally:
+                session.close()
