@@ -366,10 +366,14 @@ Thêm mới dữ liệu nhà công sản
             renderSelectAddress();
             renderFormatDate();
         });
+
+        $('#createTab1Modal').on('hide.bs.modal', function () {
+            $('#duLieuChinhForm')[0].reset();
+        })
     })
 
+    let globalParams = [];
     $(document).ready(function () {
-        let globalParams = {};
         // Validate lựa chọn danh mục phân loại tài sản
         $('#dmPhanLoaiTSForm').validate({
             rules: {
@@ -409,62 +413,11 @@ Thêm mới dữ liệu nhà công sản
             }
         });
 
-        $('#step1Modal .btn-step1-next').on('click', function () {
+        $('#step1Modal .btn-step1-next').on('click', async function () {
             if ($('#dmPhanLoaiTSForm').valid()) {
                 const id = $('#select-phan-loai-ts').val();
                 // Get all param
-                $.ajax({
-                    url: `/api/asset-type/type/${id}/param`, // Replace with your API endpoint
-                    type: 'GET',
-                    headers: {
-                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
-                    },
-                    success: function (res) {
-                        // Render UI
-                        if (res.result) {
-                            // Gán lại cho biển global
-                            globalParams = res.result.params;
-
-                            const params = res.result.params.reduce((acc, current) => {
-                                const x = acc.find(item => item.ten_nhom_tham_so === current.ten_nhom_tham_so);
-                                if (!x) {
-                                    return acc.concat([{ ten_nhom_tham_so: current.ten_nhom_tham_so, items: [current] }]);
-                                } else {
-                                    x.items.push(current);
-                                    return acc;
-                                }
-                            }, []);
-
-                            let subjectTAB = '';
-                            let contentTAB = '';
-                            params.forEach((element, index) => {
-                                let guid = generateRandomString();
-                                let active = index === 0 ? 'show active' : '';
-                                // RENDER TAB
-                                subjectTAB += `<button class="nav-link text-start ${active}" id="${guid}-tab" data-bs-toggle="pill"
-                        data-bs-target="#${guid}" type="button" role="tab" aria-controls="${guid}"
-                        aria-selected="${index === 0}">${element.ten_nhom_tham_so}</button>`;
-                                // RENDER CONTENT
-                                contentTAB += `<div class="tab-pane row fade ${active}" id="${guid}" role="tabpanel"
-                        aria-labelledby="${guid}-tab">`;
-                                element.items.forEach((par, index) => {
-                                    contentTAB += renderUIControl(par, res.result.id, res.result.ten_loai_ts);
-                                });
-                                contentTAB += `</div>`
-                            });
-
-                            $('#v-pills-tab')[0].innerHTML = subjectTAB;
-                            $('#v-pills-tabContent')[0].innerHTML = contentTAB;
-                        }
-
-                        $('#step1Modal').modal('hide');
-                        $('#createTab1Modal').modal('show');
-                    },
-                    error: function (err) {
-                        // Handle error
-                        toastr.error(err.responseJSON?.error);
-                    }
-                });
+                await renderTabAndContentUI(id);
 
             } else {
                 toastr.error('Vui lòng nhập đầy đủ trường bắt buộc.');
@@ -693,7 +646,40 @@ Thêm mới dữ liệu nhà công sản
                 });
             }
         });
-    
+
+        window.showUpdateTab1Modal = function (id) {
+            $.ajax({
+                url: `api/public-building/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: async function (res) {
+                    const data = res.result;
+                    $('#duLieuChinhForm [name="id"]').val(data.id);
+                    // Trigger validation on each field to show feedback
+                    // Get all param
+                    await renderTabAndContentUI(data.phan_loai_tai_san_id).then(() => {
+                        globalParams.forEach(item => {
+                            $(`#duLieuChinhForm [name="${item.ma_truong}"]`).val(data[`${item.ma_truong}`]);
+                        });
+
+                        $('#select-province').append(new Option(data.ten_tp, data.ma_tp, true, true)).trigger('change');
+                        $('#select-district').append(new Option(data.ten_qh, data.ma_qh, true, true)).trigger('change');
+                        $('#select-ward').append(new Option(data.ten_px, data.ma_px, true, true)).trigger('change');
+                        $('#duLieuChinhForm').validate().form();
+                        // Show confirmation modal
+                        $('#createTab1Modal').modal('show');
+                        $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                    });
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
+
         window.showDeleteTab1Modal = function (id) {
             // Show confirmation modal
             $('#deleteTab1Modal').modal('show');
@@ -874,6 +860,61 @@ Thêm mới dữ liệu nhà công sản
                 changeYear: true
             });
             $(this).datepicker("option", "dateFormat", 'dd/mm/yy');
+        });
+    }
+
+    async function renderTabAndContentUI(id) {
+        await $.ajax({
+            url: `/api/asset-type/type/${id}/param`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: function (res) {
+                // Render UI
+                if (res.result) {
+                    // Gán lại cho biển global
+                    globalParams = res.result.params;
+
+                    const params = res.result.params.reduce((acc, current) => {
+                        const x = acc.find(item => item.ten_nhom_tham_so === current.ten_nhom_tham_so);
+                        if (!x) {
+                            return acc.concat([{ ten_nhom_tham_so: current.ten_nhom_tham_so, items: [current] }]);
+                        } else {
+                            x.items.push(current);
+                            return acc;
+                        }
+                    }, []);
+
+                    let subjectTAB = '';
+                    let contentTAB = '';
+                    params.forEach((element, index) => {
+                        let guid = generateRandomString();
+                        let active = index === 0 ? 'show active' : '';
+                        // RENDER TAB
+                        subjectTAB += `<button class="nav-link text-start ${active}" id="${guid}-tab" data-bs-toggle="pill"
+                        data-bs-target="#${guid}" type="button" role="tab" aria-controls="${guid}"
+                        aria-selected="${index === 0}">${element.ten_nhom_tham_so}</button>`;
+                        // RENDER CONTENT
+                        contentTAB += `<div class="tab-pane row fade ${active}" id="${guid}" role="tabpanel"
+                        aria-labelledby="${guid}-tab">`;
+                        element.items.forEach((par, index) => {
+                            contentTAB += renderUIControl(par, res.result.id, res.result.ten_loai_ts);
+                        });
+                        contentTAB += `</div>`
+                    });
+
+                    $('#v-pills-tab')[0].innerHTML = subjectTAB;
+                    $('#v-pills-tabContent')[0].innerHTML = contentTAB;
+                }
+
+                $('#step1Modal').modal('hide');
+                $('#createTab1Modal').modal('show');
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
         });
     }
 </script>

@@ -144,8 +144,28 @@ class PublicBuildingController(ControllerV2):
         session.close()
         return jsonify({"result": pagination})
 
-    def get_by_id_public_building(self):
-        pass
+    def get_by_id_public_building(self, id):
+        session = self.session()
+        query = self.find_resource_public_building(id, session)
+        
+        jsonData = {
+            "id": query.id,
+            "ten_tp": query.ten_tp,
+            "ten_qh": query.ten_qh,
+            "ten_px": query.ten_px,
+            # "phan_loai_tai_san_id": query.phan_loai_tai_san_id
+        }
+
+        # Get object phân loại sản phẩm
+        objPhanLoaiTS = session.query(self.PBMSQuanLyPhanLoaiTaiSan).filter_by(id=query.phan_loai_tai_san_id, trang_thai_xoa=False).first()
+        if objPhanLoaiTS.ds_tham_so:
+            lstThamSoId = objPhanLoaiTS.ds_tham_so.split(",")
+            dbThamSos = session.query(self.PBMSQuanLyThamSo).filter(self.PBMSQuanLyThamSo.trang_thai_xoa == False, self.PBMSQuanLyThamSo.id.in_(lstThamSoId)).all()
+            for item in dbThamSos:
+                jsonData[item.ma_truong] = getattr(query, item.ma_truong)
+        
+        session.close()
+        return jsonify({"result": jsonData})
 
     def create_or_update_item_public_building(self, id=None):
         try:
@@ -161,23 +181,19 @@ class PublicBuildingController(ControllerV2):
                 # create new
                 obj = self.PBDMQuanLyNhaCongSan()
                 obj.id = str(uuid.uuid4())
-                # Từ số tờ, số thửa => tai_san_id
-                checkSoTo = data.get('so_to')
-                checkSoThua = data.get('so_thua')
-                if checkSoTo and checkSoThua:
-                    obj.tai_san_id = str(uuid.uuid4())
+                
                 # obj.nguoi_tao = userLogin.gext('id') or None
                 obj.ngay_tao = datetime.now(timezone.utc)
                 session.add(obj)
             else:
                 # update existing
-                obj = self.find_resource(id, session)
+                obj = self.find_resource_public_building(id, session)
                 if obj is None:
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             # update value tai_san_id
-            obj.tai_san_id = self.getTaiSanIdBySoToAndSoThua(data.get('so_to'), data.get('so_thua'))
+            obj.tai_san_id = str(self.getTaiSanIdBySoToAndSoThua(data.get('so_to'), data.get('so_thua')))
             obj.ten_tp = data.get('ten_tp')
             obj.ten_qh = data.get('ten_qh')
             obj.ten_px = data.get('ten_px')
@@ -199,10 +215,6 @@ class PublicBuildingController(ControllerV2):
 
                 elif item['kieu_du_lieu'] == "file":
                     pass
-
-            # for key, value in data.items():
-            #     objField = dsParamInDB
-            #     setattr(obj, key, value)
 
             session.commit()
             session.close()
