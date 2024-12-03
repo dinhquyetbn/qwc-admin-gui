@@ -145,6 +145,7 @@ class PublicBuildingController(ControllerV2):
         return jsonify({"result": pagination})
 
     def get_by_id_public_building(self, id):
+        self.setup_models()
         session = self.session()
         query = self.find_resource_public_building(id, session)
         
@@ -162,7 +163,10 @@ class PublicBuildingController(ControllerV2):
             lstThamSoId = objPhanLoaiTS.ds_tham_so.split(",")
             dbThamSos = session.query(self.PBMSQuanLyThamSo).filter(self.PBMSQuanLyThamSo.trang_thai_xoa == False, self.PBMSQuanLyThamSo.id.in_(lstThamSoId)).all()
             for item in dbThamSos:
-                jsonData[item.ma_truong] = getattr(query, item.ma_truong)
+                if item.kieu_du_lieu == 'date':
+                    jsonData[item.ma_truong] = getattr(query, item.ma_truong).strftime('%d/%m/%Y') if getattr(query, item.ma_truong) else None
+                else:
+                    jsonData[item.ma_truong] = getattr(query, item.ma_truong)
         
         session.close()
         return jsonify({"result": jsonData})
@@ -211,7 +215,7 @@ class PublicBuildingController(ControllerV2):
                     setattr(obj, item['ma_truong'], float(data.get(item['ma_truong'])) if data.get(item['ma_truong']) and data.get(item['ma_truong']) != '' else None)
 
                 elif item['kieu_du_lieu'] == "date":
-                    pass
+                    setattr(obj, item['ma_truong'], datetime.strptime(data.get(item['ma_truong']), '%d/%m/%Y')  if data.get(item['ma_truong']) and data.get(item['ma_truong']) != '' else None)
 
                 elif item['kieu_du_lieu'] == "file":
                     pass
@@ -325,6 +329,6 @@ class PublicBuildingController(ControllerV2):
                 self.PBDMQuanLyNhaCongSan.trang_thai_xoa == False
             ).first()
             session.close()
-            return valTaiSanID if valTaiSanID else str(uuid.uuid4())
+            return valTaiSanID[0] if valTaiSanID else str(uuid.uuid4())
         else:
             return str(uuid.uuid4())
