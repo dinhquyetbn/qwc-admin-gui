@@ -123,21 +123,14 @@ class PublicBuildingController(ControllerV2):
         jsonData = [
             {
                 "id": t1.id,
-                "he_thong_id": t1.he_thong_id,
                 "tai_san_id": t1.tai_san_id,
                 "tai_san_theo_chu_so_huu_id": t1.tai_san_theo_chu_so_huu_id,
                 "ma_tai_san": t1.ma_tai_san,
-                "ten_ngoi_nha": t1.ten_ngoi_nha,
+                "ten_tai_san": t1.ten_tai_san,
                 "phan_loai_tai_san_id": t1.phan_loai_tai_san_id,
-                "dia_chi": t1.dia_chi,
-                "ma_px": t1.ma_px,
-                "ten_px": t1.ten_px,
-                "ma_qh": t1.ma_qh,
-                "ten_qh": t1.ten_qh,
-                "ma_tp": t1.ma_tp,
-                "ten_tp": t1.ten_tp,
-                "ds_file_dinh_kem": t1.ds_file_dinh_kem,
-                "full_dia_chi": f"{t1.dia_chi}, {t1.ten_px}, {t1.ten_qh}, {t1.ten_tp}",
+                "so_to": t1.so_to,
+                "so_thua": t1.so_thua,
+                "full_dia_chi": f"{t1.dia_chi}, {t1.ten_px}, {t1.ten_qh}, {t1.ten_tp}" if t1.ten_tp and t1.ten_qh and t1.ten_px else '',
                 "ngay_tao": self.convertUTCDateToVNTime(t1.ngay_tao),
             }
             for t1 in data
@@ -184,8 +177,10 @@ class PublicBuildingController(ControllerV2):
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             # update value tai_san_id
-            obj.tai_san_id = self.getTaiSanIdBySoToAndSoThua(session, data.get('so_to'), data.get('so_thua'))
-            print(f"TS: {obj.tai_san_id}")
+            obj.tai_san_id = self.getTaiSanIdBySoToAndSoThua(data.get('so_to'), data.get('so_thua'))
+            obj.ten_tp = data.get('ten_tp')
+            obj.ten_qh = data.get('ten_qh')
+            obj.ten_px = data.get('ten_px')
             # Lấy dữ liệu tham số
             dsParamInDB = json.loads(data["body_params"])
             # Gán lại các giá trị vào bảng dữ liệu
@@ -217,8 +212,30 @@ class PublicBuildingController(ControllerV2):
             # Handle exceptions and return an error response
             return jsonify({"error": str(e)}), 500
 
-    def remove_item_public_building(self):
-        pass
+    def remove_item_public_building(self, id):
+        try:
+            session = self.session()
+            # Find the group parameter by id
+            obj = self.find_resource_public_building(id, session)
+            if obj is None:
+                return jsonify({"error": "Không tìm thấy bản ghi."}), 404
+
+            # Mark as deleted
+            # obj.nguoi_xoa = ''
+            obj.ngay_xoa = datetime.now(timezone.utc)
+            obj.trang_thai_xoa = True
+            session.commit()
+            session.close()
+            return jsonify({"message": "Xóa dữ liệu thành công."}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    def find_resource_public_building(self, id, session):
+        return (
+            session.query(self.PBDMQuanLyNhaCongSan)
+            .filter_by(id=id, trang_thai_xoa=False)
+            .first()
+        )
 
     def get_categories_public_building(self):
         # self.setup_models()
@@ -287,12 +304,15 @@ class PublicBuildingController(ControllerV2):
 
         return jsonify({"result": jsonData})
 
-    def getTaiSanIdBySoToAndSoThua(self, session, soTo, soThua):
+    def getTaiSanIdBySoToAndSoThua(self, soTo, soThua):
         if soTo and soThua:
-            return (
-                session.query(self.PBDMQuanLyNhaCongSan.tai_san_id)
-                .filter_by(so_to=soTo, so_thua=soThua, trang_thai_xoa=False)
-                .first()
-            )
+            session = self.session()
+            valTaiSanID = session.query(self.PBDMQuanLyNhaCongSan.tai_san_id).filter(
+                self.PBDMQuanLyNhaCongSan.so_to == soTo,
+                self.PBDMQuanLyNhaCongSan.so_thua == soThua,
+                self.PBDMQuanLyNhaCongSan.trang_thai_xoa == False
+            ).first()
+            session.close()
+            return valTaiSanID if valTaiSanID else str(uuid.uuid4())
         else:
             return str(uuid.uuid4())

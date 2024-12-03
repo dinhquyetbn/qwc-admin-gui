@@ -71,8 +71,8 @@
             <thead>
                 <tr>
                     <th>STT</th>
-                    <th style="min-width: 100px;">Mã tài sản</th>
-                    <th style="min-width: 175px;">Tên tài sản</th>
+                    <th style="min-width: 200px;">Mã tài sản</th>
+                    <th style="min-width: 200px;">Tên tài sản</th>
                     <th style="min-width: 200px;">Địa chỉ</th>
                     <th style="min-width: 142px;">Số tờ</th>
                     <th style="min-width: 142px;">Số thửa</th>
@@ -330,7 +330,7 @@ Thêm mới dữ liệu nhà công sản
                 selectMaTaiSan.innerHTML = `
                     <ul>
                         <li>Mã tài sản: ${itemSelected[0].id}</li>
-                        <li>Tên tài sản: ${itemSelected[0].ten_ts}</li>
+                        <li>Tên tài sản: ${itemSelected[0].ten_tai_san}</li>
                         <li>Địa chỉ: ${itemSelected[0].dia_chi}</li>
                         <li>Mã số tờ: ${itemSelected[0].ma_to_thua}</li>
                         <li>Mã số thửa: ${itemSelected[0].ma_to_dat}</li>
@@ -473,11 +473,11 @@ Thêm mới dữ liệu nhà công sản
 
         const fieldDuLieuChinh = [
             "stt",
-            "ma_ts",
-            "ten_ts",
-            "dia_chi",
-            "ma_to_thua",
-            "ma_to_dat",
+            "ma_tai_san",
+            "ten_tai_san",
+            "full_dia_chi",
+            "so_to",
+            "so_thua",
             "ds_file_dinh_kem",
             "ngay_tao",
             "tac_vu"
@@ -548,11 +548,11 @@ Thêm mới dữ liệu nhà công sản
             ],
             columns: [
                 { className: 'noVis', targets: [0] },
-                { data: 'ma_ts' },
-                { data: 'ten_ts' },
-                { data: 'dia_chi' },
-                { data: 'ma_to_thua' },
-                { data: 'ma_to_dat' },
+                { data: 'ma_tai_san' },
+                { data: 'ten_tai_san' },
+                { data: 'full_dia_chi' },
+                { data: 'so_to' },
+                { data: 'so_thua' },
                 { data: 'ds_file_dinh_kem' },
                 { data: 'ngay_tao' },
                 { className: 'noVis' },
@@ -644,7 +644,6 @@ Thêm mới dữ liệu nhà công sản
         // Tạo mới loại tài sản
         $('#createTab1Modal .btn-save').on('click', function () {
             if ($('#duLieuChinhForm').valid()) {
-                debugger;
                 // Collect form data
                 const formData = new FormData($('#duLieuChinhForm')[0]);
                 // Gán lại giá trị
@@ -694,6 +693,36 @@ Thêm mới dữ liệu nhà công sản
                 });
             }
         });
+    
+        window.showDeleteTab1Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab1Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/public-building/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableDuLieuChinh.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                    }
+                });
+            });
+        }
     })
 
     function generateRandomString(length = 8) {
