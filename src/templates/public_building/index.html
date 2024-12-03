@@ -608,9 +608,9 @@ Thêm mới dữ liệu nhà công sản
                 formData.append('ten_qh', $("#select-district").text());
                 formData.append('ten_px', $("#select-ward").text());
 
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}:`, value); // Hiển thị key và giá trị
-                }
+                // for (let [key, value] of formData.entries()) {
+                //     console.log(`${key}:`, value); // Hiển thị key và giá trị
+                // }
 
                 // Make AJAX call
                 let ajax_url = 'api/public-building/create';
@@ -794,6 +794,7 @@ Thêm mới dữ liệu nhà công sản
     function renderSelectAddress() {
         $("#select-province").select2({
             placeholder: 'Chọn Tỉnh/TP...',
+            allowClear: true,
             minimumInputLength: 0, // Number of characters before AJAX request is made
             dropdownParent: $('#createTab1Modal'),
             ajax: {
@@ -814,6 +815,7 @@ Thêm mới dữ liệu nhà công sản
             let ma_tp = e.target.value;
             $("#select-district").select2({
                 placeholder: 'Chọn Quận Huyện...',
+                allowClear: true,
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
                 ajax: {
@@ -834,6 +836,7 @@ Thêm mới dữ liệu nhà công sản
             let ma_qh = e.target.value;
             $("#select-ward").select2({
                 placeholder: 'Chọn Phường Xã...',
+                allowClear: true,
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
                 ajax: {
