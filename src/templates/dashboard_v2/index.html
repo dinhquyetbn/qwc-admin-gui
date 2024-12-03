@@ -87,10 +87,10 @@
         min-height: 400px;
     }
 
-    #chart-tongquan-quanhuyen {
+    /* #chart-tongquan-quanhuyen {
         width: 100% !important;
         height: 100% !important;
-    }
+    } */
 
     .data-loading {
         font-size: 14px;
@@ -174,14 +174,38 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card chart-tongquan">
-            <canvas id="chart-tongquan-quanhuyen"></canvas>
+            <canvas id="chart-tongquan-quanhuyen" class="w-100"></canvas>
         </div>
     </div>
 </div>
 <script>
     $(document).ready(function () {
         getThongKeSoLuongForDashboard();
+        renderChartThongKeNhaVaDatTheoDiaPhuong();
+    })
 
+    function getThongKeSoLuongForDashboard() {
+        $.ajax({
+            url: `api/dashboard-v2/thong-ke-so-luong`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: function (res) {
+                const data = res.result;
+                $('.val-nhacs').html(data.so_luong_nha_cs);
+                $('.val-datcs').html(data.so_luong_dat_cs);
+                $('.val-baotri').html(data.so_luong_nha_bao_tri);
+                $('.val-donvi').html(data.so_luong_don_vi);
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
+        });
+    }
+
+    function renderChartThongKeNhaVaDatTheoDiaPhuong() {
         const ctx = document.getElementById('chart-tongquan-quanhuyen');
 
         new Chart(ctx, {
@@ -228,27 +252,6 @@
                         beginAtZero: true
                     }
                 }
-            }
-        });
-    })
-
-    function getThongKeSoLuongForDashboard() {
-        $.ajax({
-            url: `api/dashboard-v2/thong-ke-so-luong`, // Replace with your API endpoint
-            type: 'GET',
-            headers: {
-                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
-            },
-            success: function (res) {
-                const data = res.result;
-                $('.val-nhacs').html(data.so_luong_nha_cs);
-                $('.val-datcs').html(data.so_luong_dat_cs);
-                $('.val-baotri').html(data.so_luong_nha_bao_tri);
-                $('.val-donvi').html(data.so_luong_don_vi);
-            },
-            error: function (err) {
-                // Handle error
-                toastr.error(err.responseJSON?.error);
             }
         });
     }
