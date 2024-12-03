@@ -24,7 +24,8 @@ from controllers import UsersController, GroupsController, RolesController, \
     ResourcesController, PermissionsController, RegistrableGroupsController, \
     RegistrationRequestsController, DashboardController, PublicBuildingController, \
     PublicLandController, AssetParametersController, AssetTypeController, \
-    MapDataAnalyticsController, UnitsController, CategoriesController
+    MapDataAnalyticsController, UnitsController, CategoriesController, \
+    DashboardV2Controller
 from utils import i18n
 
 AUTH_PATH = os.environ.get('AUTH_PATH', '/auth')
@@ -130,6 +131,7 @@ AssetParametersController(app, handler)
 MapDataAnalyticsController(app, handler)
 UnitsController(app, handler)
 CategoriesController(app, handler)
+DashboardV2Controller(app, handler)
 
 if app.config.get('QWC_GROUP_REGISTRATION_ENABLED'):
     RegistrableGroupsController(app, handler)
@@ -194,6 +196,12 @@ def logout():
 
 # routes
 @app.route('/')
+def home_v2():
+    return render_template(
+        'templates/dashboard_v2/index.html', i18n=i18n
+    )
+
+@app.route('/qwc')
 def home():
     config = handler().config()
     admin_gui_title = config.get('admin_gui_title', i18n('interface.main.title'))

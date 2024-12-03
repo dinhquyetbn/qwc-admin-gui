@@ -1,0 +1,256 @@
+{% extends "templates/base.html" %}
+{% block title %}Trang chủ{% endblock %}
+{% block container %}
+{% block styles %}
+{{ super() }}
+<style>
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25);
+        flex: 1;
+        margin: 10px 0;
+        padding: 10px 20px;
+        height: 125px;
+        color: #fff;
+    }
+
+    .card.card-box1 {
+        background: var(--menu-bkg, linear-gradient(180deg, #0054A6 0%, #0A3B7B 100%));
+    }
+
+    .card.card-box2 {
+        background: var(--1, linear-gradient(180deg, #F69D55 0%, #F3801F 100%));
+    }
+
+    .card.card-box3 {
+        background: var(--2, linear-gradient(180deg, #63B967 0%, #4BA64F 100%));
+    }
+
+    .card.card-box4 {
+        background: var(--3, linear-gradient(180deg, #439DEE 0%, #1E78E9 100%));
+    }
+
+    .card h5 {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .card .stat-title {
+        text-align: right;
+    }
+
+    .card .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 10px 0px 0px 0px;
+        text-align: right;
+    }
+
+    .card .stat-change {
+        font-size: 0.9rem;
+        color: green;
+    }
+
+    .icon-container {
+        /* position: absolute;
+        top: -15px; */
+        width: 50px;
+        height: 50px;
+        min-height: 50px;
+        min-width: 50px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25);
+    }
+
+    .icon-container.bg-card1 {
+        background: var(--menu-bkg, linear-gradient(180deg, #0054A6 0%, #0A3B7B 100%));
+    }
+
+    .icon-container.bg-card2 {
+        background: var(--1, linear-gradient(180deg, #F69D55 0%, #F3801F 100%));
+    }
+
+    .icon-container.bg-card3 {
+        background: var(--2, linear-gradient(180deg, #63B967 0%, #4BA64F 100%));
+    }
+
+    .icon-container.bg-card4 {
+        background: var(--3, linear-gradient(180deg, #439DEE 0%, #1E78E9 100%));
+    }
+
+    .chart-tongquan {
+        min-height: 400px;
+    }
+
+    #chart-tongquan-quanhuyen {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .data-loading {
+        font-size: 14px;
+        color: #f5f5f5;
+    }
+</style>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/chartjs/chart.js') }}"></script>
+{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item" aria-current="page">Trang chủ</li>
+    </ol>
+</nav>
+{% endblock %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+<div class="row">
+    <!-- Card 3 -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card card-box3 bg-light">
+            <div class="d-flex w-100 align-items-center justify-content-between">
+                <div class="icon-container bg-card3 text-white">
+                    <span class="svg-icon svg-icon-home-nha"></span>
+                </div>
+                <h5 class="stat-title">Số lượng nhà công sản</h5>
+            </div>
+            <div class="stat-number val-nhacs">
+                <span class="data-loading">Đang tải...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card card-box4 bg-light">
+            <div class="d-flex w-100 align-items-center justify-content-between">
+                <div class="icon-container bg-card4 text-white">
+                    <span class="svg-icon svg-icon-home-dat"></span>
+                </div>
+                <h5 class="stat-title">Số lượng thửa đất</h5>
+            </div>
+            <div class="stat-number val-datcs">
+                <span class="data-loading">Đang tải...</span>
+            </div>
+        </div>
+    </div>
+    <!-- Card 1 -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card card-box1 bg-light">
+            <div class="d-flex w-100 align-items-center justify-content-between">
+                <div class="icon-container bg-card1 text-white">
+                    <span class="svg-icon svg-icon-home-donvi"></span>
+                </div>
+                <h5 class="stat-title">Số lượng đơn vị</h5>
+            </div>
+            <div class="stat-number val-donvi">
+                <span class="data-loading">Đang tải...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card card-box2 bg-light">
+            <div class="d-flex w-100 align-items-center justify-content-between">
+                <div class="icon-container bg-card2 text-white">
+                    <span class="svg-icon svg-icon-home-baotri"></span>
+                </div>
+                <h5 class="stat-title">Số lượng nhà công sản cần bảo trì</h5>
+            </div>
+            <div class="stat-number val-baotri">
+                <span class="data-loading">Đang tải...</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card chart-tongquan">
+            <canvas id="chart-tongquan-quanhuyen"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        getThongKeSoLuongForDashboard();
+
+        const ctx = document.getElementById('chart-tongquan-quanhuyen');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Huyện Hoàng Sa', 'Huyện Hòa Vang', 'Quận Cẩm Lệ', 'Quận Hải Châu', 'Quận Liên Chiểu', 'Quận Ngũ Hành Sơn', 'Quận Sơn Trà', 'Quận Thanh Khê'],
+                datasets: [
+                    {
+                        label: 'Nhà công sản',
+                        data: [100, 70, 30, 55, 25, 30, 55, 12, 33],
+                        borderWidth: 1,
+                        backgroundColor: [
+                            'rgba(0, 162, 232, 0.8)'
+                        ]
+                    },
+                    {
+                        label: 'Đất công sản',
+                        data: [12, 19, 83, 5, 92, 31, 15, 2, 8],
+                        borderWidth: 1,
+                        backgroundColor: [
+                            'rgba(255, 127, 39, 0.8)'
+                        ]
+                    }
+                ]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Thống kê số lượng Nhà và Đất Công Sản theo địa phương',
+                        font: {
+                            size: 20, // Thiết lập font-size (pixel)
+                            weight: 'bold' // (Tùy chọn) Đặt độ đậm
+                        },
+                        padding: {
+                            top: 10, // Khoảng cách trên
+                            bottom: 20 // Khoảng cách dưới
+                        },
+                        color: 'red',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    })
+
+    function getThongKeSoLuongForDashboard() {
+        $.ajax({
+            url: `api/dashboard-v2/thong-ke-so-luong`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: function (res) {
+                const data = res.result;
+                $('.val-nhacs').html(data.so_luong_nha_cs);
+                $('.val-datcs').html(data.so_luong_dat_cs);
+                $('.val-baotri').html(data.so_luong_nha_bao_tri);
+                $('.val-donvi').html(data.so_luong_don_vi);
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -196,6 +196,8 @@ class PublicBuildingController(ControllerV2):
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
                 obj.ngay_sua = datetime.now(timezone.utc)
 
+                # TODO: Cập nhật lịch sử chỉnh sửa dữ liệu
+
             # update value tai_san_id
             obj.tai_san_id = str(self.getTaiSanIdBySoToAndSoThua(data.get('so_to'), data.get('so_thua')))
             obj.ten_tp = data.get('ten_tp')

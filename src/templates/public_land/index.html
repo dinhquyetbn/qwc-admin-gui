@@ -469,9 +469,9 @@
                     formData[item.name] = item.value;
                 });
 
-                formData['ten_tp'] = $("#select-province").text();
-                formData['ten_qh'] = $("#select-district").text();
-                formData['ten_px'] = $("#select-ward").text();
+                formData['ten_tp'] = $("#select-province").select2('data')[0].text;
+                formData['ten_qh'] = $("#select-district").select2('data')[0].text;
+                formData['ten_px'] = $("#select-ward").select2('data')[0].text;
                 formData['don_vi_quan_ly_id'] = $("#select-don-vi-quan-ly").val();
                 formData['hien_trang_su_dung_id'] = $("#select-hien-trang-su-dung").val();
 
