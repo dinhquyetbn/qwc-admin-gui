@@ -132,7 +132,7 @@ class PublicBuildingController(ControllerV2):
                 "so_thua": t1.so_thua,
                 "full_dia_chi": (
                     f"{t1.dia_chi}, {t1.ten_px}, {t1.ten_qh}, {t1.ten_tp}"
-                    if t1.ten_tp and t1.ten_qh and t1.ten_px
+                    if t1.dia_chi
                     else ""
                 ),
                 "ngay_tao": self.convertUTCDateToVNTime(t1.ngay_tao),

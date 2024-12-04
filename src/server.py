@@ -443,6 +443,60 @@ def healthz():
     return jsonify({"status": "OK"})
 
 
+@app.route("/import-dat", methods=['GET'])
+def import_data_dat():
+    base_dir = os.path.dirname(__file__)  # Thư mục chứa file script
+    file_path = os.path.join(base_dir, 'db_migrate', '_DAT_CS_METADATA__202412041453.json')
+    with open(file_path, 'r', encoding='utf-8') as file:
+        dataDat = json.load(file)
+    dataImportDat = dataDat['DAT_CS_METADATA']
+    query_insert = ""
+    lstQH = getDistrict()
+    lstPX = getWard()
+    for item in dataImportDat:
+        filterPX = [obj1 for obj1 in lstPX['pbms_dm_phuong_xa'] if obj1['ma'] == item['maXa'] or item['tenXa'] in obj1['ten']]
+        filterQH = [obj2 for obj2 in lstQH['pbms_dm_quan_huyen'] if obj2['ma'] == item['maHuyen'] or item['tenHuyen'] in obj2['ten']]
+        ma_px = filterPX[0]['ma'] if filterPX else ''
+        ten_px = filterPX[0]['ten'] if filterPX else ''
+        ma_qh = filterQH[0]['ma'] if filterQH else ''
+        ten_qh = filterQH[0]['ten'] if filterQH else ''
+        query_insert += f"""INSERT INTO qwc_config.pbms_quan_ly_dat_cong (id, ma_dat, ten_dat, so_to, so_thua, dien_tich, dia_chi, ma_px, ten_px, ma_qh, ten_qh, ma_tp, ten_tp, ngay_tao) VALUES (gen_random_uuid(), '{item['maTaiSan']}', '{item['tenTaiSan']}', {item['maToThua']}, {item['maThuaDat']}, {item['dienTichDa']}, '{item['tenDuong']}', '{ma_px}', '{ten_px}', '{ma_qh}', '{ten_qh}', '48', 'Thành phố Đà Nẵng', now());"""
+    return jsonify(query_insert)
+
+@app.route("/import-nha", methods=['GET'])
+def import_data_nha():
+    base_dir = os.path.dirname(__file__)  # Thư mục chứa file script
+    file_path = os.path.join(base_dir, 'db_migrate', '_NHA_CS_METADATA__202412041452.json')
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    dataImport = data['NHA_CS_METADATA']
+    query_insert = ""
+    lstQH = getDistrict()
+    lstPX = getWard()
+    for item in dataImport:
+        filterPX = [obj1 for obj1 in lstPX['pbms_dm_phuong_xa'] if obj1['ma'] == item['maXa'] or item['tenXa'] in obj1['ten']]
+        filterQH = [obj2 for obj2 in lstQH['pbms_dm_quan_huyen'] if obj2['ma'] == item['maHuyen'] or item['tenHuyen'] in obj2['ten']]
+        ma_px = filterPX[0]['ma'] if filterPX else ''
+        ten_px = filterPX[0]['ten'] if filterPX else ''
+        ma_qh = filterQH[0]['ma'] if filterQH else ''
+        ten_qh = filterQH[0]['ten'] if filterQH else ''
+        query_insert += f"""INSERT INTO qwc_config.pbms_quan_ly_nha_cong_san (id, tai_san_id, ma_tai_san, ten_tai_san, so_to, so_thua, dia_chi, ma_px, ten_px, ma_qh, ten_qh, ma_tp, ten_tp, ngay_tao) VALUES (gen_random_uuid(), gen_random_uuid(), '{item['maTaiSan']}', '{item['tenTaiSan']}', {item['maToThua']}, {item['maThuaDat']}, '{item['tenDuong']}', '{ma_px}', '{ten_px}', '{ma_qh}', '{ten_qh}', '48', 'Thành phố Đà Nẵng', now());"""
+    return jsonify(query_insert)
+
+def getDistrict():
+    base_dir = os.path.dirname(__file__)  # Thư mục chứa file script
+    file_path = os.path.join(base_dir, 'db_migrate', 'pbms_dm_quan_huyen_202412041548.json')
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    return data
+
+def getWard():
+    base_dir = os.path.dirname(__file__)  # Thư mục chứa file script
+    file_path = os.path.join(base_dir, 'db_migrate', 'pbms_dm_phuong_xa_202412041548.json')
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    return data
+
 # local webserver
 if __name__ == '__main__':
     print("Starting QWC Admin GUI...")
