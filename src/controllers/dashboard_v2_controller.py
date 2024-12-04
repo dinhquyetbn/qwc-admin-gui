@@ -1,7 +1,7 @@
 import os
 
 from flask import json, jsonify
-
+from sqlalchemy import text
 from .controller_v2 import ControllerV2
 
 
@@ -23,6 +23,13 @@ class DashboardV2Controller(ControllerV2):
             "/api/dashboard-v2/thong-ke-so-luong",
             "get_thong_ke_so_luong",
             self.get_thong_ke_so_luong,
+            methods=["GET"],
+        )
+
+        self.app.add_url_rule(
+            "/api/dashboard-v2/thong-ke-nha-dat-theo-qh",
+            "get_thong_ke_nha_dat_theo_qh",
+            self.get_thong_ke_nha_dat_theo_qh,
             methods=["GET"],
         )
 
@@ -50,5 +57,54 @@ class DashboardV2Controller(ControllerV2):
             "so_luong_dat_cs": resDatCS,
             "so_luong_nha_bao_tri": 0,
         }
+        session.close()
+        return jsonify({"result": data})
+
+    def get_thong_ke_nha_dat_theo_qh(self):
+        self.setup_models()
+        session = self.session()
+        # Lấy danh sách quận huyện của Đà Nẵng
+        dataQuanHuyen = (
+            session.query(self.PBDMDanhMucQuanHuyen.ma, self.PBDMDanhMucQuanHuyen.ten)
+            .filter(
+                self.PBDMDanhMucQuanHuyen.trang_thai_xoa == False,
+                self.PBDMDanhMucQuanHuyen.ma_tp == "48",
+            )
+            .all()
+        )
+
+        # Lấy danh sách nhà công sản
+        sql_queryNha = text(
+            """
+                SELECT ma_qh, COUNT(ma_qh)
+                FROM qwc_config.pbms_quan_ly_nha_cong_san
+                WHERE trang_thai_xoa = FALSE
+                GROUP BY ma_qh;
+            """
+        )
+        resNha = session.execute(sql_queryNha)
+        dataNhas = resNha.fetchall()
+        # Lấy danh sách đất công sản
+        sql_queryDat = text(
+            """
+                SELECT ma_qh, COUNT(ma_qh)
+                FROM qwc_config.pbms_quan_ly_dat_cong
+                WHERE trang_thai_xoa = FALSE
+                GROUP BY ma_qh;
+            """
+        )
+        resDat = session.execute(sql_queryDat)
+        dataDats = resNha.fetchall()
+
+        valLabel = []
+        valNha = []
+        valDat = []
+
+        for item in dataQuanHuyen:
+            valLabel.append(item.ten)
+            valNha.append(next((x[1] for x in dataNhas if x[0] == item.ma), 0))
+            valDat.append(next((x[1] for x in dataDats if x[0] == item.ma), 0))
+
+        data = {"labels": valLabel, "valueDat": valDat, "valueNha": valNha}
         session.close()
         return jsonify({"result": data})
