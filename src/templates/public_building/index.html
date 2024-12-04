@@ -817,7 +817,7 @@ Thêm mới dữ liệu nhà công sản
             } else if (obj.kieu_du_lieu === 'file') {
                 content += `
                     <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
-                    <input type="file" class="form-control" name="${obj.ma_truong}" multiple>
+                    <input type="file" class="form-control" name="${obj.ma_truong}" multiple accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf">
                 `;
             }
         }

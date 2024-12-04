@@ -94,7 +94,7 @@ class DashboardV2Controller(ControllerV2):
             """
         )
         resDat = session.execute(sql_queryDat)
-        dataDats = resNha.fetchall()
+        dataDats = resDat.fetchall()
 
         valLabel = []
         valNha = []
