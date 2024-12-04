@@ -19,8 +19,8 @@
 <link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
 <style>
     @media (min-width: 576px) {
-        .modal-dialog {
-            max-width: 700px !important;
+        #createTab1Modal .modal-dialog {
+            max-width: 1000px !important;
         }
     }
 </style>
@@ -44,10 +44,11 @@
             <thead>
                 <tr>
                     <th>STT</th>
-                    <th style="min-width: 100px;">Mã đất</th>
-                    <th style="min-width: 175px;">Tên đất</th>
+                    <th style="min-width: 200px;">Mã tài sản</th>
+                    <th style="min-width: 175px;">Tên tài sản</th>
                     <th style="min-width: 200px;">Địa chỉ</th>
-                    <th style="min-width: 175px;">Đơn vị quản lý</th>
+                    <th style="min-width: 100px;">Số tờ</th>
+                    <th style="min-width: 100px;">Số thửa</th>
                     <th style="min-width: 142px;">Diện tích (m2)</th>
                     <th style="min-width: 100px;">Hiện trạng <br> sử dụng</th>
                     <th>Ảnh/Văn bản</th>
@@ -92,12 +93,14 @@
     <div class="tab-pane fade show active" id="tab-DuLieuModal" role="tabpanel" aria-labelledby="tab-DuLieuModal">
         <form id="duLieuChinhForm" class="row g-3 needs-validation" novalidate method="post">
             <input type="text" name="id" hidden />
-            <div class="col-md-4">
-                <label for="ma_dat" class="form-label">Mã đất:<span class="required">*</span></label>
-                <input type="text" class="form-control" name="ma_dat" required>
+            <input type="text" name="lyDoChinhSuaID" hidden />
+            <input type="text" name="lyDoChinhSuaTEXT" hidden />
+            <div class="col-md-5">
+                <label for="ma_dat" class="form-label">Mã tài sản:<span class="required">*</span></label>
+                <input type="text" class="form-control" name="ma_dat" required disabled>
             </div>
-            <div class="col-md-8">
-                <label for="ten_dat" class="form-label">Tên đất:<span class="required">*</span></label>
+            <div class="col-md-7">
+                <label for="ten_dat" class="form-label">Tên tài sản:<span class="required">*</span></label>
                 <input type="text" class="form-control" name="ten_dat" required>
             </div>
             <div class="col-md-6">
@@ -152,6 +155,41 @@
     </div>
 </div>
 {% endblock %}
+{% block addNewModal %}
+<div class="modal fade" id="chonLyDoCapNhatDuLieuModal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+    aria-labelledby="chonLyDoCapNhatDuLieuModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Cập nhật dữ liệu
+                </h5>
+            </div>
+            <div class="modal-body my-2">
+                <div class="d-flex justify-content-center">
+                    <form id="lyDoCapNhatDuLieuForm" class="row g-3 needs-validation" novalidate method="post">
+                        <div class="d-flex w-100 flex-column">
+                            <p class="text-center">Vui lòng lựa chọn lý do cập nhật dữ liệu.</p>
+                            <select id="select-lyDoCapNhatDuLieu" class="form-control w-100"
+                                name="selectLyDoCapNhatDuLieu"></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="d-flex m-4" id="select-content-detail"></div>
+                <div class="d-flex justify-content-center mt-4" style="gap: 10px;">
+                    <button type="button" class="btn btn-theme btn-lyDoCapNhatDuLieu-next"
+                        onclick="showUpdateTab1Modal()">{{ utils.render_icon('arrow-right') }}
+                        Tiếp
+                        tục</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{
+                        utils.render_icon('x-circle') }}
+                        Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block renderScripts %}
 <script type="text/javascript">
@@ -161,6 +199,10 @@
             let id = $('#createTab1Modal input[name="id"]').val();
             if (!id) {
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+                // Nếu là thêm mới thì tự động gợi ý mã tài sản
+                const timestamp = Math.floor(Date.now() / 1000);
+                let valMaTaiSan = `NDCS-${new Date().getFullYear()}${timestamp}`;
+                $('#createTab1Modal input[name="ma_dat"]').val(valMaTaiSan);
             }
 
             $("#select-don-vi-quan-ly").select2({
@@ -207,6 +249,7 @@
 
             $("#select-province").select2({
                 placeholder: 'Chọn Tỉnh/TP...',
+                allowClear: true,
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
                 ajax: {
@@ -227,6 +270,7 @@
                 let ma_tp = e.target.value;
                 $("#select-district").select2({
                     placeholder: 'Chọn Quận Huyện...',
+                    allowClear: true,
                     minimumInputLength: 0, // Number of characters before AJAX request is made
                     dropdownParent: $('#createTab1Modal'),
                     ajax: {
@@ -247,6 +291,7 @@
                 let ma_qh = e.target.value;
                 $("#select-ward").select2({
                     placeholder: 'Chọn Phường Xã...',
+                    allowClear: true,
                     minimumInputLength: 0, // Number of characters before AJAX request is made
                     dropdownParent: $('#createTab1Modal'),
                     ajax: {
@@ -274,6 +319,35 @@
             $('#select-don-vi-quan-ly').val(null).trigger('change');
             $('#select-hien-trang-su-dung').val(null).trigger('change');
         })
+
+        // Load danh mục lý do cập nhật dữ liệu
+        $("#select-lyDoCapNhatDuLieu").select2({
+            placeholder: 'Chọn lý do cập nhật dữ liệu...',
+            // allowClear: true,
+            minimumInputLength: 0, // Number of characters before AJAX request is made
+            dropdownParent: $('#chonLyDoCapNhatDuLieuModal'),
+            ajax: {
+                url: 'api/categories/LyDoCapNhatDL/all', // ma_nhom: HTSD | Hiện trạng sử dụng
+                dataType: 'json',
+                delay: 250,
+                processResults: function (data) {
+                    return {
+                        results: data.result
+                    };
+                },
+                cache: true
+            }
+        });
+
+        // MODAL Lý do cập nhật dữ liệu
+        $('#chonLyDoCapNhatDuLieuModal').on('shown.bs.modal', function () {
+            // TODO
+        })
+
+        $('#chonLyDoCapNhatDuLieuModal').on('hide.bs.modal', function () {
+            $('#lyDoCapNhatDuLieuForm')[0].reset();
+            $('#select-lyDoCapNhatDuLieu').val(null).trigger('change');
+        })
     })
 
     $(document).ready(function () {
@@ -293,7 +367,8 @@
             "ma_dat",
             "ten_dat",
             "full_dia_chi",
-            "ten_don_vi_quan_ly",
+            "so_to",
+            "so_thua",
             "dien_tich",
             "ten_hien_trang_sd",
             "ds_file_dinh_kem",
@@ -340,8 +415,8 @@
                 { "defaultContent": "", "targets": "_all" },
                 {
                     orderable: false, targets: getIdxFieldTable(fieldDuLieuChinh,
-                        ['stt', 'ten_don_vi_quan_ly', 'ten_hien_trang_sd', 'full_dia_chi',
-                            'ds_file_dinh_kem', 'dien_tich', 'hien_trang_sd_id', 'ngay_tao', 'tac_vu'])
+                        ['stt', 'ten_hien_trang_sd', 'full_dia_chi',
+                            'ds_file_dinh_kem', 'dien_tich', 'ngay_tao', 'tac_vu'])
                 },
                 {
                     data: '',
@@ -355,7 +430,7 @@
                     targets: getIdxFieldTable(fieldDuLieuChinh, ['tac_vu']),
                     render: function (data, type, full, meta) {
                         return `<div class="btn-action text-center">
-                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showLyDoCapNhatDuLieuModal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    
                                     <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.id}')">
@@ -370,7 +445,8 @@
                 { data: 'ma_dat' },
                 { data: 'ten_dat' },
                 { data: 'full_dia_chi' },
-                { data: 'ten_don_vi_quan_ly' },
+                { data: 'so_to' },
+                { data: 'so_thua' },
                 { data: 'dien_tich' },
                 { data: 'ten_hien_trang_sd' },
                 { data: 'ds_file_dinh_kem' },
@@ -388,6 +464,12 @@
                 ten_dat: {
                     required: true,
                     maxlength: 256
+                },
+                so_to: {
+                    required: true,
+                },
+                so_thua: {
+                    required: true,
                 },
                 hien_trang_sd_id: {
                     required: true,
@@ -408,11 +490,11 @@
             },
             messages: {
                 ma_dat: {
-                    required: "Vui lòng nhập mã đất.",
+                    required: "Vui lòng nhập mã tài sản.",
                     maxlength: "Tên nhóm tham số có độ dài tối đa 50 kí tự."
                 },
                 ten_dat: {
-                    required: "Vui lòng nhập tên đất.",
+                    required: "Vui lòng nhập tên tài sản.",
                     maxlength: "Tên nhóm tham số có độ dài tối đa 256 kí tự."
                 },
                 hien_trang_sd_id: {
@@ -421,6 +503,12 @@
                 dia_chi: {
                     required: "Vui lòng nhập địa chỉ.",
                     maxlength: "Tên nhóm tham số có độ dài tối đa 500 kí tự."
+                },
+                so_to: {
+                    required: "Vui lòng nhập số tờ.",
+                },
+                so_thua: {
+                    required: "Vui lòng nhập số thửa.",
                 },
                 ma_px: {
                     required: "Vui lòng chọn Phường/Xã.",
@@ -462,18 +550,13 @@
         $('#createTab1Modal .btn-save').on('click', function () {
             if ($('#duLieuChinhForm').valid()) {
                 // Collect form data
-                const formDataArray = $('#duLieuChinhForm').serializeArray();
-                const formData = {};
-                formDataArray.forEach(item => {
-                    // formData.append(item.name, item.value);
-                    formData[item.name] = item.value;
-                });
-
-                formData['ten_tp'] = $("#select-province").select2('data')[0].text;
-                formData['ten_qh'] = $("#select-district").select2('data')[0].text;
-                formData['ten_px'] = $("#select-ward").select2('data')[0].text;
-                formData['don_vi_quan_ly_id'] = $("#select-don-vi-quan-ly").val();
-                formData['hien_trang_su_dung_id'] = $("#select-hien-trang-su-dung").val();
+                const formData = new FormData($('#duLieuChinhForm')[0]);
+                formData.append('ma_dat', $('input[name="ma_dat"]').val());
+                formData.append('ten_tp', $("#select-province").select2('data')[0].text);
+                formData.append('ten_qh', $("#select-district").select2('data')[0].text);
+                formData.append('ten_px', $("#select-ward").select2('data')[0].text);
+                formData.append('don_vi_quan_ly_id', $("#select-don-vi-quan-ly").val());
+                formData.append('hien_trang_su_dung_id', $("#select-hien-trang-su-dung").val());
 
                 // formData.append('ten_tp', $("#select-province").text());
                 // formData.append('ten_qh', $("#select-district").text());
@@ -484,7 +567,7 @@
                 // Make AJAX call
                 let ajax_url = 'api/public-land/create';
                 let ajax_type = 'POST';
-                let paramId = $('#unitsForm input[name="id"]').val();
+                let paramId = $('#duLieuChinhForm input[name="id"]').val();
                 // Tồn tại Id thì call api update
                 if (paramId) {
                     ajax_url = `api/public-land/update/${paramId}`;
@@ -497,8 +580,9 @@
                     headers: {
                         'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
                     },
-                    contentType: 'application/json',
-                    data: JSON.stringify(formData),
+                    contentType: false, // Set content type to false for FormData
+                    processData: false, // Prevent jQuery from setting the Content-Type header
+                    data: formData, // Use FormData directly
                     success: function (res) {
                         // Handle success
                         toastr.success(res.message);
@@ -514,6 +598,130 @@
                 });
             }
         });
+
+        window.showLyDoCapNhatDuLieuModal = function (id) {
+            $('#chonLyDoCapNhatDuLieuModal').modal('show');
+            $('#select-lyDoCapNhatDuLieu').attr('data-row-id', id);
+        }
+
+        window.showUpdateTab1Modal = function () {
+            // Khởi tạo validate form
+            $('#lyDoCapNhatDuLieuForm').validate({
+                rules: {
+                    selectLyDoCapNhatDuLieu: {
+                        required: true,
+                    }
+                },
+                messages: {
+                    selectLyDoCapNhatDuLieu: {
+                        required: "Vui lòng chọn lý do.",
+                    }
+                },
+                errorClass: "is-invalid",
+                validClass: "is-valid",
+                errorElement: "div",
+                errorPlacement: function (error, element) {
+                    if (element.hasClass('select2-hidden-accessible')) {
+                        // Insert the error message after the Select2 container
+                        error.addClass("invalid-feedback");
+                        error.insertAfter(element.next('.select2-container'));
+                    } else {
+                        error.addClass("invalid-feedback");
+                        error.insertAfter(element);
+                    }
+                },
+                highlight: function (element, errorClass, validClass) {
+                    $(element).addClass(errorClass).removeClass(validClass);
+                    if ($(element).hasClass('select2-hidden-accessible')) {
+                        $(element).next('.select2-container').addClass(errorClass);
+                    }
+                },
+                unhighlight: function (element, errorClass, validClass) {
+                    $(element).removeClass(errorClass).addClass(validClass);
+                    if ($(element).hasClass('select2-hidden-accessible')) {
+                        $(element).next('.select2-container').removeClass(errorClass);
+                    }
+                }
+            });
+
+            if ($('#lyDoCapNhatDuLieuForm').valid()) {
+                let valLyDoCapNhatDL = $("#select-lyDoCapNhatDuLieu").select2('data')[0].id;
+                let textLyDoCapNhatDL = $("#select-lyDoCapNhatDuLieu").select2('data')[0].text;
+                $('#duLieuChinhForm [name="lyDoChinhSuaID"]').val(valLyDoCapNhatDL);
+                $('#duLieuChinhForm [name="lyDoChinhSuaTEXT"]').val(textLyDoCapNhatDL);
+                // Ẩn modal Chọn lý do cập nhật dữ liệu
+                $('#chonLyDoCapNhatDuLieuModal').modal('hide');
+                const rowID = $('#select-lyDoCapNhatDuLieu').attr('data-row-id');
+                // Show modal detail cập nhật dữ liệu
+                $.ajax({
+                    url: `api/public-land/detail/${rowID}`, // Replace with your API endpoint
+                    type: 'GET',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: async function (res) {
+                        const data = res.result;
+                        $('#duLieuChinhForm [name="id"]').val(data.id);
+                        $('#duLieuChinhForm [name="ma_dat"]').val(data.ma_dat);
+                        $('#duLieuChinhForm [name="ten_dat"]').val(data.ten_dat);
+                        $('#duLieuChinhForm [name="so_to"]').val(data.so_to);
+                        $('#duLieuChinhForm [name="so_thua"]').val(data.so_thua);
+                        $('#duLieuChinhForm [name="dien_tich"]').val(data.dien_tich);
+                        $('#duLieuChinhForm [name="ds_file_dinh_kem"]').val(data.ds_file_dinh_kem);
+                        $('#duLieuChinhForm [name="dia_chi"]').val(data.dia_chi);
+                        // Trigger validation on each field to show feedback
+                        // Get all param
+                        if (data.don_vi_quan_ly_id && data.don_vi_quan_ly_id !== '') {
+                            $('#select-don-vi-quan-ly').append(new Option(data.ten_don_vi_quan_ly, data.don_vi_quan_ly_id, true, true)).trigger('change');
+                        }
+                        if (data.hien_trang_sd_id && data.hien_trang_sd_id !== '') {
+                            $('#select-hien-trang-sd').append(new Option(data.ten_hien_trang_sd, data.hien_trang_sd_id, true, true)).trigger('change');
+                        }
+                        $('#select-province').append(new Option(data.ten_tp, data.ma_tp, true, true)).trigger('change');
+                        $('#select-district').append(new Option(data.ten_qh, data.ma_qh, true, true)).trigger('change');
+                        $('#select-ward').append(new Option(data.ten_px, data.ma_px, true, true)).trigger('change');
+                        $('#duLieuChinhForm').validate().form();
+                        // Show confirmation modal
+                        $('#createTab1Modal').modal('show');
+                        $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                    }
+                });
+            }
+        }
+
+        window.showDeleteTab1Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab1Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/public-land/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                        // Reload datatable
+                        tableDuLieuChinh.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                    }
+                });
+            });
+        }
     })
 </script>
 {% endblock %}

@@ -127,9 +127,23 @@ class PublicLandController(ControllerV2):
                 "ma_dat": t1.ma_dat,
                 "ten_dat": t1.ten_dat,
                 "don_vi_quan_ly_id": t1.don_vi_quan_ly_id,
-                "ten_don_vi_quan_ly": next((item.ten_dv for item in dataDonVi if item.id == t1.don_vi_quan_ly_id), ""),
+                "ten_don_vi_quan_ly": next(
+                    (
+                        item.ten_dv
+                        for item in dataDonVi
+                        if item.id == t1.don_vi_quan_ly_id
+                    ),
+                    "",
+                ),
                 "hien_trang_sd_id": t1.hien_trang_sd_id,
-                "ten_hien_trang_sd": next((item.ten_danh_muc for item in dataHTSD if item.id == t1.hien_trang_sd_id), ""),
+                "ten_hien_trang_sd": next(
+                    (
+                        item.ten_danh_muc
+                        for item in dataHTSD
+                        if item.id == t1.hien_trang_sd_id
+                    ),
+                    "",
+                ),
                 "so_to": t1.so_to,
                 "so_thua": t1.so_thua,
                 "dien_tich": t1.dien_tich,
@@ -158,7 +172,7 @@ class PublicLandController(ControllerV2):
     def create_or_update_item_public_land(self, id=None):
         try:
             # Parse JSON data from the request
-            data = request.get_json()
+            data = request.form
             if not data:
                 return jsonify({"error": "Dữ liệu không hợp lệ."}), 400
 
@@ -177,23 +191,45 @@ class PublicLandController(ControllerV2):
                 obj = self.find_resource_public_land(id, session)
                 if obj is None:
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
+                oldData = obj.__dict__.copy()
                 obj.ngay_sua = datetime.now(timezone.utc)
 
-            obj.ma_dat = data["ma_dat"]
-            obj.ten_dat = data["ten_dat"]
-            obj.don_vi_quan_ly_id = data["don_vi_quan_ly_id"]
-            obj.hien_trang_sd_id = data["hien_trang_sd_id"]
-            obj.so_to = int(data["so_to"]) if data.get("so_to") else None
-            obj.so_thua = int(data["so_thua"]) if data.get("so_thua") else None
-            obj.dien_tich = float(data["dien_tich"]) if data.get("dien_tich") else None
-            obj.dia_chi = data["dia_chi"]
-            obj.ma_px = data["ma_px"]
-            obj.ten_px = data["ten_px"]
-            obj.ma_qh = data["ma_qh"]
-            obj.ten_qh = data["ten_qh"]
-            obj.ma_tp = data["ma_tp"]
-            obj.ten_tp = data["ten_tp"]
-            obj.ds_file_dinh_kem = data["ds_file_dinh_kem"]
+            obj.ma_dat = data.get("ma_dat")
+            obj.ten_dat = data.get("ten_dat")
+            obj.don_vi_quan_ly_id = data.get("don_vi_quan_ly_id")
+            obj.hien_trang_sd_id = data.get("hien_trang_sd_id")
+            obj.so_to = int(data.get("so_to")) if data.get("so_to") else None
+            obj.so_thua = int(data.get("so_thua")) if data.get("so_thua") else None
+            obj.dien_tich = (
+                float(data.get("dien_tich")) if data.get("dien_tich") else None
+            )
+            obj.dia_chi = data.get("dia_chi")
+            obj.ma_px = data.get("ma_px")
+            obj.ten_px = data.get("ten_px")
+            obj.ma_qh = data.get("ma_qh")
+            obj.ten_qh = data.get("ten_qh")
+            obj.ma_tp = data.get("ma_tp")
+            obj.ten_tp = data.get("ten_tp")
+            obj.ds_file_dinh_kem = data.get("ds_file_dinh_kem")
+
+            # Nếu là update thì mới ghi vào bảng lịch sử
+            if id:
+                # TODO: Cập nhật lịch sử chỉnh sửa dữ liệu
+                objLSChinhSua = self.PBDMLichSuChinhSuaDatCS()
+                objLSChinhSua.id = str(uuid.uuid4())
+                objLSChinhSua.dat_cs_id = obj.id
+                objLSChinhSua.ly_do_id = data.get("lyDoChinhSuaID")
+                objLSChinhSua.ly_do_chinh_sua = data.get("lyDoChinhSuaTEXT")
+                # TODO: Lấy ID tài khoản đăng nhập
+                objLSChinhSua.nguoi_chinh_sua_id = "-"
+                objLSChinhSua.ngay_tao = datetime.now(timezone.utc)
+                formatData = request.form.to_dict()
+                formatData.pop("lyDoChinhSuaID")
+                formatData.pop("lyDoChinhSuaTEXT")
+                oldData.pop('_sa_instance_state', None)
+                objLSChinhSua.du_lieu_cu = str(json.dumps(oldData))
+                objLSChinhSua.du_lieu_moi = str(json.dumps(formatData))
+                session.add(objLSChinhSua)
 
             session.commit()
             # self.update_config_timestamp(session)
@@ -225,14 +261,17 @@ class PublicLandController(ControllerV2):
     def get_by_id_public_land(self, id):
         session = self.session()
         query = self.find_resource_public_land(id, session)
+
+        queryHTSD = session.query(self.PBDMQuanLyDanhMuc).filter(self.PBDMQuanLyDanhMuc.id == query.hien_trang_sd_id).first()
+        queryDVQL = session.query(self.PBMSQuanLyDonVi).filter(self.PBMSQuanLyDonVi.id == query.don_vi_quan_ly_id).first()
         jsonData = {
             "id": query.id,
             "ma_dat": query.ma_dat,
             "ten_dat": query.ten_dat,
             "don_vi_quan_ly_id": query.don_vi_quan_ly_id,
-            "ten_don_vi_quan_ly": "",
+            "ten_don_vi_quan_ly": queryDVQL.ten_dv if queryDVQL else '',
             "hien_trang_sd_id": query.hien_trang_sd_id,
-            "ten_hien_trang_sd": "",
+            "ten_hien_trang_sd": queryHTSD.ten_danh_muc if queryHTSD else '',
             "so_to": query.so_to,
             "so_thua": query.so_thua,
             "dien_tich": query.dien_tich,

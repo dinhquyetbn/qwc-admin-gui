@@ -219,7 +219,7 @@ ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_qh DROP NOT NU
 ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ma_tp DROP NOT NULL;
 ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_tp DROP NOT NULL;
 
-// 20241204: TODO
+// 20241204: UPDATED DEV
 CREATE TABLE qwc_config.pbms_lich_su_chinh_sua_nha_cs (
 	id VARCHAR(50) NOT NULL,
     nha_cs_id VARCHAR(50) NOT NULL,
