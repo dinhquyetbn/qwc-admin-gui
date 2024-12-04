@@ -47,7 +47,7 @@
 
     @media (min-width: 576px) {
         #createTab1Modal .modal-dialog {
-            max-width: 700px !important;
+            max-width: 1000px !important;
         }
     }
 </style>
@@ -193,6 +193,8 @@ Thêm mới dữ liệu nhà công sản
     <div class="tab-pane fade show active" id="tab-DuLieuModal" role="tabpanel" aria-labelledby="tab-DuLieuModal">
         <form id="duLieuChinhForm" class="row g-3 needs-validation" novalidate method="post">
             <input type="text" name="id" hidden />
+            <input type="text" name="lyDoChinhSuaID" hidden />
+            <input type="text" name="lyDoChinhSuaTEXT" hidden />
             <div class="d-flex align-items-start">
                 <div class="nav flex-column nav-pills me-3 pe-2" id="v-pills-tab" role="tablist"
                     aria-orientation="vertical">
@@ -341,6 +343,17 @@ Thêm mới dữ liệu nhà công sản
 
     let globalParams = [];
     $(document).ready(function () {
+        // Search data
+        $('.btn-search').on('click', function () {
+            tableDuLieuChinh.ajax.reload(null, false);
+        })
+
+        $('#input-search').on('keydown', function (e) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                tableDuLieuChinh.ajax.reload(null, false);
+            }
+        })
+
         // Validate lựa chọn danh mục phân loại tài sản
         $('#dmPhanLoaiTSForm').validate({
             rules: {
@@ -660,8 +673,10 @@ Thêm mới dữ liệu nhà công sản
             });
 
             if ($('#lyDoCapNhatDuLieuForm').valid()) {
-                // let valLyDoCapNhatDL = $("#select-lyDoCapNhatDuLieu").select2('data')[0].id;
-                // let textLyDoCapNhatDL = $("#select-lyDoCapNhatDuLieu").select2('data')[0].text;
+                let valLyDoCapNhatDL = $("#select-lyDoCapNhatDuLieu").select2('data')[0].id;
+                let textLyDoCapNhatDL = $("#select-lyDoCapNhatDuLieu").select2('data')[0].text;
+                $('#duLieuChinhForm [name="lyDoChinhSuaID"]').val(valLyDoCapNhatDL);
+                $('#duLieuChinhForm [name="lyDoChinhSuaTEXT"]').val(textLyDoCapNhatDL);
                 // Ẩn modal Chọn lý do cập nhật dữ liệu
                 $('#chonLyDoCapNhatDuLieuModal').modal('hide');
                 const rowID = $('#select-lyDoCapNhatDuLieu').attr('data-row-id');

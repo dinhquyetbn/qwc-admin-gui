@@ -111,7 +111,9 @@ class ControllerV2:
                 "pbms_dm_phuong_xa",
                 "pbms_quan_ly_dat_cong",
                 "pbms_quan_ly_danh_muc",
-                "pbms_quan_ly_nha_cong_san"
+                "pbms_quan_ly_nha_cong_san",
+                "pbms_lich_su_chinh_sua_nha_cs",
+                "pbms_lich_su_chinh_sua_dat_cs"
             ],
         )
 
@@ -139,6 +141,8 @@ class ControllerV2:
         self.PBDMQuanLyDatCong = self.config_models.model("pbms_quan_ly_dat_cong")
         self.PBDMQuanLyDanhMuc = self.config_models.model("pbms_quan_ly_danh_muc")
         self.PBDMQuanLyNhaCongSan = self.config_models.model("pbms_quan_ly_nha_cong_san")
+        self.PBDMLichSuChinhSuaNhaCS = self.config_models.model("pbms_lich_su_chinh_sua_nha_cs")
+        self.PBDMLichSuChinhSuaDatCS = self.config_models.model("pbms_lich_su_chinh_sua_dat_cs")
 
     def resource_pkey(self):
         """Return primary key column name for resource table (default: 'id')"""

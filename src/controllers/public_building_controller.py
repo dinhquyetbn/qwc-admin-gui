@@ -89,7 +89,7 @@ class PublicBuildingController(ControllerV2):
                 self.PBDMQuanLyNhaCongSan.ma_tai_san.ilike(
                     "%%%s%%" % req_search["value"]
                 )
-                | self.PBDMQuanLyNhaCongSan.ten_ngoi_nha.ilike(
+                | self.PBDMQuanLyNhaCongSan.ten_tai_san.ilike(
                     "%%%s%%" % req_search["value"]
                 )
                 | self.PBDMQuanLyNhaCongSan.ten_tp.ilike("%%%s%%" % req_search["value"])
@@ -130,7 +130,11 @@ class PublicBuildingController(ControllerV2):
                 "phan_loai_tai_san_id": t1.phan_loai_tai_san_id,
                 "so_to": t1.so_to,
                 "so_thua": t1.so_thua,
-                "full_dia_chi": f"{t1.dia_chi}, {t1.ten_px}, {t1.ten_qh}, {t1.ten_tp}" if t1.ten_tp and t1.ten_qh and t1.ten_px else '',
+                "full_dia_chi": (
+                    f"{t1.dia_chi}, {t1.ten_px}, {t1.ten_qh}, {t1.ten_tp}"
+                    if t1.ten_tp and t1.ten_qh and t1.ten_px
+                    else ""
+                ),
                 "ngay_tao": self.convertUTCDateToVNTime(t1.ngay_tao),
             }
             for t1 in data
@@ -148,7 +152,7 @@ class PublicBuildingController(ControllerV2):
         self.setup_models()
         session = self.session()
         query = self.find_resource_public_building(id, session)
-        
+
         jsonData = {
             "id": query.id,
             "ten_tp": query.ten_tp,
@@ -158,16 +162,31 @@ class PublicBuildingController(ControllerV2):
         }
 
         # Get object phân loại sản phẩm
-        objPhanLoaiTS = session.query(self.PBMSQuanLyPhanLoaiTaiSan).filter_by(id=query.phan_loai_tai_san_id, trang_thai_xoa=False).first()
+        objPhanLoaiTS = (
+            session.query(self.PBMSQuanLyPhanLoaiTaiSan)
+            .filter_by(id=query.phan_loai_tai_san_id, trang_thai_xoa=False)
+            .first()
+        )
         if objPhanLoaiTS.ds_tham_so:
             lstThamSoId = objPhanLoaiTS.ds_tham_so.split(",")
-            dbThamSos = session.query(self.PBMSQuanLyThamSo).filter(self.PBMSQuanLyThamSo.trang_thai_xoa == False, self.PBMSQuanLyThamSo.id.in_(lstThamSoId)).all()
+            dbThamSos = (
+                session.query(self.PBMSQuanLyThamSo)
+                .filter(
+                    self.PBMSQuanLyThamSo.trang_thai_xoa == False,
+                    self.PBMSQuanLyThamSo.id.in_(lstThamSoId),
+                )
+                .all()
+            )
             for item in dbThamSos:
-                if item.kieu_du_lieu == 'date':
-                    jsonData[item.ma_truong] = getattr(query, item.ma_truong).strftime('%d/%m/%Y') if getattr(query, item.ma_truong) else None
+                if item.kieu_du_lieu == "date":
+                    jsonData[item.ma_truong] = (
+                        getattr(query, item.ma_truong).strftime("%d/%m/%Y")
+                        if getattr(query, item.ma_truong)
+                        else None
+                    )
                 else:
                     jsonData[item.ma_truong] = getattr(query, item.ma_truong)
-        
+
         session.close()
         return jsonify({"result": jsonData})
 
@@ -185,7 +204,7 @@ class PublicBuildingController(ControllerV2):
                 # create new
                 obj = self.PBDMQuanLyNhaCongSan()
                 obj.id = str(uuid.uuid4())
-                
+
                 # obj.nguoi_tao = userLogin.gext('id') or None
                 obj.ngay_tao = datetime.now(timezone.utc)
                 session.add(obj)
@@ -194,33 +213,85 @@ class PublicBuildingController(ControllerV2):
                 obj = self.find_resource_public_building(id, session)
                 if obj is None:
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
+                # Convert object to dictionary before JSON serialization
+                oldData = obj.__dict__.copy()
                 obj.ngay_sua = datetime.now(timezone.utc)
 
-                # TODO: Cập nhật lịch sử chỉnh sửa dữ liệu
-
             # update value tai_san_id
-            obj.tai_san_id = str(self.getTaiSanIdBySoToAndSoThua(data.get('so_to'), data.get('so_thua')))
-            obj.ten_tp = data.get('ten_tp')
-            obj.ten_qh = data.get('ten_qh')
-            obj.ten_px = data.get('ten_px')
+            obj.tai_san_id = str(
+                self.getTaiSanIdBySoToAndSoThua(data.get("so_to"), data.get("so_thua"))
+            )
+            obj.ten_tp = data.get("ten_tp")
+            obj.ten_qh = data.get("ten_qh")
+            obj.ten_px = data.get("ten_px")
             # Lấy dữ liệu tham số
             dsParamInDB = json.loads(data["body_params"])
             # Gán lại các giá trị vào bảng dữ liệu
             for item in dsParamInDB:
-                if item['kieu_du_lieu'] == "string" or item['kieu_du_lieu'] == "textarea":
-                    setattr(obj, item['ma_truong'], data.get(item['ma_truong']))
+                if (
+                    item["kieu_du_lieu"] == "string"
+                    or item["kieu_du_lieu"] == "textarea"
+                ):
+                    setattr(obj, item["ma_truong"], data.get(item["ma_truong"]))
 
-                elif item['kieu_du_lieu'] == "integer":
-                    setattr(obj, item['ma_truong'], int(data.get(item['ma_truong'])) if data.get(item['ma_truong']) and data.get(item['ma_truong']) != '' else None)
+                elif item["kieu_du_lieu"] == "integer":
+                    setattr(
+                        obj,
+                        item["ma_truong"],
+                        (
+                            int(data.get(item["ma_truong"]))
+                            if data.get(item["ma_truong"])
+                            and data.get(item["ma_truong"]) != ""
+                            else None
+                        ),
+                    )
 
-                elif item['kieu_du_lieu'] == "float":
-                    setattr(obj, item['ma_truong'], float(data.get(item['ma_truong'])) if data.get(item['ma_truong']) and data.get(item['ma_truong']) != '' else None)
+                elif item["kieu_du_lieu"] == "float":
+                    setattr(
+                        obj,
+                        item["ma_truong"],
+                        (
+                            float(data.get(item["ma_truong"]))
+                            if data.get(item["ma_truong"])
+                            and data.get(item["ma_truong"]) != ""
+                            else None
+                        ),
+                    )
 
-                elif item['kieu_du_lieu'] == "date":
-                    setattr(obj, item['ma_truong'], datetime.strptime(data.get(item['ma_truong']), '%d/%m/%Y')  if data.get(item['ma_truong']) and data.get(item['ma_truong']) != '' else None)
+                elif item["kieu_du_lieu"] == "date":
+                    setattr(
+                        obj,
+                        item["ma_truong"],
+                        (
+                            datetime.strptime(data.get(item["ma_truong"]), "%d/%m/%Y")
+                            if data.get(item["ma_truong"])
+                            and data.get(item["ma_truong"]) != ""
+                            else None
+                        ),
+                    )
 
-                elif item['kieu_du_lieu'] == "file":
+                elif item["kieu_du_lieu"] == "file":
                     pass
+
+            # Nếu là update thì mới ghi vào bảng lịch sử
+            if id:
+                # TODO: Cập nhật lịch sử chỉnh sửa dữ liệu
+                objLSChinhSua = self.PBDMLichSuChinhSuaNhaCS()
+                objLSChinhSua.id = str(uuid.uuid4())
+                objLSChinhSua.nha_cs_id = obj.id
+                objLSChinhSua.ly_do_id = data.get("lyDoChinhSuaID")
+                objLSChinhSua.ly_do_chinh_sua = data.get("lyDoChinhSuaTEXT")
+                # TODO: Lấy ID tài khoản đăng nhập
+                objLSChinhSua.nguoi_chinh_sua_id = "-"
+                objLSChinhSua.ngay_tao = datetime.now(timezone.utc)
+                formatData = request.form.to_dict()
+                formatData.pop("body_params")
+                formatData.pop("lyDoChinhSuaID")
+                formatData.pop("lyDoChinhSuaTEXT")
+                oldData.pop('_sa_instance_state', None)
+                objLSChinhSua.du_lieu_cu = str(json.dumps(oldData))
+                objLSChinhSua.du_lieu_moi = str(json.dumps(formatData))
+                session.add(objLSChinhSua)
 
             session.commit()
             session.close()
@@ -325,11 +396,15 @@ class PublicBuildingController(ControllerV2):
     def getTaiSanIdBySoToAndSoThua(self, soTo, soThua):
         if soTo and soThua:
             session = self.session()
-            valTaiSanID = session.query(self.PBDMQuanLyNhaCongSan.tai_san_id).filter(
-                self.PBDMQuanLyNhaCongSan.so_to == soTo,
-                self.PBDMQuanLyNhaCongSan.so_thua == soThua,
-                self.PBDMQuanLyNhaCongSan.trang_thai_xoa == False
-            ).first()
+            valTaiSanID = (
+                session.query(self.PBDMQuanLyNhaCongSan.tai_san_id)
+                .filter(
+                    self.PBDMQuanLyNhaCongSan.so_to == soTo,
+                    self.PBDMQuanLyNhaCongSan.so_thua == soThua,
+                    self.PBDMQuanLyNhaCongSan.trang_thai_xoa == False,
+                )
+                .first()
+            )
             session.close()
             return valTaiSanID[0] if valTaiSanID else str(uuid.uuid4())
         else:

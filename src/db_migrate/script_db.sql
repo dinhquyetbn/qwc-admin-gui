@@ -218,3 +218,44 @@ ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ma_qh DROP NOT NUL
 ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_qh DROP NOT NULL;
 ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ma_tp DROP NOT NULL;
 ALTER TABLE qwc_config.pbms_quan_ly_nha_cong_san ALTER COLUMN ten_tp DROP NOT NULL;
+
+// 20241204: TODO
+CREATE TABLE qwc_config.pbms_lich_su_chinh_sua_nha_cs (
+	id VARCHAR(50) NOT NULL,
+    nha_cs_id VARCHAR(50) NOT NULL,
+    ly_do_id VARCHAR(50) NOT NULL,
+    ly_do_chinh_sua VARCHAR(255) NOT NULL,
+    nguoi_chinh_sua_id VARCHAR(50) NOT NULL,
+    du_lieu_cu TEXT,
+    du_lieu_moi TEXT,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_lich_su_chinh_sua_nha_cs_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_lich_su_chinh_sua_nha_cs TO qwc_admin;
+
+CREATE TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs (
+	id VARCHAR(50) NOT NULL,
+    dat_cs_id VARCHAR(50) NOT NULL,
+    ly_do_id VARCHAR(50) NOT NULL,
+    ly_do_chinh_sua VARCHAR(255) NOT NULL,
+    nguoi_chinh_sua_id VARCHAR(50) NOT NULL,
+    du_lieu_cu TEXT,
+    du_lieu_moi TEXT,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_lich_su_chinh_sua_dat_cs_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs TO qwc_admin;

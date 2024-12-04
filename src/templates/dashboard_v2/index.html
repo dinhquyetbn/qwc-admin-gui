@@ -230,7 +230,7 @@
     }
 
     function renderChartThongKeNhaVaDatTheoDiaPhuong() {
-        const ctx = document.getElementById('chart-tongquan-quanhuyen').getContext('2d');
+        const ctx = document.getElementById('chart-tongquan-quanhuyen');
         $.ajax({
             url: `api/dashboard-v2/thong-ke-nha-dat-theo-qh`, // Replace with your API endpoint
             type: 'GET',
@@ -274,6 +274,12 @@
                 ]
             },
             options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        enabled: true,
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true
