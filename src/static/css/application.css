@@ -81,6 +81,49 @@ form {
   cursor: pointer;
 }
 
+.nav-info .nav-info-noti {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-info .nav-info-noti .noti-number {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 50%;
+  border: 1px solid white;
+  transform: translate(50%, -50%);
+  min-width: 20px;
+  text-align: center;
+}
+
+.nav-info .nav-info-noti .noti-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.nav-info .nav-info-noti .noti-content {
+  font-size: 15px;
+  margin: 0;
+}
+
+.nav-info .nav-info-noti .noti-time {
+  font-style: italic;
+  font-size: 14px;
+  display: flex;
+  margin-top: 5px;
+}
+.nav-info .nav-info-noti .dropdown-item:hover {
+  background-color: #0093D8;
+  color: #fff;
+}
+
 .nav-info .nav-info-noti img {
   width: 23px;
   cursor: pointer;

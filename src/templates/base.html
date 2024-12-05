@@ -157,8 +157,45 @@
         <div class="nav-info-user">
           <img src="{{ url_for('static', filename='img/avatar.svg')}}" title="Thông tin người dùng" />
         </div>
-        <div class="nav-info-noti">
+        <div class="nav-info-noti" type="button" data-bs-toggle="dropdown" aria-expanded="false">
           <img src="{{ url_for('static', filename='img/notification.svg')}}" title="Thông báo" />
+          <span class="noti-number">4</span>
+          <ul class="dropdown-menu" style="right: 0; left: auto;">
+            <li>
+              <a class="dropdown-item" href="#">
+                <p class="noti-title">[Nhà CS][NDCS-2031112316123] Đến hạn bảo trì</p>
+                <p class="noti-content">Trường mầm non Sao Mai (Cơ sở 1) Đường Cầu đổ - Túy Loan</p>
+                <span class="noti-time">5/12/2024 10:48</span>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <p class="noti-title">[Nhà CS][NDCS-203113322121] Đến hạn bảo trì</p>
+                <p class="noti-content">Nhà văn hóa liên TDP số 32-33</p>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <p class="noti-title">[Nhà CS][NDCS-203111231564] Đến hạn bảo trì</p>
+                <p class="noti-content">Trạm Y tế phường Hòa Thọ Tây</p>
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <p class="noti-title">[Nhà CS][NDCS-203111224614] Đến hạn bảo trì</p>
+                <p class="noti-content">Nhà văn hóa TDP số 9</p>
+              </a>
+            </li>
+          </ul>
         </div>
         <div class="nav-info-logout">
           <a href="/auth/logout">
@@ -296,8 +333,8 @@
           <span class="description">{{ i18n('interface.sidebar.thiet_lap_giao_dien') }}</span>
         </a>
       </div> -->
-      <a class="nav-link disabled" href="#" data-bs-toggle="collapse" data-bs-target="#CauHinhBanDo" aria-expanded="false"
-        aria-controls="CauHinhBanDo">
+      <a class="nav-link disabled" href="#" data-bs-toggle="collapse" data-bs-target="#CauHinhBanDo"
+        aria-expanded="false" aria-controls="CauHinhBanDo">
         <span class="svg-icon svg-icon-map"></span>
         <span class="description">{{ i18n('interface.sidebar.cau_hinh_ban_do') }}</span>
         <i class="icon-drop fa fa-chevron-down ms-auto"></i>
