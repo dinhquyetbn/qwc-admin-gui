@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import os
 import uuid
-
+from sqlalchemy import desc
 from flask import json, jsonify, request
 
 from .controller_v2 import ControllerV2
@@ -114,7 +114,7 @@ class PublicBuildingController(ControllerV2):
                     getattr(self.PBDMQuanLyNhaCongSan, val_col).desc()
                 )
         else:
-            query = query.order_by(self.PBDMQuanLyNhaCongSan.ngay_tao)
+            query = query.order_by(desc(self.PBDMQuanLyNhaCongSan.ngay_tao))
 
         # Phân trang
         data = query.limit(req_size).offset(req_page).all()

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import os
 import uuid
-
+from sqlalchemy import desc
 from flask import json, jsonify, request
 
 from .controller_v2 import ControllerV2
@@ -98,7 +98,7 @@ class PublicLandController(ControllerV2):
             elif val_dir == "desc":
                 query = query.order_by(getattr(self.PBDMQuanLyDatCong, val_col).desc())
         else:
-            query = query.order_by(self.PBDMQuanLyDatCong.ngay_tao)
+            query = query.order_by(desc(self.PBDMQuanLyDatCong.ngay_tao))
 
         # Phân trang
         data = query.limit(req_size).offset(req_page).all()

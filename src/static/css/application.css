@@ -298,7 +298,7 @@ button.dt-paging-button.last {
 .btn-action .svg-icon {
   margin: 0;  
 }
-.btn-action .btn-icon-edit, .btn-action .btn-icon-delete {
+.btn-action, .btn-icon-view, .btn-icon-edit, .btn-action .btn-icon-delete {
   padding: 5px;
 }
 .select2-container--default .select2-search--dropdown .select2-search__field {
@@ -352,6 +352,9 @@ button.dt-paging-button.last {
 }
 .svg-icon-edit {
   background-image:  url('../img/edit.svg');
+}
+.svg-icon-view {
+  background-image:  url('../img/view.svg');
 }
 .svg-icon-delete {
   background-image:  url('../img/delete.svg');

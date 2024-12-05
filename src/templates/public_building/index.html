@@ -327,6 +327,7 @@ Thêm mới dữ liệu nhà công sản
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#duLieuChinhForm')[0].reset();
+            $('.btn-save').show()
         })
 
 
@@ -469,6 +470,9 @@ Thêm mới dữ liệu nhà công sản
                     targets: getIdxFieldTable(fieldDuLieuChinh, ['tac_vu']),
                     render: function (data, type, full, meta) {
                         return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-view" role="button" title="Xem chi tiết" onclick="showDetailTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-view"></span>    
+                                    </a>
                                     <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showLyDoCapNhatDuLieuModal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    
@@ -632,6 +636,10 @@ Thêm mới dữ liệu nhà công sản
             $('#select-lyDoCapNhatDuLieu').attr('data-row-id', id);
         }
 
+        window.showDetailTab1Modal = function (id) {
+            getDetailNhaById(id, 'VIEW');
+        }
+
         window.showUpdateTab1Modal = function () {
             // Khởi tạo validate form
             $('#lyDoCapNhatDuLieuForm').validate({
@@ -681,36 +689,8 @@ Thêm mới dữ liệu nhà công sản
                 $('#chonLyDoCapNhatDuLieuModal').modal('hide');
                 const rowID = $('#select-lyDoCapNhatDuLieu').attr('data-row-id');
                 // Show modal detail cập nhật dữ liệu
-                $.ajax({
-                    url: `api/public-building/detail/${rowID}`, // Replace with your API endpoint
-                    type: 'GET',
-                    headers: {
-                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
-                    },
-                    success: async function (res) {
-                        const data = res.result;
-                        $('#duLieuChinhForm [name="id"]').val(data.id);
-                        // Trigger validation on each field to show feedback
-                        // Get all param
-                        await renderTabAndContentUI(data.phan_loai_tai_san_id).then(() => {
-                            globalParams.forEach(item => {
-                                $(`#duLieuChinhForm [name="${item.ma_truong}"]`).val(data[`${item.ma_truong}`]);
-                            });
-
-                            $('#select-province').append(new Option(data.ten_tp, data.ma_tp, true, true)).trigger('change');
-                            $('#select-district').append(new Option(data.ten_qh, data.ma_qh, true, true)).trigger('change');
-                            $('#select-ward').append(new Option(data.ten_px, data.ma_px, true, true)).trigger('change');
-                            $('#duLieuChinhForm').validate().form();
-                            // Show confirmation modal
-                            $('#createTab1Modal').modal('show');
-                            $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
-                        });
-                    },
-                    error: function (err) {
-                        // Handle error
-                        toastr.error(err.responseJSON?.error);
-                    }
-                });
+                // Show modal detail cập nhật dữ liệu
+                getDetailNhaById(rowID, 'EDIT');
             }
         }
 
@@ -744,6 +724,44 @@ Thêm mới dữ liệu nhà công sản
             });
         }
     })
+
+    function getDetailNhaById(id, action = 'EDIT') {
+        $.ajax({
+            url: `api/public-building/detail/${id}`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: async function (res) {
+                const data = res.result;
+                $('#duLieuChinhForm [name="id"]').val(data.id);
+                // Trigger validation on each field to show feedback
+                // Get all param
+                await renderTabAndContentUI(data.phan_loai_tai_san_id).then(() => {
+                    globalParams.forEach(item => {
+                        $(`#duLieuChinhForm [name="${item.ma_truong}"]`).val(data[`${item.ma_truong}`]);
+                    });
+
+                    $('#select-province').append(new Option(data.ten_tp, data.ma_tp, true, true)).trigger('change');
+                    $('#select-district').append(new Option(data.ten_qh, data.ma_qh, true, true)).trigger('change');
+                    $('#select-ward').append(new Option(data.ten_px, data.ma_px, true, true)).trigger('change');
+                    $('#duLieuChinhForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab1Modal').modal('show');
+                    if (action === 'VIEW') {
+                        $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
+                        $('.btn-save').hide()
+                    } else {
+                        $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                    }
+                });
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
+        });
+    }
 
     function generateRandomString(length = 8) {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';

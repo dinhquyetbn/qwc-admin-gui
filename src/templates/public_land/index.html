@@ -143,7 +143,8 @@
             <div class="col-md-6">
                 <label for="ds_file_dinh_kem" class="form-label">Ảnh / Văn bản đính kèm:</label>
                 <input type="text" class="form-control" name="ds_file_dinh_kem" hidden>
-                <input type="file" class="form-control" multiple accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf">
+                <input type="file" class="form-control" multiple
+                    accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf">
             </div>
         </form>
     </div>
@@ -312,6 +313,7 @@
         });
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
+            $('.btn-save').show();
             $('#duLieuChinhForm')[0].reset();
             $('#select-province').val(null).trigger('change');
             $('#select-district').val(null).trigger('change');
@@ -430,6 +432,9 @@
                     targets: getIdxFieldTable(fieldDuLieuChinh, ['tac_vu']),
                     render: function (data, type, full, meta) {
                         return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-view" role="button" title="Xem chi tiết" onclick="showDetailTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-view"></span>    
+                                    </a> 
                                     <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showLyDoCapNhatDuLieuModal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    
@@ -604,6 +609,10 @@
             $('#select-lyDoCapNhatDuLieu').attr('data-row-id', id);
         }
 
+        window.showDetailTab1Modal = function (id) {
+            getDetailDatById(id, 'VIEW');
+        }
+
         window.showUpdateTab1Modal = function () {
             // Khởi tạo validate form
             $('#lyDoCapNhatDuLieuForm').validate({
@@ -653,43 +662,7 @@
                 $('#chonLyDoCapNhatDuLieuModal').modal('hide');
                 const rowID = $('#select-lyDoCapNhatDuLieu').attr('data-row-id');
                 // Show modal detail cập nhật dữ liệu
-                $.ajax({
-                    url: `api/public-land/detail/${rowID}`, // Replace with your API endpoint
-                    type: 'GET',
-                    headers: {
-                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
-                    },
-                    success: async function (res) {
-                        const data = res.result;
-                        $('#duLieuChinhForm [name="id"]').val(data.id);
-                        $('#duLieuChinhForm [name="ma_dat"]').val(data.ma_dat);
-                        $('#duLieuChinhForm [name="ten_dat"]').val(data.ten_dat);
-                        $('#duLieuChinhForm [name="so_to"]').val(data.so_to);
-                        $('#duLieuChinhForm [name="so_thua"]').val(data.so_thua);
-                        $('#duLieuChinhForm [name="dien_tich"]').val(data.dien_tich);
-                        $('#duLieuChinhForm [name="ds_file_dinh_kem"]').val(data.ds_file_dinh_kem);
-                        $('#duLieuChinhForm [name="dia_chi"]').val(data.dia_chi);
-                        // Trigger validation on each field to show feedback
-                        // Get all param
-                        if (data.don_vi_quan_ly_id && data.don_vi_quan_ly_id !== '') {
-                            $('#select-don-vi-quan-ly').append(new Option(data.ten_don_vi_quan_ly, data.don_vi_quan_ly_id, true, true)).trigger('change');
-                        }
-                        if (data.hien_trang_sd_id && data.hien_trang_sd_id !== '') {
-                            $('#select-hien-trang-sd').append(new Option(data.ten_hien_trang_sd, data.hien_trang_sd_id, true, true)).trigger('change');
-                        }
-                        $('#select-province').append(new Option(data.ten_tp, data.ma_tp, true, true)).trigger('change');
-                        $('#select-district').append(new Option(data.ten_qh, data.ma_qh, true, true)).trigger('change');
-                        $('#select-ward').append(new Option(data.ten_px, data.ma_px, true, true)).trigger('change');
-                        $('#duLieuChinhForm').validate().form();
-                        // Show confirmation modal
-                        $('#createTab1Modal').modal('show');
-                        $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
-                    },
-                    error: function (err) {
-                        // Handle error
-                        toastr.error(err.responseJSON?.error);
-                    }
-                });
+                getDetailDatById(rowID, 'EDIT');
             }
         }
 
@@ -723,5 +696,50 @@
             });
         }
     })
+
+    function getDetailDatById(id, action = 'EDIT') {
+        $.ajax({
+            url: `api/public-land/detail/${id}`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: async function (res) {
+                const data = res.result;
+                $('#duLieuChinhForm [name="id"]').val(data.id);
+                $('#duLieuChinhForm [name="ma_dat"]').val(data.ma_dat);
+                $('#duLieuChinhForm [name="ten_dat"]').val(data.ten_dat);
+                $('#duLieuChinhForm [name="so_to"]').val(data.so_to);
+                $('#duLieuChinhForm [name="so_thua"]').val(data.so_thua);
+                $('#duLieuChinhForm [name="dien_tich"]').val(data.dien_tich);
+                $('#duLieuChinhForm [name="ds_file_dinh_kem"]').val(data.ds_file_dinh_kem);
+                $('#duLieuChinhForm [name="dia_chi"]').val(data.dia_chi);
+                // Trigger validation on each field to show feedback
+                // Get all param
+                if (data.don_vi_quan_ly_id && data.don_vi_quan_ly_id !== '') {
+                    $('#select-don-vi-quan-ly').append(new Option(data.ten_don_vi_quan_ly, data.don_vi_quan_ly_id, true, true)).trigger('change');
+                }
+                if (data.hien_trang_sd_id && data.hien_trang_sd_id !== '') {
+                    $('#select-hien-trang-sd').append(new Option(data.ten_hien_trang_sd, data.hien_trang_sd_id, true, true)).trigger('change');
+                }
+                $('#select-province').append(new Option(data.ten_tp, data.ma_tp, true, true)).trigger('change');
+                $('#select-district').append(new Option(data.ten_qh, data.ma_qh, true, true)).trigger('change');
+                $('#select-ward').append(new Option(data.ten_px, data.ma_px, true, true)).trigger('change');
+                $('#duLieuChinhForm').validate().form();
+                // Show confirmation modal
+                $('#createTab1Modal').modal('show');
+                if (action === 'VIEW') {
+                    $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
+                    $('.btn-save').hide()
+                } else {
+                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                }
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
+        });
+    }
 </script>
 {% endblock %}
