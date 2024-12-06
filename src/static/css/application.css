@@ -261,7 +261,11 @@ form {
   background: var(--Gradients-Green, linear-gradient(180deg, red 0%, red 100%));
   color: #fff;
 }
-
+.btn-upload, .btn-upload:hover {
+  background: #f5f5f5;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
 .wrapper-filter-search input {
   border: 1px solid var(--stroke, #7B809A);
   border-radius: 8px 0 0 8px;

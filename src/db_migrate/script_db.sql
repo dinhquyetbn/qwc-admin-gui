@@ -259,3 +259,22 @@ CREATE TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs (
 );
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs TO qwc_admin;
+
+// 20241205: TODO
+CREATE TABLE qwc_config.pbms_quan_ly_file_dinh_kem (
+	id VARCHAR(50) NOT NULL,
+    file_name TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(255),
+    file_size INTEGER,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_quan_ly_file_dinh_kem_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_file_dinh_kem TO qwc_admin;

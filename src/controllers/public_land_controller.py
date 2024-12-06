@@ -3,8 +3,8 @@ import os
 import uuid
 from sqlalchemy import desc
 from flask import json, jsonify, request
-
 from .controller_v2 import ControllerV2
+from services.upload_file_service import UploadFileService
 
 
 class PublicLandController(ControllerV2):
@@ -23,7 +23,6 @@ class PublicLandController(ControllerV2):
             app,
             handler,
         )
-
         self.register_routes()
 
     def register_routes(self):
@@ -154,7 +153,7 @@ class PublicLandController(ControllerV2):
                 "ten_qh": t1.ten_qh,
                 "ma_tp": t1.ma_tp,
                 "ten_tp": t1.ten_tp,
-                "ds_file_dinh_kem": t1.ds_file_dinh_kem,
+                "ds_file_dinh_kem_info": t1.ds_file_dinh_kem,
                 "full_dia_chi": f"{t1.dia_chi}, {t1.ten_px}, {t1.ten_qh}, {t1.ten_tp}",
                 "ngay_tao": self.convertUTCDateToVNTime(t1.ngay_tao),
             }
@@ -210,7 +209,43 @@ class PublicLandController(ControllerV2):
             obj.ten_qh = data.get("ten_qh")
             obj.ma_tp = data.get("ma_tp")
             obj.ten_tp = data.get("ten_tp")
-            obj.ds_file_dinh_kem = data.get("ds_file_dinh_kem")
+
+            # Upload files
+            # Kiểm tra tồn tại file upload không
+            file_uploads = request.files.getlist("ds_file_dinh_kem")
+            # File dữ liệu cũ
+            file_news = []
+            file_olds = json.loads(data.get("ds_file_dinh_kem_info")) if data.get("ds_file_dinh_kem_info") != '' else []
+            if file_uploads and file_uploads.__len__() > 0:
+                uploadFileService = UploadFileService()
+                (saved_files, error_files) = uploadFileService.saveToMultipleFile(
+                    file_uploads
+                )
+                if error_files and error_files.__len__() > 0:
+                    return jsonify({"error": "File upload không thành công."}), 400
+                if saved_files and saved_files.__len__() > 0:
+                    # Gán danh sách file vào db
+                    file_news = saved_files
+                    for item in saved_files:
+                        addFile = self.PBDMQuanLyFileDinhKem()
+                        addFile.id = item["id"]
+                        addFile.file_name = item["file_name"]
+                        addFile.file_url = item["file_url"]
+                        addFile.file_type = item["file_type"]
+                        addFile.file_size = item["file_size"]
+                        addFile.ngay_tao = datetime.now(timezone.utc)
+                        session.add(addFile)
+
+            if id:
+                if file_news.__len__() > 0:
+                    obj.ds_file_dinh_kem = json.dumps([*file_olds, *file_news])
+                else:
+                    obj.ds_file_dinh_kem = json.dumps(file_olds)
+            else:
+                if file_news.__len__() > 0:
+                    obj.ds_file_dinh_kem = json.dumps(file_news)
+                else:
+                    obj.ds_file_dinh_kem = json.dumps([])
 
             # Nếu là update thì mới ghi vào bảng lịch sử
             if id:
@@ -226,16 +261,15 @@ class PublicLandController(ControllerV2):
                 formatData = request.form.to_dict()
                 formatData.pop("lyDoChinhSuaID")
                 formatData.pop("lyDoChinhSuaTEXT")
-                oldData.pop('_sa_instance_state', None)
+                oldData.pop("_sa_instance_state", None)
                 objLSChinhSua.du_lieu_cu = str(json.dumps(oldData))
                 objLSChinhSua.du_lieu_moi = str(json.dumps(formatData))
                 session.add(objLSChinhSua)
 
             session.commit()
-            # self.update_config_timestamp(session)
             session.close()
             # Return a success response
-            return jsonify({"message": "Cập nhật dữ liệu thành công."}), 201
+            return jsonify({"message": "Cập nhật dữ liệu thành công."}), 200
         except Exception as e:
             # Handle exceptions and return an error response
             return jsonify({"error": str(e)}), 500
@@ -262,16 +296,24 @@ class PublicLandController(ControllerV2):
         session = self.session()
         query = self.find_resource_public_land(id, session)
 
-        queryHTSD = session.query(self.PBDMQuanLyDanhMuc).filter(self.PBDMQuanLyDanhMuc.id == query.hien_trang_sd_id).first()
-        queryDVQL = session.query(self.PBMSQuanLyDonVi).filter(self.PBMSQuanLyDonVi.id == query.don_vi_quan_ly_id).first()
+        queryHTSD = (
+            session.query(self.PBDMQuanLyDanhMuc)
+            .filter(self.PBDMQuanLyDanhMuc.id == query.hien_trang_sd_id)
+            .first()
+        )
+        queryDVQL = (
+            session.query(self.PBMSQuanLyDonVi)
+            .filter(self.PBMSQuanLyDonVi.id == query.don_vi_quan_ly_id)
+            .first()
+        )
         jsonData = {
             "id": query.id,
             "ma_dat": query.ma_dat,
             "ten_dat": query.ten_dat,
             "don_vi_quan_ly_id": query.don_vi_quan_ly_id,
-            "ten_don_vi_quan_ly": queryDVQL.ten_dv if queryDVQL else '',
+            "ten_don_vi_quan_ly": queryDVQL.ten_dv if queryDVQL else "",
             "hien_trang_sd_id": query.hien_trang_sd_id,
-            "ten_hien_trang_sd": queryHTSD.ten_danh_muc if queryHTSD else '',
+            "ten_hien_trang_sd": queryHTSD.ten_danh_muc if queryHTSD else "",
             "so_to": query.so_to,
             "so_thua": query.so_thua,
             "dien_tich": query.dien_tich,
@@ -282,7 +324,7 @@ class PublicLandController(ControllerV2):
             "ten_qh": query.ten_qh,
             "ma_tp": query.ma_tp,
             "ten_tp": query.ten_tp,
-            "ds_file_dinh_kem": query.ds_file_dinh_kem,
+            "ds_file_dinh_kem_info": query.ds_file_dinh_kem,
             "ngay_tao": self.convertUTCDateToVNTime(query.ngay_tao),
         }
         session.close()

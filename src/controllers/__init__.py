@@ -14,3 +14,4 @@ from .map_data_analytics_controller import MapDataAnalyticsController
 from .units_controller import UnitsController
 from .categories_controller import CategoriesController
 from .dashboard_v2_controller import DashboardV2Controller
+from .upload_file_controller import UploadFileController
