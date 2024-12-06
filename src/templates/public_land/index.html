@@ -840,6 +840,7 @@
             const fileListOld = document.getElementById("fileListOld");
             const files = JSON.parse(lstFile);
             let resFiles = files;
+            if (!resFiles) return;
             for (const file of files) {
                 const listItem = document.createElement("li");
 
