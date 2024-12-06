@@ -260,7 +260,7 @@ CREATE TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs (
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs TO qwc_admin;
 
-// 20241205: TODO
+-- 20241205: TODO
 CREATE TABLE qwc_config.pbms_quan_ly_file_dinh_kem (
 	id VARCHAR(50) NOT NULL,
     file_name TEXT NOT NULL,
