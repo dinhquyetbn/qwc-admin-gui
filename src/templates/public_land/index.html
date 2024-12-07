@@ -880,7 +880,7 @@
 
     function clickShowFiles(files) {
         $('#lstFileDinhKiemModal').html('');
-        const formatValue = JSON.parse(files);
+        const formatValue = files && files !== '' ? JSON.parse(files) : null;
         if (formatValue && formatValue.length > 0) {
             for (let item of formatValue) {
                 $('#lstFileDinhKiemModal').append(`<li><a target="_blank" href="/${item.file_url}">${item.file_name}</a></li>`);
