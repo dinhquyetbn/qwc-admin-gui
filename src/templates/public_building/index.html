@@ -492,7 +492,7 @@ Thêm mới dữ liệu nhà công sản
                     data: 'ds_file_dinh_kem_info',
                     targets: getIdxFieldTable(fieldDuLieuChinh, ['ds_file_dinh_kem_info']),
                     render: function (data, type, full, meta) {
-                        const files = JSON.parse(data);
+                        const files = data && data !== '' ? JSON.parse(data) : null;
                         return `<a class="btn btn-default btn-upload" onclick='clickShowFiles(${JSON.stringify(data)})'>
                                         {{ utils.render_icon('link-45deg') }} File đính kèm (${files?.length || 0})
                                     </a>`;
