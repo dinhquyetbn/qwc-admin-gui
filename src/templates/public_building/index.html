@@ -76,7 +76,7 @@
                     <th style="min-width: 200px;">Địa chỉ</th>
                     <th style="min-width: 142px;">Số tờ</th>
                     <th style="min-width: 142px;">Số thửa</th>
-                    <th>Ảnh/Văn bản</th>
+                    <th style="min-width: 200px;">Ảnh/Văn bản</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
                     <th class="text-center" style="min-width: 100px;">Tác vụ</th>
                 </tr>
@@ -162,6 +162,26 @@
                         utils.render_icon('x-circle') }}
                         Hủy</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="fileDinhKemModal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+    aria-labelledby="fileDinhKemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Danh sách file ảnh / văn bản
+                </h5>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{
+                        utils.render_icon('x-circle') }}
+                        Thoát</button>
+                </div>
+            </div>
+            <div class="modal-body my-2">
+                <ul id="lstFileDinhKiemModal"></ul>
             </div>
         </div>
     </div>
@@ -323,6 +343,8 @@ Thêm mới dữ liệu nhà công sản
 
             renderSelectAddress();
             renderFormatDate();
+            initEventChangeUploadFile();
+
         });
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
@@ -340,6 +362,7 @@ Thêm mới dữ liệu nhà công sản
             $('#lyDoCapNhatDuLieuForm')[0].reset();
             $('#select-lyDoCapNhatDuLieu').val(null).trigger('change');
         })
+
     })
 
     let globalParams = [];
@@ -412,7 +435,7 @@ Thêm mới dữ liệu nhà công sản
             "full_dia_chi",
             "so_to",
             "so_thua",
-            "ds_file_dinh_kem",
+            "ds_file_dinh_kem_info",
             "ngay_tao",
             "tac_vu"
         ];
@@ -456,7 +479,7 @@ Thêm mới dữ liệu nhà công sản
                 { "defaultContent": "", "targets": "_all" },
                 {
                     orderable: false, targets: getIdxFieldTable(fieldDuLieuChinh,
-                        ['stt', 'ds_file_dinh_kem', 'ngay_tao', 'tac_vu'])
+                        ['stt', 'ds_file_dinh_kem_info', 'ngay_tao', 'tac_vu'])
                 },
                 {
                     data: '',
@@ -464,6 +487,16 @@ Thêm mới dữ liệu nhà công sản
                     render: function (data, type, full, meta) {
                         return meta.settings._iDisplayStart + meta.row + 1;
                     },
+                },
+                {
+                    data: 'ds_file_dinh_kem_info',
+                    targets: getIdxFieldTable(fieldDuLieuChinh, ['ds_file_dinh_kem_info']),
+                    render: function (data, type, full, meta) {
+                        const files = JSON.parse(data);
+                        return `<a class="btn btn-default btn-upload" onclick='clickShowFiles(${JSON.stringify(data)})'>
+                                        {{ utils.render_icon('link-45deg') }} File đính kèm (${files?.length || 0})
+                                    </a>`;
+                    }
                 },
                 {
                     data: '',
@@ -490,7 +523,7 @@ Thêm mới dữ liệu nhà công sản
                 { data: 'full_dia_chi' },
                 { data: 'so_to' },
                 { data: 'so_thua' },
-                { data: 'ds_file_dinh_kem' },
+                { data: 'ds_file_dinh_kem_info' },
                 { data: 'ngay_tao' },
                 { className: 'noVis' },
             ]
@@ -588,13 +621,23 @@ Thêm mới dữ liệu nhà công sản
                 formData.append('phan_loai_tai_san_id', $('select[name="phan_loai_tai_san_id"]').val());
                 // Truyền lại danh sách param
                 formData.append('body_params', JSON.stringify(globalParams));
-                formData.append('ten_tp', $("#select-province").select2('data')[0].text);
-                formData.append('ten_qh', $("#select-district").select2('data')[0].text);
-                formData.append('ten_px', $("#select-ward").select2('data')[0].text);
+                if ($("#select-province").val())
+                    formData.append('ten_tp', $("#select-province").select2('data')[0].text);
+                if ($("#select-district").val())
+                    formData.append('ten_qh', $("#select-district").select2('data')[0].text);
+                if ($("#select-ward").val())
+                    formData.append('ten_px', $("#select-ward").select2('data')[0].text);
 
-                // for (let [key, value] of formData.entries()) {
-                //     console.log(`${key}:`, value); // Hiển thị key và giá trị
-                // }
+                // Check upload file
+                // const fileUploads = document.querySelectorAll('input[type="file"]');
+                // fileUploads.forEach(item => {
+                //     const files = item.files;
+                //     for (var i = 0; i < files.length; i++) {
+                //         console.log(item.name);
+                //         console.log(files[i]);
+                //         formData.append(`${item.name}`, files[i]);
+                //     }
+                // })
 
                 // Make AJAX call
                 let ajax_url = 'api/public-building/create';
@@ -739,7 +782,12 @@ Thêm mới dữ liệu nhà công sản
                 // Get all param
                 await renderTabAndContentUI(data.phan_loai_tai_san_id).then(() => {
                     globalParams.forEach(item => {
-                        $(`#duLieuChinhForm [name="${item.ma_truong}"]`).val(data[`${item.ma_truong}`]);
+                        if (item.kieu_du_lieu === "file") {
+                            $(`#duLieuChinhForm [name="${item.ma_truong}_info"]`).val(data[`${item.ma_truong}_info`]);
+                            renderPreviewFileUploadOld(item.ma_truong, data[`${item.ma_truong}_info`], action);
+                        } else {
+                            $(`#duLieuChinhForm [name="${item.ma_truong}"]`).val(data[`${item.ma_truong}`]);
+                        }
                     });
 
                     $('#select-province').append(new Option(data.ten_tp, data.ma_tp, true, true)).trigger('change');
@@ -834,8 +882,15 @@ Thêm mới dữ liệu nhà công sản
                 `;
             } else if (obj.kieu_du_lieu === 'file') {
                 content += `
-                    <label for="${obj.ma_truong}" class="form-label">${obj.ten_truong}:</label>
-                    <input type="file" class="form-control" name="${obj.ma_truong}" multiple accept=".xlsx,.xls,.png,.jpeg,.jpg,.doc, .docx,.ppt, .pptx,.txt,.pdf">
+                    <label for="${obj.ma_truong}" class="form-label w-100">${obj.ten_truong}:</label>
+                    <a class="btn btn-default btn-upload w-50"
+                    onclick="document.querySelector('input[name=&quot;${obj.ma_truong}&quot;]').click();">
+                        {{ utils.render_icon('upload') }} Tải lên
+                    </a>
+                    <input type="text" name="${obj.ma_truong}_info" hidden />
+                    <input type="file" class="form-control" name="${obj.ma_truong}" multiple accept=".xlsx,.xls,.png,.jpeg,.jpg,.doc,.docx,.pdf" hidden>
+                    <ul id="${obj.ma_truong}_new"></ul>
+                    <ul id="${obj.ma_truong}_old"></ul>
                 `;
             }
         }
@@ -972,5 +1027,107 @@ Thêm mới dữ liệu nhà công sản
             }
         });
     }
+
+    function initEventChangeUploadFile() {
+        const inputFiles = document.querySelectorAll(`input[type="file"]`);
+        inputFiles.forEach(input => {
+            // Khi dữ liệu file thay đổi hiển thị lại preview
+            $(`#createTab1Modal input[name="${input.name}"]`).on('change', function (e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    // Check kích thước lớn hơn 5MB (5242880 Bytes)
+                    const files5MB = Array.from(files).filter(x => x.size > 5 * 1024 * 1024);
+                    if (files5MB.length > 0) {
+                        $(`#createTab1Modal input[name="${input.name}"]`).val(null);
+                        toastr.error('File upload không được vượt quá 5MB.');
+                    }
+                }
+                renderPreviewFileUploadNew(input.name, files);
+            })
+        })
+    }
+
+    function renderPreviewFileUploadNew(name, files, action = 'VIEW') {
+        const fileListNew = document.getElementById(`${name}_new`);
+        fileListNew.innerHTML = ""; // Clear any previous entries
+        for (const file of files) {
+            const listItem = document.createElement("li");
+
+            const linkItem = document.createElement("a");
+            linkItem.href = `#`;
+            linkItem.text = file.name;
+            linkItem.style.textDecoration = "none";
+            listItem.appendChild(linkItem);
+
+            if (action !== 'VIEW') {
+                const removeLink = document.createElement("a");
+                removeLink.href = "#";
+                removeLink.textContent = "(Xóa)";
+                removeLink.style.color = "red";
+                removeLink.style.marginLeft = "10px";
+                removeLink.style.textDecoration = "none";
+                removeLink.style.cursor = "pointer";
+                removeLink.onclick = function (event) {
+                    event.preventDefault();
+                    listItem.remove();
+                };
+                listItem.appendChild(removeLink);
+            }
+
+            fileListNew.appendChild(listItem);
+        }
+    }
+
+    function renderPreviewFileUploadOld(name, lstFile, action = 'VIEW') {
+        const fileListOld = document.getElementById(`${name}_old`);
+        const files = JSON.parse(lstFile);
+        let resFiles = files;
+        if (!resFiles) return;
+        for (const file of files) {
+            const listItem = document.createElement("li");
+
+            const linkItem = document.createElement("a");
+            linkItem.href = `/${file.file_url}`;
+            linkItem.text = file.file_name;
+            linkItem.style.textDecoration = "none";
+            linkItem.target = '_blank';
+            listItem.appendChild(linkItem);
+
+            if (action !== 'VIEW') {
+                const removeLink = document.createElement("a");
+                removeLink.href = "#";
+                removeLink.textContent = "(Xóa)";
+                removeLink.style.color = "red";
+                removeLink.style.marginLeft = "10px";
+                removeLink.style.textDecoration = "none";
+                removeLink.style.cursor = "pointer";
+                removeLink.setAttribute("data-id", file.id);
+                removeLink.onclick = function (event) {
+                    event.preventDefault();
+                    const fileId = removeLink.getAttribute("data-id");
+                    resFiles = resFiles.filter(x => x.id !== fileId);
+                    $(`input[name="${name}_info"]`).val(JSON.stringify(resFiles))
+                    listItem.remove();
+                };
+                listItem.appendChild(removeLink);
+            }
+
+            fileListOld.appendChild(listItem);
+        }
+    }
+
+    function clickShowFiles(files) {
+        $('#lstFileDinhKiemModal').html('');
+        const formatValue = JSON.parse(files);
+        if (formatValue && formatValue.length > 0) {
+            for (let item of formatValue) {
+                $('#lstFileDinhKiemModal').append(`<li><a target="_blank" href="/${item.file_url}">${item.file_name}</a></li>`);
+            }
+        } else {
+            $('#lstFileDinhKiemModal').html('<p class="text-center">Không có file đính kèm.</p>');
+        }
+        $('#fileDinhKemModal').modal('show');
+    }
+
 </script>
 {% endblock %}

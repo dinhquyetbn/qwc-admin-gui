@@ -3,7 +3,7 @@ import os
 import uuid
 from sqlalchemy import desc
 from flask import json, jsonify, request
-
+from services.upload_file_service import UploadFileService
 from .controller_v2 import ControllerV2
 
 
@@ -135,6 +135,7 @@ class PublicBuildingController(ControllerV2):
                     if t1.dia_chi
                     else ""
                 ),
+                "ds_file_dinh_kem_info": t1.ds_file_dinh_kem,
                 "ngay_tao": self.convertUTCDateToVNTime(t1.ngay_tao),
             }
             for t1 in data
@@ -184,6 +185,8 @@ class PublicBuildingController(ControllerV2):
                         if getattr(query, item.ma_truong)
                         else None
                     )
+                if item.kieu_du_lieu == "file":
+                    jsonData[f"{item.ma_truong}_info"] = getattr(query, item.ma_truong)
                 else:
                     jsonData[item.ma_truong] = getattr(query, item.ma_truong)
 
@@ -271,7 +274,47 @@ class PublicBuildingController(ControllerV2):
                     )
 
                 elif item["kieu_du_lieu"] == "file":
-                    pass
+                    # Upload files
+                    file_ma_truong = str(item["ma_truong"])
+                    # Kiểm tra tồn tại file upload không
+                    file_uploads = request.files.getlist(file_ma_truong)
+                    # File dữ liệu cũ
+                    file_news = []
+                    file_olds = json.loads(data.get(f"{file_ma_truong}_info")) if data.get(f"{file_ma_truong}_info") != '' else []
+                    if file_uploads and file_uploads.__len__() > 0:
+                        uploadFileService = UploadFileService()
+                        (saved_files, error_files) = uploadFileService.saveToMultipleFile(
+                            file_uploads
+                        )
+                        if error_files and error_files.__len__() > 0:
+                            return jsonify({"error": "File upload không thành công."}), 400
+                        if saved_files and saved_files.__len__() > 0:
+                            # Gán danh sách file vào db
+                            file_news = saved_files
+                            for item in saved_files:
+                                addFile = self.PBDMQuanLyFileDinhKem()
+                                addFile.id = item["id"]
+                                addFile.file_name = item["file_name"]
+                                addFile.file_url = item["file_url"]
+                                addFile.file_type = item["file_type"]
+                                addFile.file_size = item["file_size"]
+                                addFile.ngay_tao = datetime.now(timezone.utc)
+                                session.add(addFile)
+                    if id:
+                        if file_news.__len__() > 0:
+                            resultFile = json.dumps([*file_olds, *file_news])
+                        else:
+                            resultFile = json.dumps(file_olds)
+                    else:
+                        if file_news.__len__() > 0:
+                            resultFile = json.dumps(file_news)
+                        else:
+                            resultFile = json.dumps([])
+                    setattr(
+                        obj,
+                        file_ma_truong,
+                        resultFile,
+                    )
 
             # Nếu là update thì mới ghi vào bảng lịch sử
             if id:
