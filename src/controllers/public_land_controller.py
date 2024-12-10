@@ -62,6 +62,14 @@ class PublicLandController(ControllerV2):
             methods=["DELETE"],
         )
 
+        # get history
+        self.app.add_url_rule(
+            "/api/public-land/history-edit/<id>",
+            "get_history_edit",
+            self.get_history_edit,
+            methods=["GET"],
+        )
+
     # Hàm cho danh sách tham số
     def get_data_by_page_public_land(self):
         session = self.session()
@@ -215,7 +223,11 @@ class PublicLandController(ControllerV2):
             file_uploads = request.files.getlist("ds_file_dinh_kem")
             # File dữ liệu cũ
             file_news = []
-            file_olds = json.loads(data.get("ds_file_dinh_kem_info")) if data.get("ds_file_dinh_kem_info") != '' else []
+            file_olds = (
+                json.loads(data.get("ds_file_dinh_kem_info"))
+                if data.get("ds_file_dinh_kem_info") != ""
+                else []
+            )
             if file_uploads and file_uploads.__len__() > 0:
                 uploadFileService = UploadFileService()
                 (saved_files, error_files) = uploadFileService.saveToMultipleFile(
@@ -262,8 +274,10 @@ class PublicLandController(ControllerV2):
                 formatData.pop("lyDoChinhSuaID")
                 formatData.pop("lyDoChinhSuaTEXT")
                 oldData.pop("_sa_instance_state", None)
+                newData = obj.__dict__.copy()
+                newData.pop("_sa_instance_state", None)
                 objLSChinhSua.du_lieu_cu = str(json.dumps(oldData))
-                objLSChinhSua.du_lieu_moi = str(json.dumps(formatData))
+                objLSChinhSua.du_lieu_moi = str(json.dumps(newData))
                 session.add(objLSChinhSua)
 
             session.commit()
@@ -336,3 +350,25 @@ class PublicLandController(ControllerV2):
             .filter_by(id=id, trang_thai_xoa=False)
             .first()
         )
+
+    def get_history_edit(self, id):
+        session = self.session()
+        query = (
+            session.query(self.PBDMLichSuChinhSuaDatCS)
+            .filter_by(dat_cs_id=id, trang_thai_xoa=False)
+            .order_by(desc(self.PBDMLichSuChinhSuaDatCS.ngay_tao))
+            .all()
+        )
+        resJson = [
+            {
+                "dat_cs_id": item.dat_cs_id,
+                "ly_do_chinh_sua": item.ly_do_chinh_sua,
+                "nguoi_chinh_sua": "demo001",
+                "du_lieu_cu": item.du_lieu_cu,
+                "du_lieu_moi": item.du_lieu_moi,
+                "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao)
+            }
+            for item in query
+        ]
+        session.close()
+        return jsonify({"result": resJson})

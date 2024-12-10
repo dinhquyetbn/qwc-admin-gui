@@ -403,6 +403,9 @@ button.dt-paging-button.last {
 .svg-icon-view {
   background-image:  url('../img/view.svg');
 }
+.svg-icon-history {
+  background-image:  url('../img/clock-history.svg');
+}
 .svg-icon-delete {
   background-image:  url('../img/delete.svg');
 }

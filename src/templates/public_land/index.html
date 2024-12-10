@@ -26,6 +26,10 @@
         #createTab1Modal .modal-dialog {
             max-width: 1000px !important;
         }
+
+        #historyEditModal .modal-dialog {
+            max-width: 700px !important;
+        }
     }
 </style>
 {% endblock %}
@@ -220,6 +224,26 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="historyEditModal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+    aria-labelledby="historyEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Lịch sử chỉnh sửa
+                </h5>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{
+                        utils.render_icon('x-circle') }}
+                        Thoát</button>
+                </div>
+            </div>
+            <div class="modal-body my-2">
+                <div class="content-history"></div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block renderScripts %}
@@ -398,7 +422,10 @@
         })
     })
 
+    dmHienTrangSD = [];
+
     $(document).ready(function () {
+        getCategories();
         // Search data
         $('.btn-search').on('click', function () {
             tableDuLieuChinh.ajax.reload(null, false);
@@ -490,7 +517,10 @@
                         return `<div class="btn-action text-center">
                                     <a class="btn btn-icon-view" role="button" title="Xem chi tiết" onclick="showDetailTab1Modal('${full.id}')">
                                         <span class="svg-icon svg-icon-view"></span>    
-                                    </a> 
+                                    </a>
+                                    <a class="btn btn-icon-view" role="button" title="Xem lịch sử chỉnh sửa" onclick="historyEditModal('${full.id}')">
+                                        <span class="svg-icon svg-icon-history"></span>    
+                                    </a>
                                     <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showLyDoCapNhatDuLieuModal('${full.id}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
                                     </a>    
@@ -635,12 +665,12 @@
                 if ($("#select-ward").val())
                     formData.append('ten_px', $("#select-ward").select2('data')[0].text);
                 formData.append('don_vi_quan_ly_id', $("#select-don-vi-quan-ly").val());
-                formData.append('hien_trang_su_dung_id', $("#select-hien-trang-sd").val());
+                formData.append('hien_trang_sd_id', $("#select-hien-trang-sd").val());
 
                 // Check upload file
                 // const fileUploads = document.querySelector('input[name="ds_file_dinh_kem"]');
                 // const files = fileUploads.files;
-                // for (var i = 0; i < files.length; i++) {
+                // for (var i = 0; i <script files.length; i++) {
                 //     formData.append('ds_file_dinh_kem', files[i]);
                 // }
 
@@ -678,6 +708,26 @@
                 });
             }
         });
+
+        window.historyEditModal = function (id) {
+            // Lấy danh sách lịch sử chỉnh sửa
+            $.ajax({
+                url: `api/public-land/history-edit/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    const data = res.result;
+                    renderContentHistoryEdit(data);
+                    $('#historyEditModal').modal('show');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
 
         window.showLyDoCapNhatDuLieuModal = function (id) {
             $('#chonLyDoCapNhatDuLieuModal').modal('show');
@@ -898,6 +948,124 @@
             $('#lstFileDinhKiemModal').html('<p class="text-center">Không có file đính kèm.</p>');
         }
         $('#fileDinhKemModal').modal('show');
+    }
+
+    function renderContentHistoryEdit(data) {
+        $('#historyEditModal .content-history').html('');
+        if (data.length > 0) {
+            let content = '';
+            Array.from(data).forEach((item, idx) => {
+                const valDiffs = compare2Object(JSON.parse(item.du_lieu_cu), JSON.parse(item.du_lieu_moi));
+                console.log(valDiffs);
+                content += renderContentHistory(item, valDiffs, data.length - idx);
+            });
+            $('#historyEditModal .content-history').html(content);
+        } else {
+            $('#historyEditModal .content-history').html(`<p class="text-center">Không có dữ liệu.</p>`);
+        }
+    }
+
+    const ignoreFields = [
+        "ngay_tao",
+        "nguoi_tao",
+        "ngay_sua",
+        "nguoi_sua",
+        "ngay_xoa",
+        "nguoi_xoa",
+        "trang_thai_xoa",
+        "ds_file_dinh_kem_info",
+        "hien_trang_su_dung_id",
+        "ma_px",
+        "ma_qh",
+        "ma_tp"
+    ]
+
+    const labelFields = {
+        "ma_dat": "Mã tài sản",
+        "ten_dat": "Tên tài sản",
+        "don_vi_quan_ly_id": "Đơn vị quản lý",
+        "hien_trang_sd_id": "Hiện trạng sử dụng",
+        "dien_tich": "Diện tích",
+        "so_to": "Số tờ",
+        "so_thua": "Số thửa",
+        "dia_chi": "Địa chỉ",
+        "ten_px": "Phường/Xã",
+        "ten_qh": "Quận/Huyện",
+        "ten_tp": "Tỉnh/TP",
+        "ds_file_dinh_kem": "Danh sách file đính kèm"
+    }
+
+    function compare2Object(obj1, obj2) {
+        const differences = {};
+        const allKeys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
+        allKeys.forEach((key) => {
+            if (obj1[key] != obj2[key]) {
+                const itemIgnore = ignoreFields.findIndex(x => x === key);
+                if (itemIgnore === -1) {
+                    let obj1_key = obj1[key] ?? '';
+                    let obj2_key = obj2[key] ?? '';
+                    if (obj1[key] === 'null') obj1_key = '';
+                    if (obj2[key] === 'null') obj2_key = '';
+                    if (obj1_key !== obj2_key) {
+                        differences[key] = { from: obj1[key], to: obj2[key] };
+                    }
+                }
+            }
+        });
+
+        return differences;
+    }
+
+    function renderContentHistory(item, obj, idx) {
+        let content = '';
+        content += `<div class="w-100">
+                        <p class="mb-1"><b>Lần ${idx}: <i>${item.ngay_tao} - ${item.nguoi_chinh_sua}</i></b></p>
+                        <p class="mb-2">Lý do: ${item.ly_do_chinh_sua}</b></p>
+                        <ul>`;
+        Object.keys(obj).forEach(key => {
+            const valFrom = obj[key].from ?? '';
+            const valTo = obj[key].to ?? '';
+            let dataFrom = '';
+            let dataTo = '';
+            if (key === "ds_file_dinh_kem") {
+                let formatFrom = JSON.parse(obj[key].from) ?? [];
+                let formatTo = JSON.parse(obj[key].to) ?? [];
+                Array.from(formatFrom).forEach(file => {
+                    dataFrom += `${file.file_name};`;
+                })
+                Array.from(formatTo).forEach(file => {
+                    dataTo += `${file.file_name};`;
+                })
+            } else if (key === "hien_trang_sd_id") {
+                dataFrom = dmHienTrangSD.filter(x => x.id === valFrom)[0]?.text ?? '';
+                dataTo = dmHienTrangSD.filter(x => x.id === valTo)[0]?.text ?? '';
+            }
+
+            content += `<li>
+                            <span>${labelFields[key]}</span>: <span class="required">${dataFrom}</span> => <b style="color:green;">${dataTo}</b>
+                        </li>`;
+        })
+        content += `    </ul>
+                    </div>`;
+        return content;
+    }
+
+    function getCategories() {
+        // Lấy danh sách danh mục hiện trạng sử dụng
+        $.ajax({
+            url: `api/categories/HTSD/all`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: function (res) {
+                dmHienTrangSD = res.result;
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
+        });
     }
 </script>
 {% endblock %}
