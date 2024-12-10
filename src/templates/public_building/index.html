@@ -186,6 +186,26 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="historyEditModal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static"
+    aria-labelledby="historyEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Lịch sử chỉnh sửa
+                </h5>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{
+                        utils.render_icon('x-circle') }}
+                        Thoát</button>
+                </div>
+            </div>
+            <div class="modal-body my-2">
+                <div class="content-history"></div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block titleStep1Modal %}
 Thêm mới dữ liệu nhà công sản
