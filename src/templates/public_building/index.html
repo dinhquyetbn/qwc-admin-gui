@@ -228,6 +228,10 @@ Thêm mới dữ liệu nhà công sản
         <button class="nav-link" id="tabBanDoModal" data-bs-toggle="tab" data-bs-target="#tab-BanDoModal" type="button"
             role="tab" aria-controls="tab-BanDoModal" aria-selected="false">Bản đồ</button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tabHistoryModal" data-bs-toggle="tab" data-bs-target="#tab-HistoryModal"
+            type="button" role="tab" aria-controls="tab-HistoryModal" aria-selected="false">Lịch sử thay đổi</button>
+    </li>
 </ul>
 <div class="tab-content py-4">
     <div class="tab-pane fade show active" id="tab-DuLieuModal" role="tabpanel" aria-labelledby="tab-DuLieuModal">
@@ -245,10 +249,13 @@ Thêm mới dữ liệu nhà công sản
         </form>
     </div>
     <div class="tab-pane fade" id="tab-BanDoModal" role="tabpanel" aria-labelledby="tab-BanDoModal">
-        <iframe
+        <iframe id="iframe-map"
             src="/map_viewer/?t=DaNang_PBM_Shpfile_v2&l=edit_polygons%2CDaNang_PBM_Shpfile%20—%20DAT_CS_METADATA%2CDaNang_PBM_Shpfile%20—%20NHA_CS_METADATA%2COpenStreetMap&bl=&c=12042746%2C1810986&s=20000"
             width="100%" height="600px" frameborder="0" allowfullscreen
             sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms allow-popups allow-pointer-lock allow-popups-to-escape-sandbox"></iframe>
+    </div>
+    <div class="tab-pane fade" id="tab-HistoryModal" role="tabpanel" aria-labelledby="tab-HistoryModal">
+        <p class="text-center">Không có dữ liệu.</p>
     </div>
 </div>
 {% endblock %}
@@ -351,6 +358,10 @@ Thêm mới dữ liệu nhà công sản
         $('#createTab1Modal').on('shown.bs.modal', function () {
             let id = $('#createTab1Modal input[name="id"]').val();
 
+            //
+            const iframe = document.getElementById('iframe-map');
+            const currentUrl = new URL(iframe.src);
+
             if (!id) {
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
                 // Nếu là thêm mới thì tự động gợi ý mã tài sản
@@ -358,8 +369,13 @@ Thêm mới dữ liệu nhà công sản
                 let valMaTaiSan = `NDCS-${new Date().getFullYear()}${timestamp}`;
                 $('#createTab1Modal input[name="ma_tai_san"]').val(valMaTaiSan);
             } else {
-
+                getDetailHistoryById(id);
             }
+
+            // UPdate url iframe bản đồ
+            currentUrl.searchParams.set('st', $('#createTab1Modal input[name="ma_tai_san"]').val());
+            // Cập nhật src của iframe
+            iframe.src = currentUrl.toString();
 
             renderSelectAddress();
             renderFormatDate();
@@ -369,7 +385,8 @@ Thêm mới dữ liệu nhà công sản
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#duLieuChinhForm')[0].reset();
-            $('.btn-save').show()
+            $('#tab-HistoryModal').html('');
+            $('.btn-save').show();
         })
 
 
@@ -1149,5 +1166,121 @@ Thêm mới dữ liệu nhà công sản
         $('#fileDinhKemModal').modal('show');
     }
 
+    function getDetailHistoryById(id) {
+        // Lấy danh sách lịch sử chỉnh sửa
+        $.ajax({
+            url: `api/public-building/history-edit/${id}`, // Replace with your API endpoint
+            type: 'GET',
+            headers: {
+                'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+            },
+            success: function (res) {
+                const data = res.result;
+                renderContentHistoryEdit(data);
+            },
+            error: function (err) {
+                // Handle error
+                toastr.error(err.responseJSON?.error);
+            }
+        });
+    }
+
+    function renderContentHistoryEdit(data) {
+        $('#tab-HistoryModal').html('');
+        if (data.length > 0) {
+            let content = '';
+            Array.from(data).forEach((item, idx) => {
+                const valDiffs = compare2Object(JSON.parse(item.du_lieu_cu), JSON.parse(item.du_lieu_moi));
+                console.log(valDiffs);
+                content += renderContentHistory(item, valDiffs, data.length - idx);
+            });
+            $('#tab-HistoryModal').html(content);
+        } else {
+            $('#tab-HistoryModal').html(`<p class="text-center">Không có dữ liệu.</p>`);
+        }
+    }
+
+    const ignoreFields = [
+        "ngay_tao",
+        "nguoi_tao",
+        "ngay_sua",
+        "nguoi_sua",
+        "ngay_xoa",
+        "nguoi_xoa",
+        "trang_thai_xoa",
+        "tai_san_id",
+        "ma_px",
+        "ma_qh",
+        "ma_tp"
+    ]
+
+    const labelFields = {
+        "ma_dat": "Mã tài sản",
+        "ten_dat": "Tên tài sản",
+        "don_vi_quan_ly_id": "Đơn vị quản lý",
+        "hien_trang_sd_id": "Hiện trạng sử dụng",
+        "dien_tich": "Diện tích",
+        "so_to": "Số tờ",
+        "so_thua": "Số thửa",
+        "dia_chi": "Địa chỉ",
+        "ten_px": "Phường/Xã",
+        "ten_qh": "Quận/Huyện",
+        "ten_tp": "Tỉnh/TP",
+        "ds_file_dinh_kem": "Danh sách file đính kèm"
+    }
+
+    function compare2Object(obj1, obj2) {
+        const differences = {};
+        const allKeys = new Set([...Object.keys(obj1), ...Object.keys(obj2)]);
+        allKeys.forEach((key) => {
+            if (obj1[key] != obj2[key]) {
+                const itemIgnore = ignoreFields.findIndex(x => x === key);
+                if (itemIgnore === -1) {
+                    let obj1_key = obj1[key] ?? '';
+                    let obj2_key = obj2[key] ?? '';
+                    if (obj1[key] === 'null' || obj1[key] === '[]') obj1_key = '';
+                    if (obj2[key] === 'null' || obj2[key] === '[]') obj2_key = '';
+                    if (obj1_key !== obj2_key) {
+                        differences[key] = { from: obj1[key], to: obj2[key] };
+                    }
+                }
+            }
+        });
+
+        return differences;
+    }
+
+    function renderContentHistory(item, obj, idx) {
+        let content = '';
+        content += `<div class="w-100">
+                        <p class="mb-1"><b>Lần ${idx}: <i>${item.ngay_tao} - ${item.nguoi_chinh_sua}</i></b></p>
+                        <p class="mb-2">Lý do: ${item.ly_do_chinh_sua}</b></p>
+                        <ul>`;
+        Object.keys(obj).forEach(key => {
+            const valFrom = obj[key]?.from ?? '';
+            const valTo = obj[key]?.to ?? '';
+            let dataFrom = valFrom;
+            let dataTo = valTo;
+            const arrLabelField = globalParams.filter(x => x.ma_truong === key);
+            if (arrLabelField[0]?.kieu_du_lieu === "file") {
+                dataFrom = '';
+                dataTo = '';
+                let formatFrom = obj[key]?.from ? JSON.parse(obj[key]?.from) : [];
+                let formatTo = obj[key]?.to ? JSON.parse(obj[key]?.to) : [];
+                Array.from(formatFrom).forEach(file => {
+                    dataFrom += `${file.file_name}; `;
+                })
+                Array.from(formatTo).forEach(file => {
+                    dataTo += `${file.file_name}; `;
+                })
+            }
+            content += `<li>
+                            <span>${arrLabelField[0]?.ten_truong}</span>: <span class="required">${dataFrom}</span> => <b style="color:green;">${dataTo}</b>
+                        </li>`;
+        })
+        content += `    </ul>
+                    </div>`;
+        return content;
+    }
 </script>
 {% endblock %}

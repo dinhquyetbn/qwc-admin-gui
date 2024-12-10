@@ -65,8 +65,8 @@ class PublicLandController(ControllerV2):
         # get history
         self.app.add_url_rule(
             "/api/public-land/history-edit/<id>",
-            "get_history_edit",
-            self.get_history_edit,
+            "get_history_edit_land",
+            self.get_history_edit_land,
             methods=["GET"],
         )
 
@@ -351,7 +351,7 @@ class PublicLandController(ControllerV2):
             .first()
         )
 
-    def get_history_edit(self, id):
+    def get_history_edit_land(self, id):
         session = self.session()
         query = (
             session.query(self.PBDMLichSuChinhSuaDatCS)

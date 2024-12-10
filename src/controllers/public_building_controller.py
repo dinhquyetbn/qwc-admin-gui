@@ -69,6 +69,14 @@ class PublicBuildingController(ControllerV2):
             methods=["GET"],
         )
 
+        # get history
+        self.app.add_url_rule(
+            "/api/public-building/history-edit/<id>",
+            "get_history_edit_building",
+            self.get_history_edit_building,
+            methods=["GET"],
+        )
+
     # Hàm cho danh sách tham số
     def get_data_by_page_public_building(self):
         session = self.session()
@@ -332,8 +340,10 @@ class PublicBuildingController(ControllerV2):
                 formatData.pop("lyDoChinhSuaID")
                 formatData.pop("lyDoChinhSuaTEXT")
                 oldData.pop('_sa_instance_state', None)
+                newData = obj.__dict__.copy()
+                newData.pop("_sa_instance_state", None)
                 objLSChinhSua.du_lieu_cu = str(json.dumps(oldData))
-                objLSChinhSua.du_lieu_moi = str(json.dumps(formatData))
+                objLSChinhSua.du_lieu_moi = str(json.dumps(newData))
                 session.add(objLSChinhSua)
 
             session.commit()
@@ -452,3 +462,25 @@ class PublicBuildingController(ControllerV2):
             return valTaiSanID[0] if valTaiSanID else str(uuid.uuid4())
         else:
             return str(uuid.uuid4())
+        
+    def get_history_edit_building(self, id):
+        session = self.session()
+        query = (
+            session.query(self.PBDMLichSuChinhSuaNhaCS)
+            .filter_by(nha_cs_id=id, trang_thai_xoa=False)
+            .order_by(desc(self.PBDMLichSuChinhSuaNhaCS.ngay_tao))
+            .all()
+        )
+        resJson = [
+            {
+                "nha_cs_id": item.nha_cs_id,
+                "ly_do_chinh_sua": item.ly_do_chinh_sua,
+                "nguoi_chinh_sua": "demo001",
+                "du_lieu_cu": item.du_lieu_cu,
+                "du_lieu_moi": item.du_lieu_moi,
+                "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao)
+            }
+            for item in query
+        ]
+        session.close()
+        return jsonify({"result": resJson})
