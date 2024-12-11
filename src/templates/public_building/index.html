@@ -1274,8 +1274,18 @@ Thêm mới dữ liệu nhà công sản
                     dataTo += `${file.file_name}; `;
                 })
             }
+
+            let txtLabel = arrLabelField[0]?.ten_truong;
+            if (key === 'ten_px') {
+                txtLabel = 'Phường/Xã';
+            } else if (key === 'ten_qh') {
+                txtLabel = 'Quận/Huyện';
+            } else if (key === 'ten_tp') {
+                txtLabel = 'Tỉnh/TP';
+            }
+
             content += `<li>
-                            <span>${arrLabelField[0]?.ten_truong}</span>: <span class="required">${dataFrom}</span> => <b style="color:green;">${dataTo}</b>
+                            <span>${txtLabel}</span>: <span class="required">${dataFrom}</span> => <b style="color:green;">${dataTo}</b>
                         </li>`;
         })
         content += `    </ul>
