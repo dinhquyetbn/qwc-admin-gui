@@ -504,7 +504,7 @@ class AssetParametersController(ControllerV2):
         if type == "string" or type == "file" or type == "textarea":
             return "TEXT"
         elif type == "integer":
-            return "INTEGER"
+            return "INT8"
         elif type == "float":
             return "FLOAT"
         elif type == "date":
