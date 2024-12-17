@@ -256,7 +256,7 @@ class CategoriesController(ControllerV2):
             elif val_dir == "desc":
                 query = query.order_by(getattr(self.PBDMQuanLyDanhMuc, val_col).desc())
         else:
-            query = query.order_by(desc(self.PBDMQuanLyDanhMuc.ngay_tao))
+            query = query.order_by(self.PBDMQuanLyDanhMuc.ma_nhom.asc(), self.PBDMQuanLyDanhMuc.ma_danh_muc.asc())
 
         # Phân trang
         data = query.limit(req_size).offset(req_page).all()
@@ -361,7 +361,7 @@ class CategoriesController(ControllerV2):
 
     def find_resource_danh_muc(self, id, session):
         return (
-            session.query(self.PBDMQuanLyNhomDanhMuc)
+            session.query(self.PBDMQuanLyDanhMuc)
             .filter_by(id=id, trang_thai_xoa=False)
             .first()
         )

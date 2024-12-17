@@ -1,6 +1,14 @@
 {% extends "templates/base_index_v2.html" %}
 {% block title %}{{ i18n('interface.categories.title') }}{% endblock %}
 {% block new_resource_label %}{{ i18n('interface.categories.new_categories') }}{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+{% endblock %}
+{%- block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
+{%- endblock styles %}
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -90,9 +98,20 @@
             }
         });
 
+        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $($.fn.dataTable.tables(true)).DataTable()
+                .columns.adjust()
+                .responsive.recalc();
+        });
 
         $('#createTab1Modal').on('shown.bs.modal', function () {
-            $("#select-nhom-nhom").select2({
+            let id = $('#createTab1Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            }
+
+            $("#select-ma-nhom").select2({
+                placeholder: "Chọn nhóm danh mục",
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
                 ajax: {
@@ -111,12 +130,16 @@
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#danhMucForm')[0].reset();
+            $('#select-ma-nhom').val(null).trigger('change');
             $('#danhMucForm').find('.is-invalid').removeClass('is-invalid');
             $('#danhMucForm').find('.invalid-feedback').remove();
         })
 
         $('#createTab2Modal').on('shown.bs.modal', function () {
-
+            let id = $('#createTab2Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab2Modal .modal-title').html('Thêm mới dữ liệu');
+            }
         })
 
         $('#createTab2Modal').on('hide.bs.modal', function () {
@@ -212,7 +235,7 @@
             processing: true,
             serverSide: true,
             searching: { regex: true },
-            pageLength: 100,
+            pageLength: 10,
             responsive: true,
             pagingType: "simple_numbers",
             language: PBMSLang,
@@ -278,8 +301,8 @@
                 { className: 'noVis' },
             ]
         });
-        
-        // Cập nhật dữ liệu tham số tài sản
+
+        // Cập nhật dữ liệu nhóm danh mục
         $('#createTab2Modal .btn-save').on('click', function () {
             if ($('#nhomDanhMucForm').valid()) {
                 // Collect form data
@@ -321,8 +344,8 @@
                 });
             }
         });
-        
-        // Update loại tài sản
+
+        // Update nhóm danh mục
         window.showUpdateTab2Modal = function (id) {
             $.ajax({
                 url: `api/categories/nhom-danh-muc/detail/${id}`, // Replace with your API endpoint
@@ -346,7 +369,7 @@
                 }
             });
         }
-        // Delete loại tài sản
+        // Delete nhóm danh mục
         window.showDeleteTab2Modal = function (id) {
             // Show confirmation modal
             $('#deleteTab2Modal').modal('show');
@@ -404,7 +427,7 @@
             },
             messages: {
                 ma_nhom: {
-                    required: "Vui lòng chọn mã nhóm.",
+                    required: "Vui lòng chọn nhóm danh mục.",
                 },
                 ma_danh_muc: {
                     required: "Vui lòng nhập mã danh mục.",
@@ -452,7 +475,7 @@
             processing: true,
             serverSide: true,
             searching: { regex: true },
-            pageLength: 100,
+            pageLength: 50,
             responsive: true,
             pagingType: "simple_numbers",
             language: PBMSLang,
@@ -524,6 +547,106 @@
             ]
         });
 
+        // Cập nhật dữ liệu danh mục
+        $('#createTab1Modal .btn-save').on('click', function () {
+            if ($('#danhMucForm').valid()) {
+                // Collect form data
+                const formDataArray = $('#danhMucForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+                formData['ten_nhom'] = $("#select-ma-nhom").select2('data')[0].text;
+                // Make AJAX call
+                let ajax_url = 'api/categories/danh-muc/create';
+                let ajax_type = 'POST';
+                let paramId = $('#danhMucForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/categories/danh-muc/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab1Modal').modal('hide');
+                        // Reload datatable
+                        dataTableDanhMuc.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            }
+        });
+
+        // Update nhóm danh mục
+        window.showUpdateTab1Modal = function (id) {
+            $.ajax({
+                url: `api/categories/danh-muc/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    $('#danhMucForm [name="id"]').val(res.result.id);
+                    $('#danhMucForm [name="ma_danh_muc"]').val(res.result.ma_danh_muc);
+                    $('#danhMucForm [name="ten_danh_muc"]').val(res.result.ten_danh_muc);
+                    $('#select-ma-nhom').append(new Option(res.result.ten_nhom, res.result.ma_nhom, true, true)).trigger('change');
+                    // Trigger validation on each field to show feedback
+                    $('#danhMucForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab1Modal').modal('show');
+                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
+        // Delete nhóm danh mục
+        window.showDeleteTab1Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab1Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/categories/danh-muc/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                        // Reload datatable
+                        dataTableDanhMuc.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                    }
+                });
+            });
+        }
+
         function reloadTable() {
             let tabName = $('#createModal')[0].getAttribute('data-bs-target');
             switch (tabName) {
@@ -544,7 +667,7 @@
 {% endblock %}
 
 {% block bodyCreateTab1Modal %}
-<form id="danhMucForm" class="row g-3 needs-validation" novalidate method="post"></form>
+<form id="danhMucForm" class="row g-3 needs-validation" novalidate method="post">
     <input type="text" name="id" hidden />
     <div class="col-md-6">
         <label for="ma_nhom" class="form-label">Nhóm danh mục:<span class="required">*</span></label>

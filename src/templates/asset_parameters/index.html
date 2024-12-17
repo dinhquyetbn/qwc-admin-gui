@@ -107,6 +107,12 @@
             }
         });
 
+        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $($.fn.dataTable.tables(true)).DataTable()
+                .columns.adjust()
+                .responsive.recalc();
+        });
+
         $('#createTab1Modal').on('shown.bs.modal', function () {
             // get danh mục
             let id = $('#createTab1Modal input[name="id"]').val();
@@ -137,21 +143,21 @@
             }
         });
 
-        // Khi table thay đổi
-        const tabContent = document.querySelectorAll('.tab-content');
-        // Hàm xử lý khi chiều rộng của tab-content thay đổi
-        function handleTabContentResize(entries) {
-            for (let entry of entries) {
-                $('#tableDataParam').resize();
-                $('#tableGroupParam').resize();
-            }
-        }
-        // Tạo một ResizeObserver để theo dõi sự thay đổi kích thước
-        const resizeObserver = new ResizeObserver(handleTabContentResize);
-        // Bắt đầu theo dõi tab-content
-        tabContent.forEach(tab => {
-            resizeObserver.observe(tab);
-        });
+        // // Khi table thay đổi
+        // const tabContent = document.querySelectorAll('.tab-content');
+        // // Hàm xử lý khi chiều rộng của tab-content thay đổi
+        // function handleTabContentResize(entries) {
+        //     for (let entry of entries) {
+        //         $('#tableDataParam').resize();
+        //         $('#tableGroupParam').resize();
+        //     }
+        // }
+        // // Tạo một ResizeObserver để theo dõi sự thay đổi kích thước
+        // const resizeObserver = new ResizeObserver(handleTabContentResize);
+        // // Bắt đầu theo dõi tab-content
+        // tabContent.forEach(tab => {
+        //     resizeObserver.observe(tab);
+        // });
     });
 
     $(document).ready(function () {
