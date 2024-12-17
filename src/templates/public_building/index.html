@@ -1004,11 +1004,13 @@ Thêm mới dữ liệu nhà công sản
 
     function renderFormatDate() {
         $('input[data-type="date"]').each(function () {
+            const valueInit = $(this).val();
             $(this).datepicker({
                 changeMonth: true,
                 changeYear: true
             });
             $(this).datepicker("option", "dateFormat", 'dd/mm/yy');
+            $(this).val(valueInit);
         });
     }
 

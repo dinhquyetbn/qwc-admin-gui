@@ -194,7 +194,7 @@ class PublicBuildingController(ControllerV2):
                         if getattr(query, item.ma_truong)
                         else None
                     )
-                if item.kieu_du_lieu == "file":
+                elif item.kieu_du_lieu == "file":
                     jsonData[f"{item.ma_truong}_info"] = getattr(query, item.ma_truong)
                 else:
                     jsonData[item.ma_truong] = getattr(query, item.ma_truong)
