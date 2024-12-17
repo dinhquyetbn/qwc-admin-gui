@@ -168,12 +168,22 @@
                     }
                 });
             });
-            $("#select-district").select2();
-            $("#select-ward").select2();
+            $("#select-district").select2({
+                placeholder: 'Chọn Quận Huyện...',
+                minimumInputLength: 0,
+                dropdownParent: $('#createTab1Modal'),
+            });
+            $("#select-ward").select2({
+                placeholder: 'Chọn Quận Huyện...',
+                minimumInputLength: 0,
+                dropdownParent: $('#createTab1Modal'),
+            });
         });
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#unitsForm')[0].reset();
+            $('#unitsForm').find('.is-invalid').removeClass('is-invalid');
+            $('#unitsForm').find('.invalid-feedback').remove();
             $('#select-province').val(null).trigger('change');
             $('#select-district').val(null).trigger('change');
             $('#select-ward').val(null).trigger('change');

@@ -1,0 +1,576 @@
+{% extends "templates/base_index_v2.html" %}
+{% block title %}{{ i18n('interface.categories.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.categories.new_categories') }}{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Quản trị hệ thống</li>
+        <li class="breadcrumb-item" aria-current="page">QL danh mục</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block table %}
+<ul class="nav nav-tabs w-100" id="categoriesTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="danhMuc-tab" data-bs-toggle="tab" data-bs-target="#danhMuc"
+            data-target-modal="#createTab1Modal" type="button" role="tab" aria-controls="danhMuc"
+            aria-selected="true">Ds
+            danh mục</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="nhomDanhMuc-tab" data-bs-toggle="tab" data-bs-target="#nhomDanhMuc"
+            data-target-modal="#createTab2Modal" type="button" role="tab" aria-controls="nhomDanhMuc"
+            aria-selected="false">Ds
+            nhóm danh mục</button>
+    </li>
+</ul>
+<div class="tab-content px-4 py-4">
+    <div class="tab-pane fade show active" id="danhMuc" role="tabpanel" aria-labelledby="danhMuc-tab">
+        <table id="tableDanhMuc" class="display responsive w-100">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th class="d-none">Nhóm danh mục</th>
+                    <th style="min-width: 125px;">Mã danh mục</th>
+                    <th style="min-width: 175px;">Tên danh mục</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="tab-pane fade" id="nhomDanhMuc" role="tabpanel" aria-labelledby="nhomDanhMuc-tab">
+        <table id="tableNhomDanhMuc" class="display responsive w-100">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 175px;">Mã nhóm</th>
+                    <th style="min-width: 175px;">Tên nhóm</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block renderScripts %}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const createButton = document.getElementById('createModal');
+        const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function () {
+                const targetModal = this.getAttribute('data-target-modal');
+                createButton.setAttribute('data-bs-target', targetModal);
+            });
+        });
+
+        createButton.addEventListener('click', function () {
+            const targetModal = createButton.getAttribute('data-bs-target');
+            const form = document.querySelector(`${targetModal} form`);
+            if (form) {
+                form.reset(); // Reset the form fields
+                // Remove 'is-valid' class from all form elements
+                const formValidElements = form.querySelectorAll('.is-valid');
+                formValidElements.forEach(element => {
+                    element.classList.remove('is-valid');
+                });
+                // Remove 'is-invalid' class from all form elements
+                const formInvalidElements = form.querySelectorAll('.is-invalid');
+                formInvalidElements.forEach(element => {
+                    $('.invalid-feedback').remove();
+                    element.classList.remove('is-invalid');
+                });
+            }
+        });
+
+
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            $("#select-nhom-nhom").select2({
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/categories/nhom-danh-muc/all', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+        })
+
+        $('#createTab1Modal').on('hide.bs.modal', function () {
+            $('#danhMucForm')[0].reset();
+            $('#danhMucForm').find('.is-invalid').removeClass('is-invalid');
+            $('#danhMucForm').find('.invalid-feedback').remove();
+        })
+
+        $('#createTab2Modal').on('shown.bs.modal', function () {
+
+        })
+
+        $('#createTab2Modal').on('hide.bs.modal', function () {
+            $('#nhomDanhMucForm')[0].reset();
+            $('#nhomDanhMucForm').find('.is-invalid').removeClass('is-invalid');
+            $('#nhomDanhMucForm').find('.invalid-feedback').remove();
+        })
+    })
+
+    $(document).ready(function () {
+        // Search data
+        $('.btn-search').on('click', function () {
+            reloadTable();
+        })
+
+        $('#input-search').on('keydown', function (e) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                reloadTable();
+            }
+        })
+
+        // Nhóm danh mục
+        const fieldNhomDanhMuc = [
+            "stt",
+            "ma_nhom",
+            "ten_nhom",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        // Validate dữ liệu tham số tài sản
+        $.validator.addMethod("pattern", function (value, element, regexp) {
+            const re = new RegExp(regexp);
+            return this.optional(element) || re.test(value);
+        });
+
+        $('#nhomDanhMucForm').validate({
+            rules: {
+                ma_nhom: {
+                    required: true,
+                    maxlength: 255,
+                    pattern: /^[a-zA-Z0-9_]+$/
+                },
+                ten_nhom: {
+                    required: true,
+                    maxlength: 255
+                }
+            },
+            messages: {
+                ma_nhom: {
+                    required: "Vui lòng nhập mã nhóm.",
+                    maxlength: "Mã nhóm có độ dài tối đa 255 kí tự.",
+                    pattern: "Mã nhóm phải viết liền không dấu, không chứa ký tự đặc biệt, và có thể chứa dấu gạch dưới."
+                },
+                ten_nhom: {
+                    required: "Vui lòng nhập tên nhóm.",
+                    maxlength: "Tên nhóm có độ dài tối đa 255 kí tự."
+                }
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                if (element.hasClass('select2-hidden-accessible')) {
+                    // Insert the error message after the Select2 container
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element.next('.select2-container'));
+                } else {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').addClass(errorClass);
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').removeClass(errorClass);
+                }
+            }
+        });
+
+        let dataTableNhomDanhMuc = new DataTable('#tableNhomDanhMuc', {
+            dom: 'rtlip',
+            ordering: true,
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 100,
+            responsive: true,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            ajax: {
+                url: "api/categories/nhom-danh-muc/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
+                }
+            },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                { orderable: false, targets: getIdxFieldTable(fieldNhomDanhMuc, ['stt', 'ngay_tao', 'tac_vu']) },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldNhomDanhMuc, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    render: function (data, type, full, meta) {
+                        return data;
+                    },
+                    type: 'string',
+                    targets: getIdxFieldTable(fieldNhomDanhMuc, ['ma_nhom', 'ten_nhom'])
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldNhomDanhMuc, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab2Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab2Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'ma_nhom' },
+                { data: 'ten_nhom' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
+        });
+        
+        // Cập nhật dữ liệu tham số tài sản
+        $('#createTab2Modal .btn-save').on('click', function () {
+            if ($('#nhomDanhMucForm').valid()) {
+                // Collect form data
+                const formDataArray = $('#nhomDanhMucForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+                // Make AJAX call
+                let ajax_url = 'api/categories/nhom-danh-muc/create';
+                let ajax_type = 'POST';
+                let paramId = $('#nhomDanhMucForm input[name="id"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/categories/nhom-danh-muc/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab2Modal').modal('hide');
+                        // Reload datatable
+                        dataTableNhomDanhMuc.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.error);
+                    }
+                });
+            }
+        });
+        
+        // Update loại tài sản
+        window.showUpdateTab2Modal = function (id) {
+            $.ajax({
+                url: `api/categories/nhom-danh-muc/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    $('#nhomDanhMucForm [name="id"]').val(res.result.id);
+                    $('#nhomDanhMucForm [name="ten_nhom"]').val(res.result.ten_nhom);
+                    $('#nhomDanhMucForm [name="ma_nhom"]').val(res.result.ma_nhom);
+                    // Trigger validation on each field to show feedback
+                    $('#nhomDanhMucForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab2Modal').modal('show');
+                    $('#createTab2Modal .modal-title').html('Cập nhật dữ liệu');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
+        // Delete loại tài sản
+        window.showDeleteTab2Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab2Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab2Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/categories/nhom-danh-muc/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab2Modal').modal('hide');
+                        // Reload datatable
+                        dataTableNhomDanhMuc.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab2Modal').modal('hide');
+                    }
+                });
+            });
+        }
+
+        // Danh mục
+        const fieldDanhMuc = [
+            "stt",
+            "group_nhom",
+            "ma_danh_muc",
+            "ten_danh_muc",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        $('#danhMucForm').validate({
+            rules: {
+                ma_nhom: {
+                    required: true
+                },
+                ma_danh_muc: {
+                    required: true,
+                    maxlength: 50,
+                    pattern: /^[a-zA-Z0-9_]+$/
+                },
+                ten_danh_muc: {
+                    required: true,
+                    maxlength: 255,
+                }
+            },
+            messages: {
+                ma_nhom: {
+                    required: "Vui lòng chọn mã nhóm.",
+                },
+                ma_danh_muc: {
+                    required: "Vui lòng nhập mã danh mục.",
+                    maxlength: "Mã danh mục có độ dài tối đa 50 kí tự.",
+                    pattern: "Mã danh mục phải viết liền không dấu, không chứa ký tự đặc biệt, và có thể chứa dấu gạch dưới."
+                },
+                ten_danh_muc: {
+                    required: "Vui lòng nhập tên danh mục.",
+                    maxlength: "Tên danh mục có độ dài tối đa 255 kí tự."
+                }
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                if (element.hasClass('select2-hidden-accessible')) {
+                    // Insert the error message after the Select2 container
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element.next('.select2-container'));
+                } else {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').addClass(errorClass);
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').removeClass(errorClass);
+                }
+            }
+        });
+
+        let dataTableDanhMuc = new DataTable('#tableDanhMuc', {
+            dom: 'rtlip',
+            ordering: true,
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 100,
+            responsive: true,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            rowGroup: {
+                dataSrc: ['group_nhom'],
+            },
+            ajax: {
+                url: "api/categories/danh-muc/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
+                }
+            },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                { orderable: false, targets: getIdxFieldTable(fieldDanhMuc, ['stt', 'ngay_tao', 'tac_vu']) },
+                { visible: false, targets: getIdxFieldTable(fieldDanhMuc, ['group_nhom']) },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDanhMuc, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    render: function (data, type, full, meta) {
+                        return data;
+                    },
+                    type: 'string',
+                    targets: getIdxFieldTable(fieldDanhMuc, ['ma_danh_muc', 'ten_danh_muc'])
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDanhMuc, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.id}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'group_nhom' },
+                { data: 'ma_danh_muc' },
+                { data: 'ten_danh_muc' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
+        });
+
+        function reloadTable() {
+            let tabName = $('#createModal')[0].getAttribute('data-bs-target');
+            switch (tabName) {
+                // Tab ds tham số
+                case '#createTab1Modal':
+                    dataTableDanhMuc.ajax.reload(null, false);
+                    break;
+                // Tab ds nhóm tham số
+                case '#createTab2Modal':
+                    dataTableNhomDanhMuc.ajax.reload(null, false);
+                    break;
+                default:
+                    break;
+            }
+        }
+    })
+</script>
+{% endblock %}
+
+{% block bodyCreateTab1Modal %}
+<form id="danhMucForm" class="row g-3 needs-validation" novalidate method="post"></form>
+    <input type="text" name="id" hidden />
+    <div class="col-md-6">
+        <label for="ma_nhom" class="form-label">Nhóm danh mục:<span class="required">*</span></label>
+        <select id="select-ma-nhom" class="form-control w-100" name="ma_nhom"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="ma_danh_muc" class="form-label">Mã danh mục:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ma_danh_muc" required>
+    </div>
+    <div class="col-md-12">
+        <label for="ten_danh_muc" class="form-label">Tên danh mục:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_danh_muc" required>
+    </div>
+</form>
+{% endblock %}
+
+{% block bodyCreateTab2Modal %}
+<form id="nhomDanhMucForm" class="row g-3 needs-validation" novalidate method="post">
+    <input type="text" name="id" hidden />
+    <div class="col-md-12">
+        <label for="ma_nhom" class="form-label">Mã nhóm:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ma_nhom" required>
+    </div>
+    <div class="col-md-12">
+        <label for="ten_nhom" class="form-label">Tên nhóm:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="ten_nhom" required>
+    </div>
+</form>
+{% endblock %}

@@ -260,7 +260,7 @@ CREATE TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs (
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_lich_su_chinh_sua_dat_cs TO qwc_admin;
 
--- 20241205: TODO
+-- 20241205: Updated
 CREATE TABLE qwc_config.pbms_quan_ly_file_dinh_kem (
 	id VARCHAR(50) NOT NULL,
     file_name TEXT NOT NULL,
@@ -278,3 +278,22 @@ CREATE TABLE qwc_config.pbms_quan_ly_file_dinh_kem (
 );
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_file_dinh_kem TO qwc_admin;
+
+-- 20241216 TODO
+ALTER TABLE qwc_config.users ADD COLUMN uuid VARCHAR(50) DEFAULT gen_random_uuid();
+ALTER TABLE qwc_config.pbms_quan_ly_don_vi ADD COLUMN cap_do INTEGER DEFAULT 0;
+CREATE TABLE qwc_config.pbms_quan_ly_nhom_danh_muc (
+	id VARCHAR(50) NOT NULL,
+    ma_nhom VARCHAR(255),
+    ten_nhom VARCHAR(255),
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_quan_ly_nhom_danh_muc_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_nhom_danh_muc TO qwc_admin;

@@ -320,6 +320,10 @@ form {
 div.dt-processing>div:last-child>div {
   background-color: #0A3B7B !important;
 }
+div.dt-scroll-body {
+  min-height: calc(100vh - 400px);
+  max-height: auto;
+}
 div.dt-length {
   display: flex;
   float: left;

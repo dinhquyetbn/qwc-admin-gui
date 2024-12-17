@@ -9,6 +9,10 @@
       "new_asset_type": "new_asset_type",
       "title": "title"
     },
+    "categories": {
+      "new_categories": "new_categories",
+      "title": "title"
+    },
     "common": {
       "add": "Ajouter",
       "all": "Tout",
@@ -84,6 +88,7 @@
       "write": "Ecriture"
     },
     "public_building": {
+      "new_public_building": "new_public_building",
       "title": "title"
     },
     "public_land": {
@@ -165,6 +170,7 @@
       "nhat_ky_ung_dung": "Nhật ký ứng dụng",
       "phan_quyen_su_dung": "Phân quyền sử dụng",
       "phan_tich_du_lieu_ban_do": "phan_tich_du_lieu_ban_do",
+      "quan_ly_danh_muc": "quan_ly_danh_muc",
       "quan_ly_dat_cong": "Quản lý đất công",
       "quan_ly_don_vi": "Quản lý đơn vị",
       "quan_ly_nguoi_dung": "Quản lý người dùng",

@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from flask import json, jsonify, request
 from .controller_v2 import ControllerV2
 from services.upload_file_service import UploadFileService
-
+from services.auth_service import AuthService
 
 class PublicLandController(ControllerV2):
 
@@ -178,6 +178,7 @@ class PublicLandController(ControllerV2):
 
     def create_or_update_item_public_land(self, id=None):
         try:
+            _authService = AuthService
             # Parse JSON data from the request
             data = request.form
             if not data:
@@ -190,7 +191,7 @@ class PublicLandController(ControllerV2):
                 # create new
                 obj = self.PBDMQuanLyDatCong()
                 obj.id = str(uuid.uuid4())
-                # obj.nguoi_tao = userLogin.gext('id') or None
+                obj.nguoi_tao = _authService.get_user_uuid(request)
                 obj.ngay_tao = datetime.now(timezone.utc)
                 session.add(obj)
             else:
@@ -199,6 +200,7 @@ class PublicLandController(ControllerV2):
                 if obj is None:
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
                 oldData = obj.__dict__.copy()
+                obj.nguoi_sua = _authService.get_user_uuid(request)
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             obj.ma_dat = data.get("ma_dat")
@@ -268,7 +270,7 @@ class PublicLandController(ControllerV2):
                 objLSChinhSua.ly_do_id = data.get("lyDoChinhSuaID")
                 objLSChinhSua.ly_do_chinh_sua = data.get("lyDoChinhSuaTEXT")
                 # TODO: Lấy ID tài khoản đăng nhập
-                objLSChinhSua.nguoi_chinh_sua_id = "-"
+                objLSChinhSua.nguoi_chinh_sua_id = _authService.get_user_uuid(request)
                 objLSChinhSua.ngay_tao = datetime.now(timezone.utc)
                 formatData = request.form.to_dict()
                 formatData.pop("lyDoChinhSuaID")
@@ -290,6 +292,7 @@ class PublicLandController(ControllerV2):
 
     def remove_item_public_land(self, id):
         try:
+            _authService = AuthService()
             session = self.session()
             # Find the group parameter by id
             obj = self.find_resource_public_land(id, session)
@@ -297,7 +300,7 @@ class PublicLandController(ControllerV2):
                 return jsonify({"error": "Không tìm thấy bản ghi."}), 404
 
             # Mark as deleted
-            # obj.nguoi_xoa = ''
+            obj.nguoi_xoa = _authService.get_user_uuid(request)
             obj.ngay_xoa = datetime.now(timezone.utc)
             obj.trang_thai_xoa = True
             session.commit()
@@ -359,11 +362,19 @@ class PublicLandController(ControllerV2):
             .order_by(desc(self.PBDMLichSuChinhSuaDatCS.ngay_tao))
             .all()
         )
+        
+        arrNguoiChinhSuaId = [item.nguoi_chinh_sua_id for item in query]
+        dbUsers = (
+            session.query(self.User)
+            .filter(self.User.uuid.in_(arrNguoiChinhSuaId))
+            .all()
+        )
+
         resJson = [
             {
                 "dat_cs_id": item.dat_cs_id,
                 "ly_do_chinh_sua": item.ly_do_chinh_sua,
-                "nguoi_chinh_sua": "demo001",
+                "nguoi_chinh_sua": [user.name for user in dbUsers if user.uuid == item.nguoi_chinh_sua_id],
                 "du_lieu_cu": item.du_lieu_cu,
                 "du_lieu_moi": item.du_lieu_moi,
                 "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao)

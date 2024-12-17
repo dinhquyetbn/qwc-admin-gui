@@ -2,3 +2,4 @@
 __pycache__/
 .flaskenv
 src/static/uploads/
+qwc-services-core

@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timezone
 from flask import json, jsonify, request
 from .controller_v2 import ControllerV2
-
+from services.auth_service import AuthService
 
 class UnitsController(ControllerV2):
 
@@ -145,6 +145,7 @@ class UnitsController(ControllerV2):
 
     def create_or_update_item_unit(self, id=None):
         try:
+            _authService = AuthService()
             # Parse JSON data from the request
             data = request.get_json()
             if not data:
@@ -157,7 +158,7 @@ class UnitsController(ControllerV2):
                 # create new
                 obj = self.PBMSQuanLyDonVi()
                 obj.id = str(uuid.uuid4())
-                # obj.nguoi_tao = userLogin.gext('id') or None
+                obj.nguoi_tao = _authService.get_user_uuid(request)
                 obj.ngay_tao = datetime.now(timezone.utc)
                 session.add(obj)
             else:
@@ -165,6 +166,7 @@ class UnitsController(ControllerV2):
                 obj = self.find_resource_unit(id, session)
                 if obj is None:
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
+                obj.nguoi_tao = _authService.get_user_uuid(request)
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             obj.ma_dv = data["ma_dv"]
@@ -178,6 +180,11 @@ class UnitsController(ControllerV2):
             obj.ten_tp = data["ten_tp"]
             obj.don_vi_cap_cha_id = data["don_vi_cap_cha_id"]
             obj.sdt = data["sdt"]
+
+            """ Kiểm tra nếu tồn tại đơn vị cấp cha thì 
+                lấy cấp độ của đơn vị cấp cha + 1
+            """
+            obj.cap_do = self.get_cap_do_don_vi_tu_cha(session, obj.don_vi_cap_cha_id)
 
             session.commit()
             # self.update_config_timestamp(session)
@@ -257,3 +264,11 @@ class UnitsController(ControllerV2):
 
     def resources_for_index_query(self, search_text, session):
         pass
+
+    def get_cap_do_don_vi_tu_cha(self, session, id):
+        query = session.query(self.PBMSQuanLyDonVi).filter_by(id=id, trang_thai_xoa=False).first()
+        if query:
+            return query.cap_do + 1
+        else:
+            return 0
+            

@@ -47,7 +47,7 @@
 
     @media (min-width: 576px) {
         #createTab1Modal .modal-dialog {
-            max-width: 1000px !important;
+            max-width: 1500px !important;
         }
     }
 </style>
@@ -368,6 +368,7 @@ Thêm mới dữ liệu nhà công sản
                 const timestamp = Math.floor(Date.now() / 1000);
                 let valMaTaiSan = `NDCS-${new Date().getFullYear()}${timestamp}`;
                 $('#createTab1Modal input[name="ma_tai_san"]').val(valMaTaiSan);
+                $('.btn-save').show();
             } else {
                 getDetailHistoryById(id);
             }
@@ -386,7 +387,7 @@ Thêm mới dữ liệu nhà công sản
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#duLieuChinhForm')[0].reset();
             $('#tab-HistoryModal').html('');
-            $('.btn-save').show();
+            $('.btn-save').hide();
         })
 
 
@@ -835,9 +836,10 @@ Thêm mới dữ liệu nhà công sản
                     $('#createTab1Modal').modal('show');
                     if (action === 'VIEW') {
                         $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
-                        $('.btn-save').hide()
+                        $('.btn-save').hide();
                     } else {
                         $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                        $('.btn-save').show()
                     }
                 });
             },
@@ -1191,7 +1193,6 @@ Thêm mới dữ liệu nhà công sản
             let content = '';
             Array.from(data).forEach((item, idx) => {
                 const valDiffs = compare2Object(JSON.parse(item.du_lieu_cu), JSON.parse(item.du_lieu_moi));
-                console.log(valDiffs);
                 content += renderContentHistory(item, valDiffs, data.length - idx);
             });
             $('#tab-HistoryModal').html(content);
@@ -1273,6 +1274,17 @@ Thêm mới dữ liệu nhà công sản
                 Array.from(formatTo).forEach(file => {
                     dataTo += `${file.file_name}; `;
                 })
+            } else if (arrLabelField[0]?.kieu_du_lieu === "date") {
+                dataFrom = '';
+                dataTo = '';
+                let formatFrom = obj[key]?.from;
+                let formatTo = obj[key]?.to;
+                if (formatFrom) {
+                    dataFrom = convertDateStringToFormat(formatFrom);
+                }
+                if (formatTo) {
+                    dataTo = convertDateStringToFormat(formatTo);
+                }
             }
 
             let txtLabel = arrLabelField[0]?.ten_truong;
@@ -1291,6 +1303,16 @@ Thêm mới dữ liệu nhà công sản
         content += `    </ul>
                     </div>`;
         return content;
+    }
+
+    function convertDateStringToFormat(value) {
+        const dateObject =  new Date(value);
+        const day = String(dateObject.getUTCDate()).padStart(2, '0');
+        const month = String(dateObject.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const year = dateObject.getUTCFullYear();
+        // Format into dd/MM/yyyy
+        const formattedDate = `${day}/${month}/${year}`;
+        return formattedDate;
     }
 </script>
 {% endblock %}

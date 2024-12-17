@@ -24,7 +24,7 @@
 
     @media (min-width: 576px) {
         #createTab1Modal .modal-dialog {
-            max-width: 1000px !important;
+            max-width: 1500px !important;
         }
 
         #historyEditModal .modal-dialog {
@@ -268,6 +268,7 @@
                 const timestamp = Math.floor(Date.now() / 1000);
                 let valMaTaiSan = `NDCS-${new Date().getFullYear()}${timestamp}`;
                 $('#createTab1Modal input[name="ma_dat"]').val(valMaTaiSan);
+                $('.btn-save').show();
             } else {
                 getDetailHistoryById(id);
             }
@@ -386,7 +387,7 @@
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#tab-HistoryModal').html('');
-            $('.btn-save').show();
+            $('.btn-save').hide();
             $('#duLieuChinhForm')[0].reset();
             $('#select-province').val(null).trigger('change');
             $('#select-district').val(null).trigger('change');
@@ -845,6 +846,7 @@
                     $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
                     $('.btn-save').hide()
                 } else {
+                    $('.btn-save').show();
                     $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
                 }
             },

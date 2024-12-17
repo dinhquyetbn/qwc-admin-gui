@@ -1,8 +1,9 @@
 import os
 
-from flask import json, jsonify
+from flask import json, jsonify, request
 from sqlalchemy import text
 from .controller_v2 import ControllerV2
+from services.auth_service import AuthService
 
 
 class DashboardV2Controller(ControllerV2):
@@ -36,6 +37,10 @@ class DashboardV2Controller(ControllerV2):
     def get_thong_ke_so_luong(self):
         self.setup_models()
         session = self.session()
+
+        _authService = AuthService()
+        _authService.get_user_uuid(request)
+
         resDonVi = (
             session.query(self.PBMSQuanLyDonVi)
             .filter(self.PBMSQuanLyDonVi.trang_thai_xoa == False)

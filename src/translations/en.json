@@ -9,6 +9,10 @@
       "new_asset_type": "new_asset_type",
       "title": "Danh sách danh mục phân loại tài sản"
     },
+    "categories": {
+      "new_categories": "new_categories",
+      "title": "Quản lý danh mục"
+    },
     "common": {
       "add": "Add",
       "all": "All",
@@ -84,6 +88,7 @@
       "write": "Write"
     },
     "public_building": {
+      "new_public_building": "new_public_building",
       "title": "Danh sách nhà công sản"
     },
     "public_land": {
@@ -165,6 +170,7 @@
       "nhat_ky_ung_dung": "Nhật ký ứng dụng",
       "phan_quyen_su_dung": "Phân quyền sử dụng",
       "phan_tich_du_lieu_ban_do": "Phân tích dữ liệu bản đồ",
+      "quan_ly_danh_muc": "QL danh mục",
       "quan_ly_dat_cong": "Đất công",
       "quan_ly_don_vi": "QL đơn vị",
       "quan_ly_nguoi_dung": "QL người dùng",

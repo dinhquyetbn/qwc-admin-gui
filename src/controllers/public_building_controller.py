@@ -5,6 +5,7 @@ from sqlalchemy import desc
 from flask import json, jsonify, request
 from services.upload_file_service import UploadFileService
 from .controller_v2 import ControllerV2
+from services.auth_service import AuthService
 
 
 class PublicBuildingController(ControllerV2):
@@ -203,6 +204,7 @@ class PublicBuildingController(ControllerV2):
 
     def create_or_update_item_public_building(self, id=None):
         try:
+            _authService = AuthService()
             # Parse JSON data from the request
             data = request.form
             if not data:
@@ -216,7 +218,7 @@ class PublicBuildingController(ControllerV2):
                 obj = self.PBDMQuanLyNhaCongSan()
                 obj.id = str(uuid.uuid4())
 
-                # obj.nguoi_tao = userLogin.gext('id') or None
+                obj.nguoi_tao = _authService.get_user_uuid(request)
                 obj.ngay_tao = datetime.now(timezone.utc)
                 session.add(obj)
             else:
@@ -226,6 +228,7 @@ class PublicBuildingController(ControllerV2):
                     return jsonify({"error": "Không tìm thấy bản ghi."}), 401
                 # Convert object to dictionary before JSON serialization
                 oldData = obj.__dict__.copy()
+                obj.nguoi_sua = _authService.get_user_uuid(request)
                 obj.ngay_sua = datetime.now(timezone.utc)
 
             # update value tai_san_id
@@ -288,14 +291,21 @@ class PublicBuildingController(ControllerV2):
                     file_uploads = request.files.getlist(file_ma_truong)
                     # File dữ liệu cũ
                     file_news = []
-                    file_olds = json.loads(data.get(f"{file_ma_truong}_info")) if data.get(f"{file_ma_truong}_info") != '' else []
+                    file_olds = (
+                        json.loads(data.get(f"{file_ma_truong}_info"))
+                        if data.get(f"{file_ma_truong}_info") != ""
+                        else []
+                    )
                     if file_uploads and file_uploads.__len__() > 0:
                         uploadFileService = UploadFileService()
-                        (saved_files, error_files) = uploadFileService.saveToMultipleFile(
-                            file_uploads
+                        (saved_files, error_files) = (
+                            uploadFileService.saveToMultipleFile(file_uploads)
                         )
                         if error_files and error_files.__len__() > 0:
-                            return jsonify({"error": "File upload không thành công."}), 400
+                            return (
+                                jsonify({"error": "File upload không thành công."}),
+                                400,
+                            )
                         if saved_files and saved_files.__len__() > 0:
                             # Gán danh sách file vào db
                             file_news = saved_files
@@ -333,13 +343,13 @@ class PublicBuildingController(ControllerV2):
                 objLSChinhSua.ly_do_id = data.get("lyDoChinhSuaID")
                 objLSChinhSua.ly_do_chinh_sua = data.get("lyDoChinhSuaTEXT")
                 # TODO: Lấy ID tài khoản đăng nhập
-                objLSChinhSua.nguoi_chinh_sua_id = "-"
+                objLSChinhSua.nguoi_chinh_sua_id = _authService.get_user_uuid(request)
                 objLSChinhSua.ngay_tao = datetime.now(timezone.utc)
                 formatData = request.form.to_dict()
                 formatData.pop("body_params")
                 formatData.pop("lyDoChinhSuaID")
                 formatData.pop("lyDoChinhSuaTEXT")
-                oldData.pop('_sa_instance_state', None)
+                oldData.pop("_sa_instance_state", None)
                 newData = obj.__dict__.copy()
                 newData.pop("_sa_instance_state", None)
                 objLSChinhSua.du_lieu_cu = str(json.dumps(oldData))
@@ -356,6 +366,7 @@ class PublicBuildingController(ControllerV2):
 
     def remove_item_public_building(self, id):
         try:
+            _authService = AuthService()
             session = self.session()
             # Find the group parameter by id
             obj = self.find_resource_public_building(id, session)
@@ -363,7 +374,7 @@ class PublicBuildingController(ControllerV2):
                 return jsonify({"error": "Không tìm thấy bản ghi."}), 404
 
             # Mark as deleted
-            # obj.nguoi_xoa = ''
+            obj.nguoi_xoa = _authService.get_user_uuid(request)
             obj.ngay_xoa = datetime.now(timezone.utc)
             obj.trang_thai_xoa = True
             session.commit()
@@ -462,7 +473,7 @@ class PublicBuildingController(ControllerV2):
             return valTaiSanID[0] if valTaiSanID else str(uuid.uuid4())
         else:
             return str(uuid.uuid4())
-        
+
     def get_history_edit_building(self, id):
         session = self.session()
         query = (
@@ -471,14 +482,20 @@ class PublicBuildingController(ControllerV2):
             .order_by(desc(self.PBDMLichSuChinhSuaNhaCS.ngay_tao))
             .all()
         )
+        arrNguoiChinhSuaId = [item.nguoi_chinh_sua_id for item in query]
+        dbUsers = (
+            session.query(self.User)
+            .filter(self.User.uuid.in_(arrNguoiChinhSuaId))
+            .all()
+        )
         resJson = [
             {
                 "nha_cs_id": item.nha_cs_id,
                 "ly_do_chinh_sua": item.ly_do_chinh_sua,
-                "nguoi_chinh_sua": "demo001",
+                "nguoi_chinh_sua": [user.name for user in dbUsers if user.uuid == item.nguoi_chinh_sua_id],
                 "du_lieu_cu": item.du_lieu_cu,
                 "du_lieu_moi": item.du_lieu_moi,
-                "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao)
+                "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao),
             }
             for item in query
         ]

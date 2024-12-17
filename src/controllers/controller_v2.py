@@ -114,7 +114,8 @@ class ControllerV2:
                 "pbms_quan_ly_nha_cong_san",
                 "pbms_lich_su_chinh_sua_nha_cs",
                 "pbms_lich_su_chinh_sua_dat_cs",
-                "pbms_quan_ly_file_dinh_kem"
+                "pbms_quan_ly_file_dinh_kem",
+                "pbms_quan_ly_nhom_danh_muc"
             ],
         )
 
@@ -140,6 +141,7 @@ class ControllerV2:
         self.PBDMDanhMucQuanHuyen = self.config_models.model("pbms_dm_quan_huyen")
         self.PBDMDanhMucPhuongXa = self.config_models.model("pbms_dm_phuong_xa")
         self.PBDMQuanLyDatCong = self.config_models.model("pbms_quan_ly_dat_cong")
+        self.PBDMQuanLyNhomDanhMuc = self.config_models.model("pbms_quan_ly_nhom_danh_muc")
         self.PBDMQuanLyDanhMuc = self.config_models.model("pbms_quan_ly_danh_muc")
         self.PBDMQuanLyNhaCongSan = self.config_models.model("pbms_quan_ly_nha_cong_san")
         self.PBDMLichSuChinhSuaNhaCS = self.config_models.model("pbms_lich_su_chinh_sua_nha_cs")
