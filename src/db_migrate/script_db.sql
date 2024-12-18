@@ -279,7 +279,7 @@ CREATE TABLE qwc_config.pbms_quan_ly_file_dinh_kem (
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_file_dinh_kem TO qwc_admin;
 
--- 20241216 TODO
+-- 20241216 Updated
 ALTER TABLE qwc_config.users ADD COLUMN uuid VARCHAR(50) DEFAULT gen_random_uuid();
 ALTER TABLE qwc_config.pbms_quan_ly_don_vi ADD COLUMN cap_do INTEGER DEFAULT 0;
 CREATE TABLE qwc_config.pbms_quan_ly_nhom_danh_muc (
@@ -297,3 +297,28 @@ CREATE TABLE qwc_config.pbms_quan_ly_nhom_danh_muc (
 );
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_nhom_danh_muc TO qwc_admin;
+
+-- 20241217 TODO
+ALTER TABLE qwc_config.users ADD COLUMN chuc_vu_id VARCHAR(50) DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN don_vi_id VARCHAR(50) DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN full_name VARCHAR(256) DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN sdt VARCHAR(15) DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+CREATE TABLE qwc_config.pbms_quan_ly_chuc_vu (
+	id VARCHAR(50) NOT NULL,
+    ten_chuc_vu VARCHAR(255) NOT NULL,
+    cap_chuc_vu INTEGER DEFAULT 0,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_quan_ly_chuc_vu_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_chuc_vu TO qwc_admin;
+
+ALTER TABLE qwc_config.users ADD COLUMN acc_ke_khai BOOLEAN DEFAULT FALSE;
+ALTER TABLE qwc_config.users ADD COLUMN acc_phe_duyet BOOLEAN DEFAULT FALSE;

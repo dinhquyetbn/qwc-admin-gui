@@ -4,6 +4,7 @@
 {% block scripts %}
 {{super()}}
 <script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='libs/select2/vi.min.js') }}"></script>
 {% endblock %}
 {%- block styles %}
 {{ super() }}
@@ -111,6 +112,7 @@
             }
 
             $("#select-ma-nhom").select2({
+                language: "vi",
                 placeholder: "Chọn nhóm danh mục",
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),

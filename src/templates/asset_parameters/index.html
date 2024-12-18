@@ -5,11 +5,7 @@
 {% block scripts %}
 {{super()}}
 <script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
-<script type="text/javascript">
-    $(function () {
-
-    });
-</script>
+<script src="{{ url_for('static', filename='libs/select2/vi.min.js') }}"></script>
 {% endblock %}
 
 {%- block styles %}
@@ -120,6 +116,7 @@
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
             }
             $("#select-nhom-tham-so").select2({
+                language: "vi",
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
                 ajax: {

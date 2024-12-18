@@ -1,0 +1,218 @@
+{% extends "templates/base_index_v2.html" %}
+{% block title %}{{ i18n('interface.user_manager.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.user_manager.new_user_manager') }}{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='libs/select2/vi.min.js') }}"></script>
+{% endblock %}
+{%- block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='libs/select2/select2.min.css') }}" rel="stylesheet">
+<style>
+    @media (min-width: 576px) {
+        #createTab1Modal .modal-dialog {
+            max-width: 700px !important;
+        }
+    }
+</style>
+{%- endblock styles %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Quản trị hệ thống</li>
+        <li class="breadcrumb-item" aria-current="page">Quản lý người dùng</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block table %}
+<div class="tab-content px-4 py-4 my-4">
+    <div class="tab-pane fade show active" id="dsNguoiDung" role="tabpanel" aria-labelledby="dsNguoiDung-tab">
+        <table id="tableDanhSachNguoiDung" class="display responsive">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th style="min-width: 175px;">Tên đăng nhập</th>
+                    <th style="min-width: 125px;">Họ và tên</th>
+                    <th style="min-width: 125px;">Chức vụ</th>
+                    <th style="min-width: 125px;">Đơn vị</th>
+                    <th style="min-width: 100px;">Ngày tạo</th>
+                    <th class="text-center" style="min-width: 100px;">Tác vụ</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block renderScripts %}
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#createTab1Modal').on('shown.bs.modal', function () {
+            let id = $('#createTab1Modal input[name="id"]').val();
+            if (!id) {
+                $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            }
+
+            $("#select-don-vi").select2({
+                placeholder: "Vui lòng chọn đơn vị",
+                autoClear: true,
+                language: "vi",
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/units/all', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $("#select-chuc-vu").select2({
+                placeholder: "Vui lòng chọn chức vụ",
+                autoClear: true,
+                language: "vi",
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/categories/nhom-danh-muc/all', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+        })
+
+        $('#createTab1Modal').on('hide.bs.modal', function () {
+            $('#dsNguoiDungForm')[0].reset();
+            $('#select-don-vi').val(null).trigger('change');
+            $('#select-chuc-vu').val(null).trigger('change');
+            $('#danhMucForm').find('.is-invalid').removeClass('is-invalid');
+            $('#danhMucForm').find('.invalid-feedback').remove();
+        })
+    })
+
+    $(document).ready(function () {
+        $('#dsNguoiDungForm').validate({
+            rules: {
+                username: {
+                    required: true,
+                    pattern: /^[a-zA-Z0-9_]+$/
+                },
+                full_name: {
+                    required: true,
+                    maxlength: 256,
+                },
+                chuc_vu_id: {
+                    required: true
+                },
+                don_vi_id: {
+                    required: true
+                }
+            },
+            messages: {
+                username: {
+                    required: "Vui lòng nhập tên đăng nhập.",
+                    pattern: "Tên đăng nhập phải viết liền không dấu, không chứa ký tự đặc biệt, và có thể chứa dấu gạch dưới."
+                },
+                full_name: {
+                    required: "Vui lòng nhập họ và tên.",
+                    maxlength: "Họ và tên có độ dài tối đa 256 kí tự.",
+                    
+                },
+                chuc_vu_id: {
+                    required: "Vui lòng chọn chức vụ.",
+                },
+                don_vi_id: {
+                    required: "Vui lòng chọn đơn vị.",
+                }
+            },
+            errorClass: "is-invalid",
+            validClass: "is-valid",
+            errorElement: "div",
+            errorPlacement: function (error, element) {
+                if (element.hasClass('select2-hidden-accessible')) {
+                    // Insert the error message after the Select2 container
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element.next('.select2-container'));
+                } else {
+                    error.addClass("invalid-feedback");
+                    error.insertAfter(element);
+                }
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').addClass(errorClass);
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+                if ($(element).hasClass('select2-hidden-accessible')) {
+                    $(element).next('.select2-container').removeClass(errorClass);
+                }
+            }
+        });
+
+        $('#createTab1Modal .btn-save').on('click', function () {
+            if ($('#dsNguoiDungForm').valid()) {
+            }
+        })
+    })
+</script>
+{% endblock %}
+{% block bodyCreateTab1Modal %}
+<form id="dsNguoiDungForm" class="row g-3 needs-validation" novalidate method="post">
+    <input type="text" name="id" hidden />
+    <div class="col-md-6">
+        <label for="username" class="form-label">Tên đăng nhập:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="username" required>
+    </div>
+    <div class="col-md-6">
+        <label for="full_name" class="form-label">Họ và tên:<span class="required">*</span></label>
+        <input type="text" class="form-control" name="full_name" required>
+    </div>
+    <div class="col-md-6">
+        <label for="email" class="form-label">Email:</label>
+        <input type="text" class="form-control" name="email">
+    </div>
+    <div class="col-md-6">
+        <label for="sdt" class="form-label">SĐT:</label>
+        <input type="text" class="form-control" name="sdt">
+    </div>
+    <div class="col-md-6">
+        <label for="chuc_vu_id" class="form-label">Chức vụ:<span class="required">*</span></label>
+        <select id="select-chuc-vu" class="form-control w-100" name="chuc_vu_id"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="don_vi_id" class="form-label">Đơn vị:<span class="required">*</span></label>
+        <select id="select-don-vi" class="form-control w-100" name="don_vi_id"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="password" class="form-label">Mật khẩu:<span class="required">*</span></label>
+        <input type="password" class="form-control" name="password">
+    </div>
+    <div class="col-md-6">
+        <label for="confirm_password" class="form-label">Xác nhận mật khẩu:<span class="required">*</span></label>
+        <input type="password" class="form-control" name="confirm_password">
+    </div>
+    <div class="col-md-6">
+        <input class="form-check-input" type="checkbox" value="" name="is_active" checked>
+        <label class="form-check-label" for="is_active">
+            Kích hoạt
+        </label>
+    </div>
+</form>
+{% endblock %}

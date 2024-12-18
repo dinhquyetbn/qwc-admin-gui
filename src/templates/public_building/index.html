@@ -13,6 +13,7 @@
 {% block scripts %}
 {{super()}}
 <script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='libs/select2/vi.min.js') }}"></script>
 {% endblock %}
 {% block styles %}
 {{ super() }}
@@ -270,6 +271,7 @@ Thêm mới dữ liệu nhà công sản
         }
 
         $("#select-phan-loai-ts").select2({
+            language: "vi",
             placeholder: 'Chọn danh mục phân loại tài sản...',
             allowClear: true,
             minimumInputLength: 0, // Number of characters before AJAX request is made
@@ -289,6 +291,7 @@ Thêm mới dữ liệu nhà công sản
 
         // Load danh mục lý do cập nhật dữ liệu
         $("#select-lyDoCapNhatDuLieu").select2({
+            language: "vi",
             placeholder: 'Chọn lý do cập nhật dữ liệu...',
             // allowClear: true,
             minimumInputLength: 0, // Number of characters before AJAX request is made
@@ -309,6 +312,7 @@ Thêm mới dữ liệu nhà công sản
         // TODO
         let listMaTaiSan = [];
         $("#select-maTaiSan").select2({
+            language: "vi",
             placeholder: 'Chọn mã tài sản...',
             allowClear: true,
             minimumInputLength: 0, // Number of characters before AJAX request is made
@@ -939,6 +943,7 @@ Thêm mới dữ liệu nhà công sản
 
     function renderSelectAddress() {
         $("#select-province").select2({
+            language: "vi",
             placeholder: 'Chọn Tỉnh/TP...',
             allowClear: true,
             minimumInputLength: 0, // Number of characters before AJAX request is made
@@ -960,6 +965,7 @@ Thêm mới dữ liệu nhà công sản
             // Do something
             let ma_tp = e.target.value;
             $("#select-district").select2({
+                language: "vi",
                 placeholder: 'Chọn Quận Huyện...',
                 allowClear: true,
                 minimumInputLength: 0, // Number of characters before AJAX request is made
@@ -981,6 +987,7 @@ Thêm mới dữ liệu nhà công sản
             // Do something
             let ma_qh = e.target.value;
             $("#select-ward").select2({
+                language: "vi",
                 placeholder: 'Chọn Phường Xã...',
                 allowClear: true,
                 minimumInputLength: 0, // Number of characters before AJAX request is made

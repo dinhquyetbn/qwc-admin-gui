@@ -162,6 +162,8 @@
     "interface.sidebar.trang_chu",
     "interface.unit.new_unit",
     "interface.unit.title",
+    "interface.user_manager.new_user_manager",
+    "interface.user_manager.title",
     "interface.users.authentication",
     "interface.users.confirm_message_delete",
     "interface.users.form_email",

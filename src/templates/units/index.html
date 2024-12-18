@@ -13,6 +13,7 @@
 {% block scripts %}
 {{super()}}
 <script src="{{ url_for('static', filename='libs/select2/select2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='libs/select2/vi.min.js') }}"></script>
 {% endblock %}
 
 {%- block styles %}
@@ -93,6 +94,7 @@
             }
 
             $("#select-don-vi").select2({
+                language: "vi",
                 placeholder: 'Chọn đơn vị cấp cha...',
                 allowClear: true,
                 minimumInputLength: 0, // Number of characters before AJAX request is made
@@ -112,6 +114,7 @@
             });
 
             $("#select-province").select2({
+                language: "vi",
                 placeholder: 'Chọn Tỉnh/TP...',
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
@@ -132,7 +135,8 @@
                 // Do something
                 let ma_tp = e.target.value;
                 $("#select-district").select2({
-                    placeholder: 'Chọn Quận Huyện...',
+                    language: "vi",
+                    placeholder: 'Chọn Quận/Huyện...',
                     minimumInputLength: 0, // Number of characters before AJAX request is made
                     dropdownParent: $('#createTab1Modal'),
                     ajax: {
@@ -152,7 +156,8 @@
                 // Do something
                 let ma_qh = e.target.value;
                 $("#select-ward").select2({
-                    placeholder: 'Chọn Phường Xã...',
+                    language: "vi",
+                    placeholder: 'Chọn Phường/Xã...',
                     minimumInputLength: 0, // Number of characters before AJAX request is made
                     dropdownParent: $('#createTab1Modal'),
                     ajax: {
@@ -169,12 +174,14 @@
                 });
             });
             $("#select-district").select2({
-                placeholder: 'Chọn Quận Huyện...',
+                language: "vi",
+                placeholder: 'Chọn Quận/Huyện...',
                 minimumInputLength: 0,
                 dropdownParent: $('#createTab1Modal'),
             });
             $("#select-ward").select2({
-                placeholder: 'Chọn Quận Huyện...',
+                language: "vi",
+                placeholder: 'Chọn Phường/Xã...',
                 minimumInputLength: 0,
                 dropdownParent: $('#createTab1Modal'),
             });

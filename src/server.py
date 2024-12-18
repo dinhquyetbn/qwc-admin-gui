@@ -25,7 +25,7 @@ from controllers import UsersController, GroupsController, RolesController, \
     RegistrationRequestsController, DashboardController, PublicBuildingController, \
     PublicLandController, AssetParametersController, AssetTypeController, \
     MapDataAnalyticsController, UnitsController, CategoriesController, \
-    DashboardV2Controller, UploadFileController
+    DashboardV2Controller, UploadFileController, UserManagerController
 from utils import i18n
 
 AUTH_PATH = os.environ.get('AUTH_PATH', '/auth')
@@ -133,6 +133,7 @@ UnitsController(app, handler)
 CategoriesController(app, handler)
 DashboardV2Controller(app, handler)
 UploadFileController(app, handler)
+UserManagerController(app, handler)
 
 if app.config.get('QWC_GROUP_REGISTRATION_ENABLED'):
     RegistrableGroupsController(app, handler)

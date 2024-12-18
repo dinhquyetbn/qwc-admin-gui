@@ -178,7 +178,7 @@ class PublicLandController(ControllerV2):
 
     def create_or_update_item_public_land(self, id=None):
         try:
-            _authService = AuthService
+            _authService = AuthService()
             # Parse JSON data from the request
             data = request.form
             if not data:

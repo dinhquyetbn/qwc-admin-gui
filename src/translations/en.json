@@ -188,6 +188,10 @@
       "new_unit": "new_unit",
       "title": "Danh sách đơn vị"
     },
+    "user_manager": {
+      "new_user_manager": "new_user_manager",
+      "title": "Danh sách người dùng"
+    },
     "users": {
       "authentication": "Authentication",
       "confirm_message_delete": "Remove user?",
