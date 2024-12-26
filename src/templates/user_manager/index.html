@@ -33,10 +33,10 @@
             <thead>
                 <tr>
                     <th>STT</th>
+                    <th class="d-none" style="min-width: 125px;">Đơn vị</th>
                     <th style="min-width: 175px;">Tên đăng nhập</th>
                     <th style="min-width: 125px;">Họ và tên</th>
                     <th style="min-width: 125px;">Chức vụ</th>
-                    <th style="min-width: 125px;">Đơn vị</th>
                     <th style="min-width: 100px;">Ngày tạo</th>
                     <th class="text-center" style="min-width: 100px;">Tác vụ</th>
                 </tr>
@@ -51,7 +51,7 @@
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
         $('#createTab1Modal').on('shown.bs.modal', function () {
-            let id = $('#createTab1Modal input[name="id"]').val();
+            let id = $('#createTab1Modal input[name="user_uuid"]').val();
             if (!id) {
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
             }
@@ -75,6 +75,7 @@
                 }
             });
 
+            var globalChucVu = [];
             $("#select-chuc-vu").select2({
                 placeholder: "Vui lòng chọn chức vụ",
                 autoClear: true,
@@ -82,7 +83,50 @@
                 minimumInputLength: 0, // Number of characters before AJAX request is made
                 dropdownParent: $('#createTab1Modal'),
                 ajax: {
-                    url: 'api/categories/nhom-danh-muc/all', // API endpoint URL
+                    url: 'api/categories/chuc-vu/all', // API endpoint URL
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        globalChucVu = data.result;
+                        return {
+                            results: data.result
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            // Handle the change event
+            $('#select-chuc-vu').on('change', function (e) {
+                // Get the selected value
+                var selectedValue = $(this).val();
+                if (selectedValue) {
+                    const obj = globalChucVu.filter(x => x.id === selectedValue);
+                    if (obj[0]?.level === 0) {
+                        $('input[name="acc_ke_khai"]').prop('checked', true);
+                        $('input[name="acc_phe_duyet"]').prop('checked', false);
+                    } else if (obj[0]?.level === 1) {
+                        $('input[name="acc_ke_khai"]').prop('checked', false);
+                        $('input[name="acc_phe_duyet"]').prop('checked', true);
+                    } else {
+                        $('input[name="acc_ke_khai"]').prop('checked', false);
+                        $('input[name="acc_phe_duyet"]').prop('checked', false);
+                    }
+                } else {
+                    $('input[name="acc_ke_khai"]').prop('checked', false);
+                    $('input[name="acc_phe_duyet"]').prop('checked', false);
+                }
+            });
+
+            $("#select-quyen").select2({
+                placeholder: "Vui lòng chọn quyền hệ thống",
+                autoClear: true,
+                language: "vi",
+                multiple: true,
+                minimumInputLength: 0, // Number of characters before AJAX request is made
+                dropdownParent: $('#createTab1Modal'),
+                ajax: {
+                    url: 'api/categories/roles/all', // API endpoint URL
                     dataType: 'json',
                     delay: 250,
                     processResults: function (data) {
@@ -99,12 +143,33 @@
             $('#dsNguoiDungForm')[0].reset();
             $('#select-don-vi').val(null).trigger('change');
             $('#select-chuc-vu').val(null).trigger('change');
-            $('#danhMucForm').find('.is-invalid').removeClass('is-invalid');
-            $('#danhMucForm').find('.invalid-feedback').remove();
+            $('#select-quyen').val(null).trigger('change');
+            $('input[name="acc_ke_khai"]').prop('checked', false);
+            $('input[name="acc_phe_duyet"]').prop('checked', false);
+            $('#dsNguoiDungForm').find('.is-valid').removeClass('is-valid');
+            $('#dsNguoiDungForm').find('.is-invalid').removeClass('is-invalid');
+            $('#dsNguoiDungForm').find('.invalid-feedback').remove();
         })
     })
 
     $(document).ready(function () {
+        // Search data
+        $('.btn-search').on('click', function () {
+            dataTableNguoiDung.ajax.reload(null, false);
+        })
+
+        $('#input-search').on('keydown', function (e) {
+            if (event.key === "Enter" || event.keyCode === 13) {
+                dataTableNguoiDung.ajax.reload(null, false);
+            }
+        })
+
+        // Validate dữ liệu tham số tài sản
+        $.validator.addMethod("pattern", function (value, element, regexp) {
+            const re = new RegExp(regexp);
+            return this.optional(element) || re.test(value);
+        });
+
         $('#dsNguoiDungForm').validate({
             rules: {
                 username: {
@@ -120,6 +185,20 @@
                 },
                 don_vi_id: {
                     required: true
+                },
+                role_ids: {
+                    required: true
+                },
+                tai_khoan_cap: {
+                    required: true
+                },
+                password: {
+                    // required: true,
+                    // minlength: 6
+                },
+                confirm_password: {
+                    // required: true,
+                    equalTo: "#password"
                 }
             },
             messages: {
@@ -130,13 +209,27 @@
                 full_name: {
                     required: "Vui lòng nhập họ và tên.",
                     maxlength: "Họ và tên có độ dài tối đa 256 kí tự.",
-                    
+
                 },
                 chuc_vu_id: {
                     required: "Vui lòng chọn chức vụ.",
                 },
                 don_vi_id: {
                     required: "Vui lòng chọn đơn vị.",
+                },
+                role_ids: {
+                    required: "Vui lòng chọn quyền hệ thống.",
+                },
+                tai_khoan_cap: {
+                    required: "Vui lòng chọn tài khoản cấp."
+                },
+                password: {
+                    // required: "Vui lòng nhập mật khẩu.",
+                    // minlength: "Độ dài mật khẩu tối thiểu 6 kí tự."
+                },
+                confirm_password: {
+                    // required: "Vui lòng nhập xác nhận mật khẩu.",
+                    equalTo: "Mật khẩu xác nhận không trùng khớp."
                 }
             },
             errorClass: "is-invalid",
@@ -166,16 +259,235 @@
             }
         });
 
+        const fieldDsNguoiDung = [
+            "stt",
+            "ten_don_vi",
+            "username",
+            "full_name",
+            "ten_chuc_vu",
+            "ngay_tao",
+            "tac_vu"
+        ];
+
+        let dataTableNguoiDung = new DataTable('#tableDanhSachNguoiDung', {
+            dom: 'rtlip',
+            ordering: true,
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            processing: true,
+            serverSide: true,
+            searching: { regex: true },
+            pageLength: 10,
+            responsive: true,
+            pagingType: "simple_numbers",
+            language: PBMSLang,
+            order: [],
+            rowGroup: {
+                dataSrc: ['ten_don_vi'],
+            },
+            ajax: {
+                url: "api/user-manager/page",
+                type: "POST",
+                contentType: 'application/json',
+                dataType: "json",
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                data: function (d) {
+                    d.search.value = $('input[name=txt-search]').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function (json) {
+                    json.recordsTotal = json.result.recordsTotal;
+                    json.recordsFiltered = json.result.recordsFiltered;
+                    return json.result.data;
+                }
+            },
+            initComplete: function () {
+
+            },
+            columnDefs: [
+                { "defaultContent": "", "targets": "_all" },
+                { orderable: false, targets: getIdxFieldTable(fieldDsNguoiDung, ['stt', 'ngay_tao', 'tac_vu']) },
+                { visible: false, targets: getIdxFieldTable(fieldDsNguoiDung, ['ten_don_vi']) },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDsNguoiDung, ['stt']),
+                    render: function (data, type, full, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    },
+                },
+                {
+                    data: '',
+                    targets: getIdxFieldTable(fieldDsNguoiDung, ['tac_vu']),
+                    render: function (data, type, full, meta) {
+                        return `<div class="btn-action text-center">
+                                    <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.uuid}')">
+                                        <span class="svg-icon svg-icon-edit"></span>    
+                                    </a>    
+                                    <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.uuid}')">
+                                        <span class="svg-icon svg-icon-delete" title="Xóa"></span>
+                                    </a>    
+                                </div>`
+                    },
+                },
+            ],
+            columns: [
+                { className: 'noVis', targets: [0] },
+                { data: 'ten_don_vi' },
+                { data: 'username' },
+                { data: 'full_name' },
+                { data: 'ten_chuc_vu' },
+                { data: 'ngay_tao' },
+                { className: 'noVis' },
+            ]
+        });
+
         $('#createTab1Modal .btn-save').on('click', function () {
             if ($('#dsNguoiDungForm').valid()) {
+                const formDataArray = $('#dsNguoiDungForm').serializeArray();
+                const formData = {};
+                formDataArray.forEach(item => {
+                    formData[item.name] = item.value;
+                });
+                // Add value control checkbox
+                formData['role_ids'] = $('select[name="role_ids"]').val();
+                formData['is_active'] = $('input[name="is_active"]').prop('checked');
+                formData['acc_ke_khai'] = $('input[name="acc_ke_khai"]').prop('checked');
+                formData['acc_phe_duyet'] = $('input[name="acc_phe_duyet"]').prop('checked');
+
+                // Make AJAX call
+                let ajax_url = 'api/user-manager/create';
+                let ajax_type = 'POST';
+                let paramId = $('#dsNguoiDungForm input[name="user_uuid"]').val();
+                // Tồn tại Id thì call api update
+                if (paramId) {
+                    ajax_url = `api/user-manager/update/${paramId}`;
+                    ajax_type = 'PUT';
+                }
+
+                $.ajax({
+                    url: ajax_url, // Replace with your API endpoint
+                    type: ajax_type,
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    contentType: 'application/json', // Set content type to JSON
+                    data: JSON.stringify(formData), // Convert formData to JSON string
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Optionally, close the modal or reset the form
+                        $('#createTab1Modal').modal('hide');
+                        // Reload datatable
+                        dataTableNguoiDung.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON ? err.responseJSON?.error : 'Lỗi hệ thống. Vui lòng kiểm tra lại.');
+                    }
+                });
             }
         })
+    
+        window.showUpdateTab1Modal = function (id) {
+            $.ajax({
+                url: `api/user-manager/detail/${id}`, // Replace with your API endpoint
+                type: 'GET',
+                headers: {
+                    'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                },
+                success: function (res) {
+                    const data = res.result;
+                    $('#dsNguoiDungForm [name="user_uuid"]').val(data.uuid);
+                    $('#dsNguoiDungForm [name="username"]').val(data.username);
+                    $('#dsNguoiDungForm [name="tai_khoan_cap"]').val(data.tai_khoan_cap);
+                    $('#dsNguoiDungForm [name="sdt"]').val(data.sdt);
+                    $('#dsNguoiDungForm [name="full_name"]').val(data.full_name);
+                    $('#dsNguoiDungForm [name="email"]').val(data.email);
+
+                    $('#select-don-vi').append(new Option(data.ten_don_vi, data.don_vi_id, true, true)).trigger('change');
+                    $('#select-chuc-vu').append(new Option(data.ten_chuc_vu, data.chuc_vu_id, true, true)).trigger('change');
+                    
+                    let lstRoles = [];
+                    data.roles.forEach(item => {
+                        lstRoles.push(new Option(item.name, item.id, true, true))
+                    });
+                    $('#select-quyen').append(lstRoles).trigger('change');
+
+                    if (data.is_active) $('input[name="is_active"]').prop('checked', 'checked');
+                    if (data.acc_ke_khai) $('input[name="acc_ke_khai"]').prop('checked', 'checked');
+                    if (data.acc_phe_duyet) $('input[name="acc_phe_duyet"]').prop('checked', 'checked');
+                    // Trigger validation on each field to show feedback
+                    $('#dsNguoiDungForm').validate().form();
+                    // Show confirmation modal
+                    $('#createTab1Modal').modal('show');
+                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                },
+                error: function (err) {
+                    // Handle error
+                    toastr.error(err.responseJSON?.error);
+                }
+            });
+        }
+
+        window.showDeleteTab1Modal = function (id) {
+            // Show confirmation modal
+            $('#deleteTab1Modal').modal('show');
+            // Set the delete button action
+            $('#deleteTab1Modal .btn-delete').off('click').on('click', function () {
+                // Make AJAX call to delete the item
+                $.ajax({
+                    url: `api/user-manager/delete/${id}`, // Replace with your API endpoint
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': $('input[name="csrf_token"]').val() // Include the CSRF token in the headers
+                    },
+                    success: function (res) {
+                        // Handle success
+                        toastr.success(res.message);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                        // Reload datatable
+                        dataTableNguoiDung.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        // Handle error
+                        toastr.error(err.responseJSON?.error);
+                        // Close the modal
+                        $('#deleteTab1Modal').modal('hide');
+                    }
+                });
+            });
+        }
     })
+
+    function togglePasswordVisibility() {
+        var passwordField = document.getElementById("password");
+        var confirmPasswordField = document.getElementById("confirm_password");
+        var eyeIcons = document.querySelectorAll(".toggle-password .eye-icon");
+        if (passwordField.type === "password" && confirmPasswordField.type === "password") {
+            passwordField.type = "text";
+            confirmPasswordField.type = "text";
+            eyeIcons.forEach(function (icon) {
+                icon.classList.add("eye-closed");
+                icon.classList.remove("eye-open");
+            });
+        } else {
+            passwordField.type = "password";
+            confirmPasswordField.type = "password";
+            eyeIcons.forEach(function (icon) {
+                icon.classList.add("eye-open");
+                icon.classList.remove("eye-closed");
+            });
+        }
+    }
 </script>
 {% endblock %}
 {% block bodyCreateTab1Modal %}
 <form id="dsNguoiDungForm" class="row g-3 needs-validation" novalidate method="post">
-    <input type="text" name="id" hidden />
+    <input type="text" name="user_uuid" hidden />
     <div class="col-md-6">
         <label for="username" class="form-label">Tên đăng nhập:<span class="required">*</span></label>
         <input type="text" class="form-control" name="username" required>
@@ -201,18 +513,50 @@
         <select id="select-don-vi" class="form-control w-100" name="don_vi_id"></select>
     </div>
     <div class="col-md-6">
-        <label for="password" class="form-label">Mật khẩu:<span class="required">*</span></label>
-        <input type="password" class="form-control" name="password">
+        <label for="password" class="form-label">Mật khẩu:</label>
+        <span class="toggle-password" onclick="togglePasswordVisibility()">
+            <i class="eye-icon eye-open"></i>
+        </span>
+        <input id="password" type="password" class="form-control" name="password" autocomplete="current-password">
     </div>
     <div class="col-md-6">
-        <label for="confirm_password" class="form-label">Xác nhận mật khẩu:<span class="required">*</span></label>
-        <input type="password" class="form-control" name="confirm_password">
+        <label for="confirm_password" class="form-label">Xác nhận mật khẩu:</label>
+        <span class="toggle-password" onclick="togglePasswordVisibility()">
+            <i class="eye-icon eye-open"></i>
+        </span>
+        <input id="confirm_password" type="password" class="form-control" name="confirm_password" autocomplete="new-password">
     </div>
     <div class="col-md-6">
-        <input class="form-check-input" type="checkbox" value="" name="is_active" checked>
-        <label class="form-check-label" for="is_active">
-            Kích hoạt
-        </label>
+        <label for="role_ids" class="form-label">Quyền hệ thống:<span class="required">*</span></label>
+        <select id="select-quyen" class="form-control w-100" name="role_ids"></select>
+    </div>
+    <div class="col-md-6">
+        <label for="tai_khoan_cap" class="form-label">Tài khoản cấp:<span class="required">*</span></label>
+        <select id="select-tai-khoan-cap" class="form-control w-100" name="tai_khoan_cap">
+            <option value="1">Cấp 1</option>
+            <option value="2">Cấp 2</option>
+            <option value="3">Cấp 3</option>
+        </select>
+    </div>
+    <div class="row mt-2">
+        <div class="col-md-4">
+            <input class="form-check-input" type="checkbox" value="" name="is_active">
+            <label class="form-check-label" for="is_active">
+                Kích hoạt
+            </label>
+        </div>
+        <div class="col-md-4">
+            <input class="form-check-input" type="checkbox" value="" name="acc_ke_khai">
+            <label class="form-check-label" for="acc_ke_khai">
+                Thực hiện kê khai
+            </label>
+        </div>
+        <div class="col-md-4">
+            <input class="form-check-input" type="checkbox" value="" name="acc_phe_duyet">
+            <label class="form-check-label" for="acc_phe_duyet">
+                Thực hiện phê duyệt
+            </label>
+        </div>
     </div>
 </form>
 {% endblock %}

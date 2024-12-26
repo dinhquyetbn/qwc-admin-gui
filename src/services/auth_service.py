@@ -33,3 +33,17 @@ class AuthService:
             user_info = decoded_token.get("user_info")
             return user_info.get('id')
         return None
+    
+    def isAccess(self, req):
+        token = self.get_token_cookie(req)
+        if token:
+            decoded_token = decode_token(token)
+            user_roles = decoded_token.get("roles")
+            role_level = decoded_token.get("tai_khoan_cap")
+            if "admin" in user_roles:
+                return True
+            else:
+                # Từ cấp UBND Quận mới có thể thực hiện cập nhật tài khoản cấp 1
+                if role_level >= 2:
+                    return True
+        return False

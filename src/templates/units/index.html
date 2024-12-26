@@ -189,6 +189,7 @@
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#unitsForm')[0].reset();
+            $('#unitsForm').find('.is-valid').removeClass('is-valid');
             $('#unitsForm').find('.is-invalid').removeClass('is-invalid');
             $('#unitsForm').find('.invalid-feedback').remove();
             $('#select-province').val(null).trigger('change');

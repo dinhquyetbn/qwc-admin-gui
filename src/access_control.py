@@ -74,6 +74,16 @@ class AccessControl:
 
         return admin_role
     
-    def getUserId(self, identity):
-        return identity.get('id')
-        
+    def get_user_roles(self, username):
+        db_engine = self.handler().db_engine()
+        self.config_models = ConfigModels(db_engine, self.handler().conn_str())
+        Role = self.config_models.model('roles')
+        User = self.config_models.model('users')
+        session = self.config_models.session()
+        # create query
+        query = session.query(Role)
+        # query permissions from direct user roles
+        user_roles_query = query.join(Role.users_collection) \
+            .filter(User.name == username)
+        print(user_roles_query)
+        session.close()

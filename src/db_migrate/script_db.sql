@@ -298,7 +298,7 @@ CREATE TABLE qwc_config.pbms_quan_ly_nhom_danh_muc (
 
 GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_quan_ly_nhom_danh_muc TO qwc_admin;
 
--- 20241217 TODO
+-- 20241217 DONE
 ALTER TABLE qwc_config.users ADD COLUMN chuc_vu_id VARCHAR(50) DEFAULT NULL;
 ALTER TABLE qwc_config.users ADD COLUMN don_vi_id VARCHAR(50) DEFAULT NULL;
 ALTER TABLE qwc_config.users ADD COLUMN full_name VARCHAR(256) DEFAULT NULL;
@@ -322,3 +322,38 @@ GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc
 
 ALTER TABLE qwc_config.users ADD COLUMN acc_ke_khai BOOLEAN DEFAULT FALSE;
 ALTER TABLE qwc_config.users ADD COLUMN acc_phe_duyet BOOLEAN DEFAULT FALSE;
+
+-- 20241220 DONE
+ALTER TABLE qwc_config.roles ADD COLUMN txt_name VARCHAR(255) DEFAULT NULL;
+UPDATE qwc_config.roles SET txt_name = 'Công khai' WHERE id = 1;
+UPDATE qwc_config.roles SET txt_name = 'Quản trị viên' WHERE id = 2;
+INSERT INTO qwc_config.roles (id, name, description, txt_name) VALUE (3, 'can_bo', 'Cán bộ role', 'Cán bộ');
+
+-- 20241225 DONE
+ALTER TABLE qwc_config.users ADD COLUMN tai_khoan_cap INTEGER DEFAULT 1;
+
+-- 20241226 TODO
+ALTER TABLE qwc_config.users ADD COLUMN nguoi_tao VARCHAR(50) DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN ngay_tao SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE qwc_config.users ADD COLUMN nguoi_sua VARCHAR(50) DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN ngay_sua TIMESTAMPTZ DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN nguoi_xoa VARCHAR(50) DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN ngay_xoa TIMESTAMPTZ DEFAULT NULL;
+ALTER TABLE qwc_config.users ADD COLUMN trang_thai_xoa BOOLEAN DEFAULT FALSE;
+ALTER TABLE qwc_config.password_histories ADD COLUMN pass_hash VARCHAR(256) DEFAULT NULL;
+
+CREATE TABLE qwc_config.pbms_user_removed (
+	id VARCHAR(50) NOT NULL,
+	user_id VARCHAR(50) NOT NULL,
+    user_info TEXT NOT NULL,
+    nguoi_tao VARCHAR(50),
+    ngay_tao TIMESTAMPTZ NOT NULL,
+    nguoi_sua VARCHAR(50),
+    ngay_sua TIMESTAMPTZ,
+    nguoi_xoa VARCHAR(50),
+    ngay_xoa TIMESTAMPTZ,
+    trang_thai_xoa BOOLEAN DEFAULT false,
+	CONSTRAINT pbms_user_removed_pk PRIMARY KEY (id)
+);
+
+GRANT REFERENCES, INSERT, UPDATE, TRUNCATE, TRIGGER, SELECT, DELETE ON TABLE qwc_config.pbms_user_removed TO qwc_admin;

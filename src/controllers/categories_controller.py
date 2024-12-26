@@ -54,6 +54,21 @@ class CategoriesController(ControllerV2):
             self.get_category_by_ma_nhom,
             methods=["GET"],
         )
+        # Lấy danh sách chức vụ
+        self.app.add_url_rule(
+            "/api/categories/chuc-vu/all",
+            "get_category_chuc_vu",
+            self.get_category_chuc_vu,
+            methods=["GET"],
+        )
+
+        # Lấy danh sách quyền
+        self.app.add_url_rule(
+            "/api/categories/roles/all",
+            "get_category_roles",
+            self.get_category_roles,
+            methods=["GET"],
+        )
 
         # Nhóm danh mục
         self.app.add_url_rule(
@@ -195,6 +210,52 @@ class CategoriesController(ControllerV2):
             {
                 "id": item.ma,
                 "text": item.ten,
+            }
+            for item in query
+        ]
+        session.close()
+        return jsonify({"result": jsonData})
+
+    def get_category_chuc_vu(self): 
+        self.setup_models()
+        param_value = request.args.get("q")
+        session = self.session()
+        # Get dữ liệu đà nẵng
+        query = session.query(self.PBDMQuanLyChucVu).filter_by(
+            trang_thai_xoa=False
+        )
+        if param_value:
+            query = query.filter(
+                self.PBDMQuanLyChucVu.ten_chuc_vu.ilike("%" + param_value + "%")
+            )
+        query = query.order_by(self.PBDMQuanLyChucVu.cap_chuc_vu).all()
+        jsonData = [
+            {
+                "id": item.id,
+                "text": item.ten_chuc_vu,
+                "level": item.cap_chuc_vu
+            }
+            for item in query
+        ]
+        session.close()
+        return jsonify({"result": jsonData})
+    
+    def get_category_roles(self): 
+        self.setup_models()
+        param_value = request.args.get("q")
+        session = self.session()
+        # Get dữ liệu đà nẵng
+        query = session.query(self.Role).filter(self.Role.name != 'public')
+        if param_value:
+            query = query.filter(
+                self.Role.txt_name.ilike("%" + param_value + "%")
+            )
+        query = query.order_by(self.Role.id).all()
+        jsonData = [
+            {
+                "id": item.id,
+                "text": item.txt_name,
+                "name": item.name
             }
             for item in query
         ]

@@ -133,6 +133,7 @@
         $('#createTab1Modal').on('hide.bs.modal', function () {
             $('#danhMucForm')[0].reset();
             $('#select-ma-nhom').val(null).trigger('change');
+            $('#danhMucForm').find('.is-valid').removeClass('is-valid');
             $('#danhMucForm').find('.is-invalid').removeClass('is-invalid');
             $('#danhMucForm').find('.invalid-feedback').remove();
         })
@@ -146,6 +147,7 @@
 
         $('#createTab2Modal').on('hide.bs.modal', function () {
             $('#nhomDanhMucForm')[0].reset();
+            $('#nhomDanhMucForm').find('.is-valid').removeClass('is-valid');
             $('#nhomDanhMucForm').find('.is-invalid').removeClass('is-invalid');
             $('#nhomDanhMucForm').find('.invalid-feedback').remove();
         })

@@ -115,7 +115,10 @@ class ControllerV2:
                 "pbms_lich_su_chinh_sua_nha_cs",
                 "pbms_lich_su_chinh_sua_dat_cs",
                 "pbms_quan_ly_file_dinh_kem",
-                "pbms_quan_ly_nhom_danh_muc"
+                "pbms_quan_ly_nhom_danh_muc",
+                "pbms_quan_ly_chuc_vu",
+                "password_histories",
+                "pbms_user_removed"
             ],
         )
 
@@ -128,6 +131,7 @@ class ControllerV2:
         self.Role = self.config_models.model("roles")
         self.User = self.config_models.model("users")
         self.UserInfo = self.config_models.model("user_infos")
+        self.UserRemoved = self.config_models.model("pbms_user_removed")
 
         self.PBMSQuanLyNhomThamSo = self.config_models.model(
             "pbms_quan_ly_nhom_tham_so"
@@ -147,6 +151,8 @@ class ControllerV2:
         self.PBDMLichSuChinhSuaNhaCS = self.config_models.model("pbms_lich_su_chinh_sua_nha_cs")
         self.PBDMLichSuChinhSuaDatCS = self.config_models.model("pbms_lich_su_chinh_sua_dat_cs")
         self.PBDMQuanLyFileDinhKem = self.config_models.model("pbms_quan_ly_file_dinh_kem")
+        self.PBDMQuanLyChucVu = self.config_models.model("pbms_quan_ly_chuc_vu")
+        self.PasswordHistory = self.config_models.model('password_histories')
 
     def resource_pkey(self):
         """Return primary key column name for resource table (default: 'id')"""
@@ -574,7 +580,9 @@ class ControllerV2:
 
         # update relations
         relation_ids = []
-        for relation_id in multi_select.data:
+        # for relation_id in multi_select.data:
+        # multi_select tương ứng với list id
+        for relation_id in multi_select:
             # get relation from ConfigDB
             filter = {id_attr: relation_id}
             query = session.query(relation_model).filter_by(**filter)
