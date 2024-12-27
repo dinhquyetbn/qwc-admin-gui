@@ -108,7 +108,10 @@
         $('#createTab1Modal').on('shown.bs.modal', function () {
             let id = $('#createTab1Modal input[name="id"]').val();
             if (!id) {
+                actionEditForm();
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            } else {
+                actionViewForm();
             }
 
             $("#select-ma-nhom").select2({
@@ -131,6 +134,7 @@
         })
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
+            actionViewForm();
             $('#danhMucForm')[0].reset();
             $('#select-ma-nhom').val(null).trigger('change');
             $('#danhMucForm').find('.is-valid').removeClass('is-valid');
@@ -141,11 +145,15 @@
         $('#createTab2Modal').on('shown.bs.modal', function () {
             let id = $('#createTab2Modal input[name="id"]').val();
             if (!id) {
+                actionEditForm();
                 $('#createTab2Modal .modal-title').html('Thêm mới dữ liệu');
+            } else {
+                actionViewForm();
             }
         })
 
         $('#createTab2Modal').on('hide.bs.modal', function () {
+            actionViewForm();
             $('#nhomDanhMucForm')[0].reset();
             $('#nhomDanhMucForm').find('.is-valid').removeClass('is-valid');
             $('#nhomDanhMucForm').find('.is-invalid').removeClass('is-invalid');
@@ -163,6 +171,14 @@
             if (event.key === "Enter" || event.keyCode === 13) {
                 reloadTable();
             }
+        })
+
+        $('#createTab1Modal .btn-view').on('click', function () {
+            actionEditForm();
+        })
+
+        $('#createTab2Modal .btn-view').on('click', function () {
+            actionEditForm();
         })
 
         // Nhóm danh mục
@@ -365,7 +381,6 @@
                     $('#nhomDanhMucForm').validate().form();
                     // Show confirmation modal
                     $('#createTab2Modal').modal('show');
-                    $('#createTab2Modal .modal-title').html('Cập nhật dữ liệu');
                 },
                 error: function (err) {
                     // Handle error
@@ -612,7 +627,6 @@
                     $('#danhMucForm').validate().form();
                     // Show confirmation modal
                     $('#createTab1Modal').modal('show');
-                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
                 },
                 error: function (err) {
                     // Handle error
@@ -667,9 +681,60 @@
             }
         }
     })
+
+    function actionViewForm() {
+        let tabName = $('#createModal')[0].getAttribute('data-bs-target');
+        switch (tabName) {
+            // Tab ds tham số
+            case '#createTab1Modal':
+                $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
+                $("#createTab1Modal input, select").prop("disabled", true);
+                $('#createTab1Modal .btn-view').show();
+                $('#createTab1Modal .btn-save').hide();
+                break;
+            // Tab ds nhóm tham số
+            case '#createTab2Modal':
+                $('#createTab2Modal .modal-title').html('Xem chi tiết dữ liệu');
+                $("#createTab2Modal input, select").prop("disabled", true);
+                $('#createTab2Modal .btn-view').show();
+                $('#createTab2Modal .btn-save').hide();
+                break;
+            default:
+                break;
+        }
+        
+    }
+
+    function actionEditForm() {
+        let tabName = $('#createModal')[0].getAttribute('data-bs-target');
+        switch (tabName) {
+            // Tab ds tham số
+            case '#createTab1Modal':
+                $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+                $("#createTab1Modal input, select").prop("disabled", false);
+                $('#createTab1Modal .btn-view').hide();
+                $('#createTab1Modal .btn-save').show();
+                break;
+            // Tab ds nhóm tham số
+            case '#createTab2Modal':
+                $('#createTab2Modal .modal-title').html('Cập nhật dữ liệu');
+                $("#createTab2Modal input, select").prop("disabled", false);
+                $('#createTab2Modal .btn-view').hide();
+                $('#createTab2Modal .btn-save').show();
+                break;
+            default:
+                break;
+        }
+        
+    }
 </script>
 {% endblock %}
-
+{% block buttonViewTab1Modal %}
+<button type="button" class="btn btn-view">{{ utils.render_icon('floppy2-fill') }} Chỉnh sửa</button>
+{% endblock%}
+{% block buttonViewTab2Modal %}
+<button type="button" class="btn btn-view">{{ utils.render_icon('floppy2-fill') }} Chỉnh sửa</button>
+{% endblock%}
 {% block bodyCreateTab1Modal %}
 <form id="danhMucForm" class="row g-3 needs-validation" novalidate method="post">
     <input type="text" name="id" hidden />

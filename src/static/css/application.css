@@ -234,7 +234,9 @@ form {
   height: 40px;
 }
 
-.btn-theme:hover, .btn-create:hover, .btn-save:hover, .btn-delete:hover, .btn-step1-next:hover {
+.btn-theme:hover, .btn-create:hover, 
+.btn-save:hover, .btn-delete:hover, 
+.btn-step1-next:hover, .btn-view:hover {
   color: #fff;
 }
 .btn-theme {
@@ -249,7 +251,7 @@ form {
   background: var(--Gradients-Green, linear-gradient(180deg, #63B967 0%, #4BA64F 100%));
   color: #fff;
 }
-.btn-save {
+.btn-save, .btn-view {
   box-shadow: 1px 2px 10px 0px rgba(0, 0, 0, 0.20);
   border-radius: 8px;
   background: var(--Gradients-Green, linear-gradient(180deg, #63B967 0%, #4BA64F 100%));

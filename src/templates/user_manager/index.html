@@ -53,7 +53,11 @@
         $('#createTab1Modal').on('shown.bs.modal', function () {
             let id = $('#createTab1Modal input[name="user_uuid"]').val();
             if (!id) {
+                actionEditForm();
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            } else {
+                // Khi mở form mặc định chỉ view
+                actionViewForm();
             }
 
             $("#select-don-vi").select2({
@@ -140,6 +144,8 @@
         })
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
+            // Khi đóng form mặc định chỉ view
+            actionViewForm();
             $('#dsNguoiDungForm')[0].reset();
             $('#select-don-vi').val(null).trigger('change');
             $('#select-chuc-vu').val(null).trigger('change');
@@ -325,7 +331,7 @@
                         return `<div class="btn-action text-center">
                                     <a class="btn btn-icon-edit" role="button" title="Sửa" onclick="showUpdateTab1Modal('${full.uuid}')">
                                         <span class="svg-icon svg-icon-edit"></span>    
-                                    </a>    
+                                    </a> 
                                     <a class="btn btn-icon-delete" role="button" onclick="showDeleteTab1Modal('${full.uuid}')">
                                         <span class="svg-icon svg-icon-delete" title="Xóa"></span>
                                     </a>    
@@ -343,6 +349,10 @@
                 { className: 'noVis' },
             ]
         });
+
+        $('#createTab1Modal .btn-view').on('click', function () {
+            actionEditForm();
+        })
 
         $('#createTab1Modal .btn-save').on('click', function () {
             if ($('#dsNguoiDungForm').valid()) {
@@ -390,7 +400,7 @@
                 });
             }
         })
-    
+
         window.showUpdateTab1Modal = function (id) {
             $.ajax({
                 url: `api/user-manager/detail/${id}`, // Replace with your API endpoint
@@ -409,7 +419,7 @@
 
                     $('#select-don-vi').append(new Option(data.ten_don_vi, data.don_vi_id, true, true)).trigger('change');
                     $('#select-chuc-vu').append(new Option(data.ten_chuc_vu, data.chuc_vu_id, true, true)).trigger('change');
-                    
+
                     let lstRoles = [];
                     data.roles.forEach(item => {
                         lstRoles.push(new Option(item.name, item.id, true, true))
@@ -423,7 +433,6 @@
                     $('#dsNguoiDungForm').validate().form();
                     // Show confirmation modal
                     $('#createTab1Modal').modal('show');
-                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
                 },
                 error: function (err) {
                     // Handle error
@@ -483,8 +492,25 @@
             });
         }
     }
+
+    function actionViewForm() {
+        $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
+        $("#createTab1Modal input, select").prop("disabled", true);
+        $('#createTab1Modal .btn-view').show();
+        $('#createTab1Modal .btn-save').hide();
+    }
+
+    function actionEditForm() {
+        $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+        $("#createTab1Modal input, select").prop("disabled", false);
+        $('#createTab1Modal .btn-view').hide();
+        $('#createTab1Modal .btn-save').show();
+    }
 </script>
 {% endblock %}
+{% block buttonViewTab1Modal %}
+<button type="button" class="btn btn-view">{{ utils.render_icon('floppy2-fill') }} Chỉnh sửa</button>
+{% endblock%}
 {% block bodyCreateTab1Modal %}
 <form id="dsNguoiDungForm" class="row g-3 needs-validation" novalidate method="post">
     <input type="text" name="user_uuid" hidden />
@@ -524,7 +550,8 @@
         <span class="toggle-password" onclick="togglePasswordVisibility()">
             <i class="eye-icon eye-open"></i>
         </span>
-        <input id="confirm_password" type="password" class="form-control" name="confirm_password" autocomplete="new-password">
+        <input id="confirm_password" type="password" class="form-control" name="confirm_password"
+            autocomplete="new-password">
     </div>
     <div class="col-md-6">
         <label for="role_ids" class="form-label">Quyền hệ thống:<span class="required">*</span></label>

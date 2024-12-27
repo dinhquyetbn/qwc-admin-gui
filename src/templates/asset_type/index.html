@@ -102,6 +102,7 @@
             let initDataJsTreeThamSo = [...dataJsTreeThamSo];
             let id = $('#createTab1Modal input[name="id"]').val();
             if (!id) {
+                actionEditForm();
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
                 initDataJsTreeThamSo = [...dataJsTreeThamSo].map(x => {
                     if (x.children.length > 0) {
@@ -113,6 +114,7 @@
                     return x;
                 });
             } else {
+                actionViewForm();
                 // Nếu có giá trị tham số sẽ thực hiện init lại jsTree
                 let dsThamSo = $('#loaiTSForm [name="ds_tham_so"]').val();
                 let arrThamSo = dsThamSo.split(',');
@@ -144,6 +146,14 @@
                 "plugins": ["checkbox"],
             });
         });
+    
+        $('#createTab1Modal').on('hide.bs.modal', function () { 
+            actionViewForm();
+            $('#loaiTSForm')[0].reset();
+            $('#loaiTSForm').find('.is-valid').removeClass('is-valid');
+            $('#loaiTSForm').find('.is-invalid').removeClass('is-invalid');
+            $('#loaiTSForm').find('.invalid-feedback').remove();
+        })
     })
 
     dataJsTreeThamSo = [];
@@ -160,6 +170,10 @@
             if (event.key === "Enter" || event.keyCode === 13) {
                 tableLoaiTS.ajax.reload(null, false);
             }
+        })
+
+        $('#createTab1Modal .btn-view').on('click', function () {
+            actionEditForm();
         })
         // TAB1: LOẠI TÀI SẢN
         const fieldLoaiTS = [
@@ -354,7 +368,6 @@
                     $('#loaiTSForm').validate().form();
                     // Show confirmation modal
                     $('#createTab1Modal').modal('show');
-                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
                 },
                 error: function (err) {
                     // Handle error
@@ -411,9 +424,25 @@
             }
         });
     }
+
+    function actionViewForm() {
+        $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
+        $("#createTab1Modal input, select, textarea").prop("disabled", true);
+        $('#createTab1Modal .btn-view').show();
+        $('#createTab1Modal .btn-save').hide();
+    }
+
+    function actionEditForm() {
+        $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+        $("#createTab1Modal input, select, textarea").prop("disabled", false);
+        $('#createTab1Modal .btn-view').hide();
+        $('#createTab1Modal .btn-save').show();
+    }
 </script>
 {% endblock %}
-
+{% block buttonViewTab1Modal %}
+<button type="button" class="btn btn-view">{{ utils.render_icon('floppy2-fill') }} Chỉnh sửa</button>
+{% endblock%}
 {% block bodyCreateTab1Modal %}
 <form id="loaiTSForm" class="row g-3 needs-validation" novalidate method="post">
     <input type="text" name="id" hidden />

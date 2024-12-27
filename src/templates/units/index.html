@@ -90,7 +90,10 @@
             // get danh mục
             let id = $('#createTab1Modal input[name="id"]').val();
             if (!id) {
+                actionEditForm();
                 $('#createTab1Modal .modal-title').html('Thêm mới dữ liệu');
+            } else {
+                actionViewForm();
             }
 
             $("#select-don-vi").select2({
@@ -188,6 +191,7 @@
         });
 
         $('#createTab1Modal').on('hide.bs.modal', function () {
+            actionViewForm();
             $('#unitsForm')[0].reset();
             $('#unitsForm').find('.is-valid').removeClass('is-valid');
             $('#unitsForm').find('.is-invalid').removeClass('is-invalid');
@@ -210,6 +214,11 @@
                 tableUnits.ajax.reload(null, false);
             }
         })
+
+        $('#createTab1Modal .btn-view').on('click', function () {
+            actionEditForm();
+        })
+
         // TAB1: LOẠI TÀI SẢN
         const fieldUnits = [
             "stt",
@@ -430,12 +439,13 @@
                     $('#select-province').append(new Option(res.result.ten_tp, res.result.ma_tp, true, true)).trigger('change');
                     $('#select-district').append(new Option(res.result.ten_qh, res.result.ma_qh, true, true)).trigger('change');
                     $('#select-ward').append(new Option(res.result.ten_px, res.result.ma_px, true, true)).trigger('change');
-                    $('#select-don-vi').append(new Option(res.result.ten_don_vi_cap_cha, res.result.don_vi_cap_cha_id, true, true)).trigger('change');
+                    if (res.result.don_vi_cap_cha_id) {
+                        $('#select-don-vi').append(new Option(res.result.ten_don_vi_cap_cha, res.result.don_vi_cap_cha_id, true, true)).trigger('change');
+                    }
                     // Trigger validation on each field to show feedback
                     $('#unitsForm').validate().form();
                     // Show confirmation modal
                     $('#createTab1Modal').modal('show');
-                    $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
                 },
                 error: function (err) {
                     // Handle error
@@ -474,5 +484,22 @@
             });
         }
     });
+
+    function actionViewForm() {
+        $('#createTab1Modal .modal-title').html('Xem chi tiết dữ liệu');
+        $("#createTab1Modal input, select").prop("disabled", true);
+        $('#createTab1Modal .btn-view').show();
+        $('#createTab1Modal .btn-save').hide();
+    }
+
+    function actionEditForm() {
+        $('#createTab1Modal .modal-title').html('Cập nhật dữ liệu');
+        $("#createTab1Modal input, select").prop("disabled", false);
+        $('#createTab1Modal .btn-view').hide();
+        $('#createTab1Modal .btn-save').show();
+    }
 </script>
 {% endblock %}
+{% block buttonViewTab1Modal %}
+<button type="button" class="btn btn-view">{{ utils.render_icon('floppy2-fill') }} Chỉnh sửa</button>
+{% endblock%}
