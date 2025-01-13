@@ -56,7 +56,12 @@
 {% block table %}
 <ul class="nav nav-tabs w-100" id="tabNhaCongSan" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="tabDuLieuChinh" data-bs-toggle="tab" data-bs-target="#tab-DuLieuChinh"
+        <button class="nav-link active" id="tabDuLieuBanDo" data-bs-toggle="tab" data-bs-target="#tab-DuLieuBanDo"
+            data-target-modal="#createTabMapModal" type="button" role="tab" aria-controls="tab-DuLieuBanDo"
+            aria-selected="true">Dữ liệu bản đồ</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tabDuLieuChinh" data-bs-toggle="tab" data-bs-target="#tab-DuLieuChinh"
             data-target-modal="#createTab1Modal" type="button" role="tab" aria-controls="tab-DuLieuChinh"
             aria-selected="true">Ds nhà công sản</button>
     </li>
@@ -67,7 +72,15 @@
     </li> -->
 </ul>
 <div class="tab-content px-4 py-4">
-    <div class="tab-pane fade show active" id="tab-DuLieuChinh" role="tabpanel" aria-labelledby="tab-DuLieuChinh">
+    <div class="tab-pane fade show active" id="tab-DuLieuBanDo" role="tabpanel" aria-labelledby="tab-DuLieuBanDo">
+        <div class="webview-container">
+            <iframe
+                src="/map_viewer/?t=DaNang_PBM_Shpfile_v2&l=edit_polygons%2CDaNang_PBM_Shpfile%20—%20DAT_CS_METADATA%2CDaNang_PBM_Shpfile%20—%20NHA_CS_METADATA%2COpenStreetMap&bl=&c=12042746%2C1810986&s=20000"
+                width="100%" style="min-height: calc(100vh - 190px);" frameborder="0" allowfullscreen
+                sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms allow-popups allow-pointer-lock allow-popups-to-escape-sandbox"></iframe>
+        </div>
+    </div>
+    <div class="tab-pane fade show" id="tab-DuLieuChinh" role="tabpanel" aria-labelledby="tab-DuLieuChinh">
         <table id="tableDuLieuChinh" class="display responsive">
             <thead>
                 <tr>

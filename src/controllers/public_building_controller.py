@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import os
 import uuid
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from flask import json, jsonify, request
 from services.upload_file_service import UploadFileService
 from .controller_v2 import ControllerV2
@@ -78,10 +78,133 @@ class PublicBuildingController(ControllerV2):
             methods=["GET"],
         )
 
+        # Tìm kiếm chi tiết thông tin tài sản theo mã tài sản
+        self.app.add_url_rule(
+            "/api/public-building/feature-info/<maTaiSan>",
+            "get_tai_san_by_ma_tai_san",
+            self.get_tai_san_by_ma_tai_san,
+            methods=["GET"],
+        )
+
+    def get_tai_san_by_ma_tai_san(self, maTaiSan):
+        self.setup_models()
+        session = self.session()
+        result = "<p>Không có thông tin dữ liệu về tài sản.</p>"
+        objDat = session.query(self.PBDMQuanLyDatCong).filter(
+            self.PBDMQuanLyDatCong.trang_thai_xoa == False,
+            self.PBDMQuanLyDatCong.ma_dat != None,  # Ensure ma_dat is not None
+            func.replace(self.PBDMQuanLyDatCong.ma_dat, " ", "")
+            == maTaiSan.replace(" ", "")
+        ).first()
+
+        if objDat:
+            pass
+
+        objNha = session.query(self.PBDMQuanLyNhaCongSan).filter(
+            self.PBDMQuanLyNhaCongSan.trang_thai_xoa == False,
+            self.PBDMQuanLyNhaCongSan.ma_tai_san != None,  # Ensure ma_dat is not None
+            func.replace(self.PBDMQuanLyNhaCongSan.ma_tai_san, " ", "")
+            == maTaiSan.replace(" ", "")
+        ).first()
+
+        if objNha:
+            loai_ts_id = objNha.phan_loai_tai_san_id
+            db_param = self.get_param_phan_loai_ts(session, loai_ts_id)
+            result = self.render_ui_tai_san(objNha, db_param)
+
+        session.close()
+        return jsonify({"result": result})
+
+    def get_param_phan_loai_ts(self, session, phan_loai_ts_id):
+        queryPhanLoaiTS = (
+            session.query(self.PBMSQuanLyPhanLoaiTaiSan)
+            .filter_by(id=phan_loai_ts_id, trang_thai_xoa=False)
+            .first()
+        )
+        jsonData = []
+        if queryPhanLoaiTS.ds_tham_so:
+            lstThamSoId = queryPhanLoaiTS.ds_tham_so.split(",")
+            dbThamSos = (
+                session.query(self.PBMSQuanLyThamSo, self.PBMSQuanLyNhomThamSo)
+                .join(
+                    self.PBMSQuanLyNhomThamSo,
+                    self.PBMSQuanLyThamSo.nhom_tham_so_id
+                    == self.PBMSQuanLyNhomThamSo.id,
+                )
+                .filter(
+                    self.PBMSQuanLyThamSo.trang_thai_xoa == False,
+                    self.PBMSQuanLyThamSo.id.in_(lstThamSoId),
+                )
+                .all()
+            )
+
+            jsonData = {}
+            for tblThamSo, tblNhomTS in dbThamSos:
+                ten_nhom_tham_so = f"{tblNhomTS.thu_tu_hien_thi}.{tblNhomTS.ten_nhom}"
+                if ten_nhom_tham_so not in jsonData:
+                    jsonData[ten_nhom_tham_so] = []
+                jsonData[ten_nhom_tham_so].append({
+                    "id": tblThamSo.id,
+                    "ma_truong": tblThamSo.ma_truong,
+                    "ten_truong": tblThamSo.ten_truong,
+                    "kieu_du_lieu": tblThamSo.kieu_du_lieu,
+                    "mo_ta": tblThamSo.mo_ta,
+                    "thu_tu_hien_thi": tblThamSo.thu_tu_hien_thi,
+                    "nhom_tham_so_id": tblThamSo.nhom_tham_so_id,
+                    # Add other fields as necessary
+                })
+            jsonData = sorted(jsonData.items(), key=lambda x: x[0])
+
+        return jsonData
+
+    def render_ui_tai_san(self, infoData, infoParam):
+        contentLabelTabs = '<div class="nav flex-column nav-pills me-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">'
+        contentParamTabs = '<div class="tab-content" id="v-pills-tabContent">'
+        count_active = 0
+        for itemGroup in infoParam:
+            class_active = ''
+            count_active += 1
+            tab_id = str(uuid.uuid4())
+            if count_active == 1:
+                class_active = 'active'
+            labelTab = itemGroup[0]
+            contentLabelTabs += '<button class="nav-link text-start ' + class_active + '" id="' + tab_id + '-tab" data-bs-toggle="pill" data-bs-target="#' + tab_id + '" type="button" role="tab" aria-controls="' + tab_id + '" aria-selected="true">' + labelTab + '</button>'
+            paramTabs = itemGroup[1]
+            contentChildParam = '<div class="tab-pane fade show ' + class_active + '" id="' + tab_id + '" role="tabpanel" aria-labelledby="' + tab_id + '-tab">'
+            for itemParam in paramTabs:
+                val_data = getattr(infoData, itemParam['ma_truong'])
+                res_data = '<b>' + str(val_data) + '</b>' if val_data else ''
+
+                if itemParam['ma_truong'] == 'ma_px':
+                    res_data = '<b>' + infoData.ten_px + '</b>'
+                elif itemParam['ma_truong'] == 'ma_qh':
+                    res_data = '<b>' + infoData.ten_qh + '</b>'
+                elif itemParam['ma_truong'] == 'ma_tp':
+                    res_data = '<b>' + infoData.ten_tp + '</b>'
+
+                if itemParam['kieu_du_lieu'] == 'file':
+                    res_data = ''
+                    for file in json.loads(val_data):
+                        res_data += '<b><a href="/' + file['file_url'] + '" target="_blank">' + file['file_name'] + '</a></b>'
+
+                contentChildParam += '<div class="col-md-6 mt-3"> \
+                                        <label for="' + itemParam['ma_truong'] + '" class="form-label">' + itemParam['ten_truong'] + ':</label> \
+                                        ' + res_data + ' \
+                                    </div>'
+            contentChildParam += '</div>' 
+            contentParamTabs += contentChildParam
+
+        contentLabelTabs += '</div>'
+        contentParamTabs += '</div>'
+        content = '<div class="d-flex align-items-start"> \
+                ' + contentLabelTabs + '\
+                ' + contentParamTabs + '\
+                </div>'
+        return content
     # Hàm cho danh sách tham số
     def get_data_by_page_public_building(self):
         session = self.session()
-
+        # self.get_tai_san_by_ma_tai_san('NDCS-20224847610')
         body_request = request.get_json()
         req_page = body_request["start"]
         req_size = body_request["length"]
@@ -492,7 +615,11 @@ class PublicBuildingController(ControllerV2):
             {
                 "nha_cs_id": item.nha_cs_id,
                 "ly_do_chinh_sua": item.ly_do_chinh_sua,
-                "nguoi_chinh_sua": [user.name for user in dbUsers if user.uuid == item.nguoi_chinh_sua_id],
+                "nguoi_chinh_sua": [
+                    user.name
+                    for user in dbUsers
+                    if user.uuid == item.nguoi_chinh_sua_id
+                ],
                 "du_lieu_cu": item.du_lieu_cu,
                 "du_lieu_moi": item.du_lieu_moi,
                 "ngay_tao": self.convertUTCDateToVNTime(item.ngay_tao),

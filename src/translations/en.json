@@ -77,6 +77,9 @@
       "new_map_data_analytics": "new_map_data_analytics",
       "title": "Phân tích dữ liệu bản đồ"
     },
+    "map_theme_config": {
+      "title": "Thiết lập giao diện"
+    },
     "permissions": {
       "confirm_message_delete": "Remove permission?",
       "ph_select_resource": "Select a resource",
@@ -185,6 +188,7 @@
       "trang_chu": "Trang chủ"
     },
     "unit": {
+      "new_map_theme_config": "new_map_theme_config",
       "new_unit": "new_unit",
       "title": "Danh sách đơn vị"
     },

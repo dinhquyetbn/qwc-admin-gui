@@ -1,0 +1,12 @@
+{% extends "templates/base_index_v2.html" %}
+{% block title %}{{ i18n('interface.map_theme_config.title') }}{% endblock %}
+{% block new_resource_label %}{{ i18n('interface.unit.new_map_theme_config') }}{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">{{ utils.render_icon('house-door-fill') }}</li>
+        <li class="breadcrumb-item active">Cấu hình bản đồ</li>
+        <li class="breadcrumb-item" aria-current="page">Thiết lập giao diện</li>
+    </ol>
+</nav>
+{% endblock %}

@@ -16,3 +16,4 @@ from .categories_controller import CategoriesController
 from .dashboard_v2_controller import DashboardV2Controller
 from .upload_file_controller import UploadFileController
 from .user_manager_controller import UserManagerController
+from .map_theme_config_controller import MapThemeConfigController

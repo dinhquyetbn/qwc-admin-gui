@@ -207,6 +207,12 @@ For more information please visit: https://github.com/qwc-services/qwc-docker
 
 Development
 -----------
+Nếu chưa cài đặt qgis, python3-qgis
+
+    sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+    sudo apt update
+    sudo apt install qgis python3-qgis
+
 
 Create a virtual environment:
 
