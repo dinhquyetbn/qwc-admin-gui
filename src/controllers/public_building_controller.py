@@ -184,8 +184,9 @@ class PublicBuildingController(ControllerV2):
 
                 if itemParam['kieu_du_lieu'] == 'file':
                     res_data = ''
-                    for file in json.loads(val_data):
-                        res_data += '<b><a href="/' + file['file_url'] + '" target="_blank">' + file['file_name'] + '</a></b>'
+                    if val_data:
+                        for file in json.loads(val_data):
+                            res_data += '<b><a href="/' + file['file_url'] + '" target="_blank">' + file['file_name'] + '</a></b>'
 
                 contentChildParam += '<div class="col-md-6 mt-3"> \
                                         <label for="' + itemParam['ma_truong'] + '" class="form-label">' + itemParam['ten_truong'] + ':</label> \
