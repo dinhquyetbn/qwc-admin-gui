@@ -98,7 +98,7 @@ class PublicBuildingController(ControllerV2):
         ).first()
 
         if objDat:
-            pass
+            result = self.render_ui_nha_cs(session, objDat)
 
         objNha = session.query(self.PBDMQuanLyNhaCongSan).filter(
             self.PBDMQuanLyNhaCongSan.trang_thai_xoa == False,
@@ -181,6 +181,8 @@ class PublicBuildingController(ControllerV2):
                     res_data = '<b>' + infoData.ten_qh + '</b>'
                 elif itemParam['ma_truong'] == 'ma_tp':
                     res_data = '<b>' + infoData.ten_tp + '</b>'
+                elif itemParam['ma_truong'] == 'phan_loai_tai_san_id':
+                    res_data = 'Nhà công sản'
 
                 if itemParam['kieu_du_lieu'] == 'file':
                     res_data = ''
@@ -188,7 +190,7 @@ class PublicBuildingController(ControllerV2):
                         for file in json.loads(val_data):
                             res_data += '<b><a href="/' + file['file_url'] + '" target="_blank">' + file['file_name'] + '</a></b>'
 
-                contentChildParam += '<div class="col-md-6 mt-3"> \
+                contentChildParam += '<div class="col-md-12 mt-3"> \
                                         <label for="' + itemParam['ma_truong'] + '" class="form-label">' + itemParam['ten_truong'] + ':</label> \
                                         ' + res_data + ' \
                                     </div>'
@@ -202,6 +204,84 @@ class PublicBuildingController(ControllerV2):
                 ' + contentParamTabs + '\
                 </div>'
         return content
+    
+    def render_ui_nha_cs(self, session, infoData):
+        queryHTSD = (
+            session.query(self.PBDMQuanLyDanhMuc)
+            .filter(self.PBDMQuanLyDanhMuc.id == infoData.hien_trang_sd_id)
+            .first()
+        )
+        content_htsd = queryHTSD.ten_danh_muc if queryHTSD else ''
+
+        content_file = ''
+        if (infoData.ds_file_dinh_kem):
+            for file in json.loads(infoData.ds_file_dinh_kem):
+                content_file += '<a href="/' + file['file_url'] + '" target="_blank">' + file['file_name'] + '</a>'
+
+        content = '<tr> \
+                        <td class="identify-attr-title wrap"><id>Mã tài sản</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ma_dat + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Tên tài sản</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ten_dat + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Hiện trạng sử dụng</id></td> \
+                        <td class="identify-attr-value wrap">' + content_htsd + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Số tờ</id></td> \
+                        <td class="identify-attr-value wrap">' + str(infoData.so_to) + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Số thửa</id></td> \
+                        <td class="identify-attr-value wrap">' + str(infoData.so_thua) + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Diện tích</id></td> \
+                        <td class="identify-attr-value wrap">' + str(infoData.dien_tich) + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Địa chỉ</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.dia_chi + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Mã Phường/Xã</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ma_px + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Tên Phường/Xã</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ten_px + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Mã Quận/Huyện</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ma_qh + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Tên Quận/Huyện</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ten_qh + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Mã Tỉnh/TP</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ma_tp + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Tên Tỉnh/TP</id></td> \
+                        <td class="identify-attr-value wrap">' + infoData.ten_tp + '</td> \
+                   </tr> \
+                   <tr> \
+                        <td class="identify-attr-title wrap"><id>Ảnh/Văn bản</id></td> \
+                        <td class="identify-attr-value wrap">' + content_file + '</td> \
+                   </tr> \
+                    '
+        result = '<table class="attribute-list"> \
+                        <tbody> \
+                        ' + content + ' \
+                        </tbody> \
+                    </table>'
+
+        return result
     # Hàm cho danh sách tham số
     def get_data_by_page_public_building(self):
         session = self.session()
